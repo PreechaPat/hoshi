@@ -1,0 +1,29 @@
+<section class="page A4">
+  <div class="title">Disclaimers & Notes</div>
+
+  <h3>Intended Use</h3>
+  <p>{{ disclaimers.intended_use or "This 16S rRNA assay supports bacterial identification from clinical specimens. Results must be interpreted with clinical context and other laboratory findings." }}</p>
+
+  <h3>Methodological Limitations</h3>
+  <ul>
+    {% for item in (disclaimers.limitations or [
+      "16S detects bacterial DNA and may identify non-viable organisms.",
+      "Species-level resolution may be limited for closely related taxa.",
+      "Relative abundance can be affected by primer bias and 16S copy number.",
+      "Low-level contamination cannot be fully excluded despite controls."
+    ]) %}
+      <li>{{ item }}</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Reporting Thresholds</h3>
+  <p>{{ disclaimers.thresholds or "Only taxa above pre-defined thresholds and/or of clinical relevance are reported explicitly; others may be summarized." }}</p>
+
+  <h3>Contact</h3>
+  <p>{{ disclaimers.contact or "For questions or urgent clinical correlation, contact the reporting laboratory." }}</p>
+
+  <div style="margin-top:16px; display:flex; justify-content:space-between;">
+    <span><strong>Lab:</strong> {{ disclaimers.lab or "Long-read Lab Reference" }}</span>
+    <span><strong>Version:</strong> {{ version or "1.0" }}</span>
+  </div>
+</section>

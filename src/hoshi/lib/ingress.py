@@ -34,9 +34,7 @@ def read_input_table(input_data, required_columns=None, sep=None):
         if not os.path.isfile(input_data):
             raise ValueError(f"File not found: {input_data}")
         try:
-            df = pd.read_csv(
-                input_data, sep=sep, engine="python"
-            )  # auto-detect by default
+            df = pd.read_csv(input_data, sep=sep, engine="python")  # auto-detect by default
         except Exception as e:
             raise ValueError(f"Failed to read file '{input_data}': {e}")
     else:

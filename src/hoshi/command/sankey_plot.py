@@ -2,7 +2,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import hashlib
 import argparse
-import os
 
 
 def hex_color_from_label(label):
@@ -91,9 +90,7 @@ def sankey_from_dataframe(df, level_cols, value_col="value", title=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Plot a Sankey diagram from hierarchical TSV data."
-    )
+    parser = argparse.ArgumentParser(description="Plot a Sankey diagram from hierarchical TSV data.")
     parser.add_argument(
         "input_file",
         help="Input TSV file with hierarchical columns and abundance column.",
@@ -103,9 +100,7 @@ def main():
         default="abundance",
         help="Column representing flow values (default: 'abundance').",
     )
-    parser.add_argument(
-        "-o", "--output_file", help="Path to save the Sankey plot HTML."
-    )
+    parser.add_argument("-o", "--output_file", help="Path to save the Sankey plot HTML.")
     parser.add_argument("--title", help="Plot title.")
     parser.add_argument(
         "--levels",
@@ -126,9 +121,7 @@ def main():
         raise ValueError(f"Missing required columns in input: {missing}")
 
     # Create plot
-    fig = sankey_from_dataframe(
-        df, level_cols=args.levels, value_col=args.value_col, title=args.title
-    )
+    fig = sankey_from_dataframe(df, level_cols=args.levels, value_col=args.value_col, title=args.title)
 
     if args.output_file:
         fig.write_html(args.output_file)

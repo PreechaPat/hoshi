@@ -1,8 +1,6 @@
 # tests/test_ingress.py
-import pandas as pd
 
-from hoshi.lib.ingress import read_input_table
+from hoshi.lib import ingress
 
-
-def test_thing():
+def test_read():
     assert 1 == 1

@@ -49,9 +49,7 @@ def main():
     import argparse
     from hoshi.lib.ingress import read_input_table
 
-    parser = argparse.ArgumentParser(
-        description="Annotate tax_id table with lineage columns."
-    )
+    parser = argparse.ArgumentParser(description="Annotate tax_id table with lineage columns.")
     parser.add_argument("input_file", help="Path to input table with 'tax_id' column.")
     parser.add_argument(
         "-o",
@@ -71,9 +69,7 @@ def main():
 
     args = parser.parse_args()
 
-    df_input = read_input_table(
-        args.input_file, required_columns=[args.taxid_col, args.abundance_col]
-    )
+    df_input = read_input_table(args.input_file, required_columns=[args.taxid_col, args.abundance_col])
 
     df_annotated = annotate_with_taxonomic_lineage(
         df_input,

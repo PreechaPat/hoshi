@@ -7,10 +7,12 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "dominate>=2.9.1",
+    "jinja2>=3.1.6",
     "pandas>=2.3.0",
     "playwright>=1.54.0",
     "plotly>=6.2.0",
     "taxopy>=0.14.0",
+    "weasyprint>=66.0",
 ]
 
 [dependency-groups]

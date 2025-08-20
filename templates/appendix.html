@@ -1,0 +1,60 @@
+<section class="page A4">
+  <div class="title" style="margin-top:0;">Appendix: Materials & Methods</div>
+
+  <div class="block">
+    <h3>Specimen Processing</h3>
+    <p>{{ appendix.processing or "DNA extraction with host depletion where applicable; input volume and concentration measured by Qubit; negative and positive controls included." }}</p>
+  </div>
+
+  <div class="block">
+    <h3>Library Preparation</h3>
+    <p>{{ appendix.library or "16S V1–V9 amplicon workflow using ONT barcoding; amplicon cleanup and pooling by equal molarity." }}</p>
+  </div>
+
+  <div class="block">
+    <h3>Bioinformatics</h3>
+    <p>{{ appendix.bioinfo or "Basecalling (high accuracy), demultiplexing, adapter/primer trimming, human read removal, QC, taxonomic assignment via Kraken2/Bracken against SILVA 138.1; reporting threshold per laboratory SOP." }}</p>
+  </div>
+
+  <h3>Run Metrics</h3>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Value</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      {% for m in (appendix.metrics or [
+        {"metric":"Total raw reads","value":"25,860","notes":""},
+        {"metric":"Mean Q-score","value":"12.6","notes":"ONT high-accuracy basecalling"},
+        {"metric":"Human reads (%)","value":"3.2%","notes":"post-filtering fraction"},
+        {"metric":"Negative control","value":"Not detected","notes":""}
+      ]) %}
+        <tr><td>{{ m.metric }}</td><td>{{ m.value }}</td><td>{{ m.notes or "" }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Primers</h3>
+  <table>
+    <thead><tr><th>Name</th><th>Sequence</th><th>Target</th></tr></thead>
+    <tbody>
+      {% for p in (appendix.primers or [
+        {"name":"16S_F","seq":"AGAGTTTGATCMTGGCTCAG","target":"V1"},
+        {"name":"16S_R","seq":"TACGGYTACCTTGTTACGACTT","target":"V9"}
+      ]) %}
+        <tr><td>{{ p.name }}</td><td><code>{{ p.seq }}</code></td><td>{{ p.target }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>References</h3>
+  <ol>
+    {% for ref in (appendix.refs or [
+      "Quast et al., SILVA ribosomal RNA gene database project.",
+      "Wood & Salzberg, Kraken: ultrafast metagenomic sequence classification.",
+      "Lu et al., Bracken: estimating species abundance in metagenomics data."
+    ]) %}
+      <li>{{ ref }}</li>
+    {% endfor %}
+  </ol>
+</section>
+
