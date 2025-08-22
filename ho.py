@@ -19,7 +19,7 @@ context = {
   "patient":{"name":"NA","hn":"H123456","dob":"NA","age":"NA","gender":"NA","ethnicity":"NA"},
   "dates":{"collected":"2025-02-21","received":"2025-02-22","tested":"2025-02-22","reported":"2025-02-24"},
   "requester":"NA", "provider":"Siriraj Hospital",
-  "specimen":{"id":"S-01","type":"Blood (EDTA), suspected sepsis"},
+  "specimen":{"id":"S-42","type":"Vag swab, suspected sepsis"},
   "test":{"required":"Pathogen detection (bacterial), culture-independent","performed":"16S rRNA amplicon sequencing (V1–V9), ONT"},
   "taxa":[
     {"name":"Streptococcus agalactiae","common_name":"Group B Streptococcus","reads":15842,"rel_abundance":"62.1%","confidence":"High","interpretation":"Significant—compatible with invasive infection","significant":True},
@@ -51,6 +51,12 @@ context = {
   },
   "disclaimers":{"lab":"Long-read Lab Reference"}
 }
+
+context["taxa"] = [
+    {"name": "Lactobacillus iners", "common_name": None, "reads": 25500, "rel_abundance": "98.7%", "confidence": "High", "interpretation": "Dominant Lactobacillus — consistent with Lactobacillus-dominant vaginal microbiota", "significant": False},
+    {"name": "Ureaplasma parvum", "common_name": None, "reads": 50, "rel_abundance": "0.19%", "confidence": "Moderate", "interpretation": "Detected at low level", "significant": True},
+    {"name": "Gardnerella vaginalis", "common_name": None, "reads": 8, "rel_abundance": "0.03%", "confidence": "Low", "interpretation": "Trace presence; below typical reporting threshold", "significant": False},
+]
 
 # Render HTML
 html = tpl.render(**context)
