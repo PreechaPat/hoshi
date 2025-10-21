@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ page_title }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    h1 {
+      margin-bottom: 24px;
+    }
+    .tab-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .tab-menu {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .tab-trigger {
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .tab-trigger:focus {
+      outline: 2px solid #1d4ed8;
+      outline-offset: 2px;
+    }
+    .tab-trigger.is-active {
+      background: #1d4ed8;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(29, 78, 216, 0.3);
+    }
+    .tab-trigger:hover {
+      background: #cbd5f5;
+    }
+    .tab-panel {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      padding: 16px 20px;
+      display: none;
+    }
+    .tab-panel.is-active {
+      display: block;
+    }
+    .tab-panel h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid #cbd5f5;
+      padding: 8px;
+      text-align: left;
+    }
+    thead th {
+      background-color: #e2e8f0;
+      font-weight: 600;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #f1f5f9;
+    }
+    code {
+      background: #e2e8f0;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{ page_title }}</h1>
+  <div class="tab-layout">
+    <nav class="tab-menu" role="tablist" aria-label="TSV tables">
+      {% for table in tables %}
+      <button
+        id="trigger-{{ table.dom_id }}"
+        class="tab-trigger{% if loop.first %} is-active{% endif %}"
+        type="button"
+        role="tab"
+        aria-selected="{{ 'true' if loop.first else 'false' }}"
+        aria-controls="{{ table.dom_id }}"
+        data-tab-target="{{ table.dom_id }}"
+      >
+        {{ table.name }}
+      </button>
+      {% endfor %}
+    </nav>
+    <main>
+      {% for table in tables %}
+        {% set is_active = loop.first %}
+        {% include "table_page.html.j2" %}
+      {% endfor %}
+    </main>
+  </div>
+  <script>
+    (function () {
+      const triggers = Array.from(document.querySelectorAll('.tab-trigger'));
+      const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
+      if (triggers.length === 0 || panels.length === 0) {
+        return;
+      }
+
+      const activate = (targetId) => {
+        panels.forEach((panel) => {
+          const isMatch = panel.id === targetId;
+          panel.classList.toggle('is-active', isMatch);
+          panel.toggleAttribute('hidden', !isMatch);
+        });
+        triggers.forEach((trigger) => {
+          const isMatch = trigger.dataset.tabTarget === targetId;
+          trigger.classList.toggle('is-active', isMatch);
+          trigger.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+        });
+      };
+
+      triggers.forEach((trigger) => {
+        trigger.addEventListener('click', () => activate(trigger.dataset.tabTarget));
+        trigger.addEventListener('keydown', (event) => {
+          if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') {
+            return;
+          }
+          event.preventDefault();
+          const currentIndex = triggers.indexOf(trigger);
+          const direction = event.key === 'ArrowRight' ? 1 : -1;
+          const nextIndex = (currentIndex + direction + triggers.length) % triggers.length;
+          const nextTrigger = triggers[nextIndex];
+          activate(nextTrigger.dataset.tabTarget);
+          nextTrigger.focus({ preventScroll: true });
+        });
+      });
+
+      activate(triggers.find((trigger) => trigger.classList.contains('is-active')).dataset.tabTarget);
+    }());
+  </script>
+  <noscript>
+    JavaScript is required to switch between tables. The first table is displayed by default.
+  </noscript>
+</body>
+</html>

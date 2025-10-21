@@ -1,0 +1,10 @@
+<section
+  id="{{ table.dom_id }}"
+  class="tab-panel{% if is_active %} is-active{% endif %}"
+  role="tabpanel"
+  aria-labelledby="trigger-{{ table.dom_id }}"
+  {% if not is_active %}hidden{% endif %}
+>
+  <h2>{{ table.name }}</h2>
+  {{ table.html | safe }}
+</section>

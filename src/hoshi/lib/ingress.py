@@ -1,5 +1,9 @@
-import pandas as pd
 import os
+import re
+from pathlib import Path
+from typing import Dict, Sequence
+
+import pandas as pd
 
 
 def read_input_table(input_data, required_columns=None, sep=None):
@@ -44,5 +48,57 @@ def read_input_table(input_data, required_columns=None, sep=None):
         missing = [col for col in required_columns if col not in df.columns]
         if missing:
             raise ValueError(f"Missing required columns: {missing}")
+
+    return df
+
+
+def read_emu_abundance(
+    input_data, *, sep: str | None = "\t", reorder: bool = False
+) -> pd.DataFrame:
+    """
+    Load an EMU rel-abundance table and normalise its column layout.
+    """
+
+    EMU_REQUIRED_COLUMNS = ("tax_id", "abundance")
+    EMU_TAXONOMY_COLUMNS = (
+        "superkingdom",
+        "phylum",
+        "class",
+        "order",
+        "family",
+        "genus",
+        "species",
+    )
+    EMU_OUTPUT_COLUMNS = (
+        "tax_id",
+        "abundance",
+        "estimated counts",
+        *EMU_TAXONOMY_COLUMNS,
+    )
+    EMU_NUMERIC_COLUMNS = ("abundance", "estimated counts")
+    df = read_input_table(input_data, required_columns=list(EMU_REQUIRED_COLUMNS), sep=sep)
+
+    # Only pick up those superkingdom -> species taxonomy
+    for column in EMU_TAXONOMY_COLUMNS:
+        if column not in df.columns:
+            df[column] = pd.NA
+
+    for column in EMU_NUMERIC_COLUMNS:
+        if column in df.columns:
+            df[column] = pd.to_numeric(df[column], errors="coerce")
+
+    if reorder:
+        if "estimated counts" in df.columns:
+            df = df.rename(columns={"estimated counts": "estimated counts"})
+            df["estimated counts"] = pd.to_numeric(df["estimated counts"], errors="coerce").astype(int)
+        if "estimated counts" not in df.columns:
+            df["estimated counts"] = pd.NA
+
+
+        for column in EMU_OUTPUT_COLUMNS:
+            if column not in df.columns:
+                df[column] = pd.NA
+
+        df = df.loc[:, list(EMU_OUTPUT_COLUMNS)]
 
     return df

@@ -1,12 +1,11 @@
 [project]
 name = "hoshi"
 version = "0.1.0"
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Preecha", email = "preecha.pat@mahidol.ac.th" }]
 description = "A flexible report generator"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "dominate>=2.9.1",
     "jinja2>=3.1.6",
     "pandas>=2.3.0",
     "playwright>=1.54.0",
@@ -30,5 +29,10 @@ hoshi = "hoshi.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["hoshi"]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["hoshi*"]
+
+[tool.setuptools.package-data]
+"hoshi.command" = ["templates/*.j2"]

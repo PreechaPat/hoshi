@@ -1,8 +1,14 @@
-import pandas as pd
+import argparse
 from collections import OrderedDict
+from typing import Sequence
+
+import pandas as pd
+
+from hoshi.lib.ingress import read_input_table
 from hoshi.lib.taxdb import get_taxdb, get_filtered_lineage
 
 
+# Reannotated and reformat output of a single sample
 def annotate_with_taxonomic_lineage(
     df,
     taxdb=None,
@@ -45,11 +51,8 @@ def annotate_with_taxonomic_lineage(
     return pd.DataFrame(lineage_records)
 
 
-def main():
-    import argparse
-    from hoshi.lib.ingress import read_input_table
-
-    parser = argparse.ArgumentParser(description="Annotate tax_id table with lineage columns.")
+def build_parser(parser: argparse.ArgumentParser | None = None) -> argparse.ArgumentParser:
+    parser = parser or argparse.ArgumentParser(description="Annotate tax_id table with lineage columns.")
     parser.add_argument("input_file", help="Path to input table with 'tax_id' column.")
     parser.add_argument(
         "-o",
@@ -66,9 +69,10 @@ def main():
         default="abundance",
         help="Name of the abundance column (default: 'abundance').",
     )
+    return parser
 
-    args = parser.parse_args()
 
+def run(args: argparse.Namespace) -> int:
     df_input = read_input_table(args.input_file, required_columns=[args.taxid_col, args.abundance_col])
 
     df_annotated = annotate_with_taxonomic_lineage(
@@ -82,7 +86,14 @@ def main():
         df_annotated.to_csv(args.output_file, sep="\t", index=False)
     else:
         print(df_annotated.to_csv(sep="\t", index=False))
+    return 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    return run(args)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
