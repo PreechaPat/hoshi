@@ -10,4 +10,7 @@ wheels/
 .venv
 
 # Configuration
-uv.lock
+.ruff.toml
+
+# Cache
+.ruff_cache/

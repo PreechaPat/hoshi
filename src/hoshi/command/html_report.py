@@ -14,7 +14,7 @@ _TEMPLATE_DIR = Path(__file__).with_name("templates")
 def _load_tables(tsv_files: Iterable[Path]) -> list[dict[str, str]]:
     tables: list[dict[str, str]] = []
     for index, path in enumerate(tsv_files):
-        df = read_emu_abundance(str(path), reorder = True)
+        df = read_emu_abundance(str(path), reorder=True)
         # Use pandas HTML rendering for quick table output with consistent styling.
         table_html = df.to_html(index=False, border=0, classes="data-table")
         tables.append(
@@ -30,7 +30,7 @@ def _load_tables(tsv_files: Iterable[Path]) -> list[dict[str, str]]:
 def generate_basic_html_report(
     tsv_files: Sequence[Path],
     *,
-    page_title: str = "TSV Report",
+    page_title: str = "16S rRNA reports",
 ) -> str:
     """
     Render a simple HTML report with one table section per TSV file.

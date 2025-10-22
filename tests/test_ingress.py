@@ -7,7 +7,7 @@ from hoshi.lib.ingress import read_emu_abundance
 
 
 def test_read_emu_abundance_from_path():
-    df = read_emu_abundance(Path("test_data/emu-mock01.tsv"))
+    df = read_emu_abundance("test_data/emu-mock01.tsv")
 
     expected_columns = {
         "tax_id",
@@ -19,15 +19,13 @@ def test_read_emu_abundance_from_path():
         "family",
         "genus",
         "species",
-        "estimated_counts",
-        "species_group",
-        "species_subgroup",
+        "estimated counts"
     }
     assert expected_columns.issubset(set(df.columns))
 
     abundance_value = df.loc[df["tax_id"] == "1290", "abundance"].iat[0]
     assert abundance_value == pytest.approx(0.2755103097)
-    assert df["estimated_counts"].dtype.kind == "f"
+    assert df["estimated counts"].dtype.kind == "f"
 
 
 def test_read_emu_abundance_dataframe_input_adds_taxonomy_columns():
@@ -42,12 +40,12 @@ def test_read_emu_abundance_dataframe_input_adds_taxonomy_columns():
 
 
 def test_read_emu_abundance_reorders_and_limits_columns():
-    df = read_emu_abundance(Path("test_data/emu-mock01.tsv"), reorder=True)
+    df = read_emu_abundance("test_data/emu-mock01.tsv", reorder=True)
 
     expected_columns = [
         "tax_id",
         "abundance",
-        "estimated_count",
+        "estimated counts",
         "superkingdom",
         "phylum",
         "class",
@@ -58,4 +56,4 @@ def test_read_emu_abundance_reorders_and_limits_columns():
     ]
 
     assert list(df.columns) == expected_columns
-    assert df["estimated_count"].dtype.kind == "f"
+    assert df["estimated counts"].dtype.kind == "i"

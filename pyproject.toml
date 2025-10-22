@@ -1,6 +1,6 @@
 [project]
 name = "hoshi"
-version = "0.1.0"
+version = "v0.1.0"
 authors = [{ name = "Preecha", email = "preecha.pat@mahidol.ac.th" }]
 description = "A flexible report generator"
 readme = "README.md"
@@ -26,6 +26,7 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 hoshi = "hoshi.cli:main"
+hoshi-html_report = "hoshi.command.html_report:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

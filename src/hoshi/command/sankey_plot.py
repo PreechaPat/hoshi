@@ -16,7 +16,9 @@ def hex_color_from_label(label: str) -> str:
     return f"#{h}"
 
 
-def sankey_from_dataframe(df: pd.DataFrame, level_cols: Sequence[str], value_col: str, title: str | None = None) -> go.Figure:
+def sankey_from_dataframe(
+    df: pd.DataFrame, level_cols: Sequence[str], value_col: str, title: str | None = None
+) -> go.Figure:
     links: list[pd.DataFrame] = []
     node_levels: dict[str, int] = {}
     for index in range(len(level_cols) - 1):
@@ -113,7 +115,9 @@ def main(tsv_file: str, output_html: str | None = None, *, title: str | None = N
 def build_parser(parser: argparse.ArgumentParser | None = None) -> argparse.ArgumentParser:
     parser = parser or argparse.ArgumentParser(description="Render a Sankey diagram from an EMU abundance table.")
     parser.add_argument("tsv_file", help="EMU abundance TSV file.")
-    parser.add_argument("-o", "--output", help="Optional HTML output path. Defaults to replacing the TSV suffix with .html.")
+    parser.add_argument(
+        "-o", "--output", help="Optional HTML output path. Defaults to replacing the TSV suffix with .html."
+    )
     parser.add_argument("--title", help="Plot title to display in the rendered HTML.")
     return parser
 

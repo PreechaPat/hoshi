@@ -52,9 +52,7 @@ def read_input_table(input_data, required_columns=None, sep=None):
     return df
 
 
-def read_emu_abundance(
-    input_data, *, sep: str | None = "\t", reorder: bool = False
-) -> pd.DataFrame:
+def read_emu_abundance(input_data, *, sep: str | None = "\t", reorder: bool = False) -> pd.DataFrame:
     """
     Load an EMU rel-abundance table and normalise its column layout.
     """
@@ -93,7 +91,6 @@ def read_emu_abundance(
             df["estimated counts"] = pd.to_numeric(df["estimated counts"], errors="coerce").astype(int)
         if "estimated counts" not in df.columns:
             df["estimated counts"] = pd.NA
-
 
         for column in EMU_OUTPUT_COLUMNS:
             if column not in df.columns:
