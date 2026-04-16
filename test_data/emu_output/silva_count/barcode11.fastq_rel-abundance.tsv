@@ -1,0 +1,14 @@
+tax_id	abundance	superkingdom	phylum	class	order	family	genus	species	estimated counts
+3975	0.39080459770114945	Bacteria	Firmicutes	Clostridia	Peptostreptococcales-Tissierellales	Peptostreptococcaceae	Clostridioides	difficile;	850.0
+246	0.1328735632183908	Bacteria	Firmicutes	Bacilli	Lactobacillales	Lactobacillaceae	Lactiplantibacillus		289.0
+356	0.16275862068965516	Bacteria	Firmicutes	Bacilli	Lactobacillales	Enterococcaceae	Enterococcus	faecalis;	353.99999999999994
+7711	0.030344827586206897	Bacteria	Actinobacteriota	Actinobacteria	Bifidobacteriales	Bifidobacteriaceae	Bifidobacterium	adolescentis;	66.0
+3322	0.09425287356321839	Bacteria	Bacteroidota	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides	vulgatus;	205.0
+110	0.09241379310344827	Bacteria	Bacteroidota	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides	fragilis;	201.0
+590	0.011954022988505748	Bacteria	Proteobacteria	Gammaproteobacteria	Enterobacterales	Enterobacteriaceae	Salmonella	enterica;	26.0
+518	0.02482758620689655	Bacteria	Proteobacteria	Gammaproteobacteria	Enterobacterales	Enterobacteriaceae	Enterobacter	cloacae;	54.0
+2682	0.021149425287356322	Bacteria	Proteobacteria	Gammaproteobacteria	Enterobacterales	Yersiniaceae	Yersinia	enterocolitica;	46.0
+14	0.031724137931034485	Bacteria	Proteobacteria	Gammaproteobacteria	Enterobacterales	Enterobacteriaceae	Escherichia-Shigella	coli;	69.0
+2178	0.006896551724137931	Bacteria	Campylobacterota	Campylobacteria	Campylobacterales	Helicobacteraceae	Helicobacter	pylori;	15.0
+unmapped	0.0								0.0
+mapped_unclassified	0.0								7.0

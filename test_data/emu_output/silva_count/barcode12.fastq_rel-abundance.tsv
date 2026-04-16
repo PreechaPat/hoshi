@@ -1,0 +1,11 @@
+tax_id	abundance	superkingdom	phylum	class	order	family	genus	species	estimated counts
+8889	0.12318840579710146	Bacteria	Bacteroidota	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella	bivia;	459.0
+239	0.3671987411412102	Bacteria	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	agalactiae;	1368.1825094921492
+106	0.024373991011232155	Bacteria	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus		90.817490507851
+5159	0.09098228663446055	Bacteria	Actinobacteriota	Actinobacteria	Bifidobacteriales	Bifidobacteriaceae	Gardnerella	vaginalis;	339.0
+851	0.3046162104626474	Bacteria	Firmicutes	Bacilli	Lactobacillales	Lactobacillaceae	Lactobacillus	gasseri;	1135.0000001838243
+16414	0.08400429409988612	Bacteria	Firmicutes	Bacilli	Lactobacillales	Lactobacillaceae	Lactobacillus	jensenii;	312.99999981617566
+1895	0.002818035426731079	Bacteria	Firmicutes	Bacilli	Mycoplasmatales	Mycoplasmataceae	Mycoplasma	hominis;	10.5
+50	0.002818035426731079	Bacteria	Firmicutes	Bacilli	Mycoplasmatales	Mycoplasmataceae	Mycoplasma		10.5
+unmapped	0.0								0.0
+mapped_unclassified	0.0								7.0

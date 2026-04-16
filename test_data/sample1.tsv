@@ -1,4 +1,4 @@
-Rank1	Rank2	Rank3	abundance
-Bacteria	Firmicutes	Erysipelotrichaceae	10
-Bacteria	Firmicutes	Lactobacillaceae	50
-Bacteria	Bacteroidota	Bacteroidaceae	20
+tax_id	Rank1	Rank2	Rank3	abundance
+011	Bacteria	Firmicutes	Erysipelotrichaceae	10
+022	Bacteria	Firmicutes	Lactobacillaceae	50
+033	Bacteria	Bacteroidota	Bacteroidaceae	20

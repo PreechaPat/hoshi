@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import argparse
 from collections import OrderedDict
-from typing import Sequence
 
 import pandas as pd
 
@@ -8,25 +9,16 @@ from hoshi.lib.ingress import read_input_table
 from hoshi.lib.taxdb import get_taxdb, get_filtered_lineage
 
 
-# Reannotated and reformat output of a single sample
 def annotate_with_taxonomic_lineage(
-    df,
+    df: pd.DataFrame,
     taxdb=None,
     taxid_col="tax_id",
     abundance_col="abundance",
     desired_ranks=None,
     skip_invalid=True,
-):
+) -> pd.DataFrame:
     if desired_ranks is None:
-        desired_ranks = [
-            "species",
-            "genus",
-            "family",
-            "order",
-            "class",
-            "phylum",
-            "kingdom",
-        ]
+        desired_ranks = ["species", "genus", "family", "order", "class", "phylum", "kingdom"]
 
     if taxdb is None:
         taxdb = get_taxdb()
@@ -39,37 +31,14 @@ def annotate_with_taxonomic_lineage(
         try:
             taxid_int = int(taxid)
             lineage = get_filtered_lineage(taxid_int, taxdb, desired_ranks)
-            for k, v in lineage.items():
-                lineage_data[k] = v
+            lineage_data.update(lineage)
         except (ValueError, TypeError):
             if skip_invalid:
                 continue
 
-        merged = {**row.to_dict(), **lineage_data}
-        lineage_records.append(merged)
+        lineage_records.append({**row.to_dict(), **lineage_data})
 
     return pd.DataFrame(lineage_records)
-
-
-def build_parser(parser: argparse.ArgumentParser | None = None) -> argparse.ArgumentParser:
-    parser = parser or argparse.ArgumentParser(description="Annotate tax_id table with lineage columns.")
-    parser.add_argument("input_file", help="Path to input table with 'tax_id' column.")
-    parser.add_argument(
-        "-o",
-        "--output_file",
-        help="Path to save annotated output (TSV). If not provided, prints to stdout.",
-    )
-    parser.add_argument(
-        "--taxid_col",
-        default="tax_id",
-        help="Name of the tax ID column (default: 'tax_id').",
-    )
-    parser.add_argument(
-        "--abundance_col",
-        default="abundance",
-        help="Name of the abundance column (default: 'abundance').",
-    )
-    return parser
 
 
 def run(args: argparse.Namespace) -> int:
@@ -89,11 +58,31 @@ def run(args: argparse.Namespace) -> int:
     return 0
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    return run(args)
+def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
+    parser = subparsers.add_parser("enrich", help="Enrich tax_id table with lineage columns.")
+    parser.add_argument("input_file", help="Path to input table with 'tax_id' column.")
+    parser.add_argument(
+        "-o",
+        "--output_file",
+        help="Path to save annotated output (TSV). If not provided, prints to stdout.",
+    )
+    parser.add_argument(
+        "--taxid_col",
+        default="tax_id",
+        help="Name of the tax ID column (default: 'tax_id').",
+    )
+    parser.add_argument(
+        "--abundance_col",
+        default="abundance",
+        help="Name of the abundance column (default: 'abundance').",
+    )
+
+    parser.set_defaults(func=run)
+    return parser
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+    build_parser(subparsers)
+    raise SystemExit(run(parser.parse_args()))

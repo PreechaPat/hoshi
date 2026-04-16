@@ -26,7 +26,8 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 hoshi = "hoshi.cli:main"
-hoshi-html_report = "hoshi.command.html_report:main"
+hoshi-report = "hoshi.command.report:main"
+hoshi-summary = "hoshi.command.summary:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

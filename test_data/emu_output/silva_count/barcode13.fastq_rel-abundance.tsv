@@ -1,0 +1,19 @@
+tax_id	abundance	superkingdom	phylum	class	order	family	genus	species	estimated counts
+851	0.3059173108870769	Bacteria	Firmicutes	Bacilli	Lactobacillales	Lactobacillaceae	Lactobacillus	gasseri;	185.99772501934277
+1827	0.0016497156901959607	Bacteria	Firmicutes	Bacilli	Lactobacillales	Lactobacillaceae	Lactobacillus		1.0030271396391441
+16414	0.08552507868588526	Bacteria	Firmicutes	Bacilli	Lactobacillales	Lactobacillaceae	Lactobacillus	jensenii;	51.99924784101824
+8889	0.09868421052631579	Bacteria	Bacteroidota	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella	bivia;	60.0
+3322	0.008223684210526315	Bacteria	Bacteroidota	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides	vulgatus;	5.0
+239	0.3261241933881918	Bacteria	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	agalactiae;	198.28350958002062
+106	0.04229685924338778	Bacteria	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus		25.71649041997977
+14	0.001644736842105263	Bacteria	Proteobacteria	Gammaproteobacteria	Enterobacterales	Enterobacteriaceae	Escherichia-Shigella	coli;	1.0
+246	0.001644736842105263	Bacteria	Firmicutes	Bacilli	Lactobacillales	Lactobacillaceae	Lactiplantibacillus		1.0
+1895	0.004934210526315789	Bacteria	Firmicutes	Bacilli	Mycoplasmatales	Mycoplasmataceae	Mycoplasma	hominis;	3.0
+50	0.004934210526315789	Bacteria	Firmicutes	Bacilli	Mycoplasmatales	Mycoplasmataceae	Mycoplasma		3.0
+3975	0.01644736842105263	Bacteria	Firmicutes	Clostridia	Peptostreptococcales-Tissierellales	Peptostreptococcaceae	Clostridioides	difficile;	10.0
+5159	0.09046052631578948	Bacteria	Actinobacteriota	Actinobacteria	Bifidobacteriales	Bifidobacteriaceae	Gardnerella	vaginalis;	55.0
+590	0.001644736842105263	Bacteria	Proteobacteria	Gammaproteobacteria	Enterobacterales	Enterobacteriaceae	Salmonella	enterica;	1.0
+356	0.004934210526315789	Bacteria	Firmicutes	Bacilli	Lactobacillales	Enterococcaceae	Enterococcus	faecalis;	3.0
+110	0.004934210526315789	Bacteria	Bacteroidota	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides	fragilis;	3.0
+unmapped	0.0								0.0
+mapped_unclassified	0.0								0.0

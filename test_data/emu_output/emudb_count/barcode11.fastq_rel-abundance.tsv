@@ -1,0 +1,14 @@
+tax_id	abundance	species	genus	family	order	class	phylum	clade	superkingdom	subspecies	species subgroup	species group	estimated counts
+1496	0.39080459770114945	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria				850.0
+1351	0.16275862068965516	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				353.99999999999994
+1590	0.1328735632183908	Lactiplantibacillus plantarum	Lactiplantibacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				289.0
+1680	0.030344827586206897	Bifidobacterium adolescentis	Bifidobacterium	Bifidobacteriaceae	Bifidobacteriales	Actinobacteria	Actinobacteria	Terrabacteria group	Bacteria				66.0
+821	0.09425287356321839	Phocaeicola vulgatus	Phocaeicola		Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria				205.0
+817	0.09241379310344827	Bacteroides fragilis	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria				201.0
+28901	0.01195450999696008	Salmonella enterica	Salmonella	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Proteobacteria		Bacteria				26.001059243388177
+550	0.024827099198442216	Enterobacter cloacae	Enterobacter	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Proteobacteria		Bacteria			Enterobacter cloacae complex	53.998940756611816
+630	0.021149425287356322	Yersinia enterocolitica	Yersinia	Yersiniaceae	Enterobacterales	Gammaproteobacteria	Proteobacteria		Bacteria				46.0
+562	0.031724137931034485	Escherichia coli	Escherichia	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Proteobacteria		Bacteria				69.0
+210	0.006896551724137931	Helicobacter pylori	Helicobacter	Helicobacteraceae	Campylobacterales	Epsilonproteobacteria	Proteobacteria		Bacteria				15.0
+unmapped	0.0												0.0
+mapped_unclassified	0.0												7.0

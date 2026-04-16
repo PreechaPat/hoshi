@@ -1,0 +1,11 @@
+tax_id	abundance	species	genus	family	order	class	phylum	clade	superkingdom	subspecies	species subgroup	species group	estimated counts
+2420308	0.028257295626959424	Streptococcus sp. FDAARGOS_520	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				105.48448457543952
+1311	0.07074709500284293	Streptococcus agalactiae	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				264.09890564561266
+2420310	0.291834077090534	Streptococcus sp. FDAARGOS_522	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				1089.4166097789634
+28125	0.12295740691133136	Prevotella bivia	Prevotella	Prevotellaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria				459.0
+1596	0.30557906025538195	Lactobacillus gasseri	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				1140.7266319333407
+2702	0.09081167961425127	Gardnerella vaginalis	Gardnerella	Bifidobacteriaceae	Bifidobacteriales	Actinobacteria	Actinobacteria	Terrabacteria group	Bacteria				339.0
+109790	0.0841878832217142	Lactobacillus jensenii	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				314.2733680666591
+2098	0.005625502276989017	Mycoplasma hominis	Mycoplasma	Mycoplasmataceae	Mycoplasmatales	Mollicutes	Tenericutes	Terrabacteria group	Bacteria				21.0
+unmapped	0.0												0.0
+mapped_unclassified	0.0												0.0

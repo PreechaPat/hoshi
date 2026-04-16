@@ -5,18 +5,18 @@
 ## Quickstart
 
 ### Other...
-### html-report
-Generate a simple HTML report containing one table per TSV file:
+### report-single
+Generate a single HTML report for a single sample:
 
 ```bash
-hoshi html-report test_data/raw_out/kash_emu/*.tsv -o dist/emu-samples.html
+hoshi report-single test_data/emu-mock01.tsv -o dist/mock01.html
 ```
 
-Omit `-o` to print the HTML to stdout. Use `--title` to customise the page heading.
+### report-multi
+Generate an aggregate HTML report from multiple TSV files:
 
-# TODO
-
-1. Generate an overview report for group-based analysis
-2. Generate a single report for a single sample analysis
+```bash
+hoshi report-multi test_data/raw_out/kash_emu/*.tsv -o dist/emu-samples.html
+```
 
 

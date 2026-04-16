@@ -6,5 +6,10 @@
   {% if not is_active %}hidden{% endif %}
 >
   <h2>{{ table.name }}</h2>
-  {{ table.html | safe }}
+  <div class="sankey-container">
+    {{ table.sankey_html | safe }}
+  </div>
+  <div class="table-container">
+    {{ table.html | safe }}
+  </div>
 </section>

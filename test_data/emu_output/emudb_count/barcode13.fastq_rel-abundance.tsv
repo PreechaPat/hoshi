@@ -1,0 +1,17 @@
+tax_id	abundance	species	genus	family	order	class	phylum	clade	superkingdom	subspecies	species subgroup	species group	estimated counts
+109790	0.085667215815486	Lactobacillus jensenii	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				52.00000000000001
+1596	0.30807248594642617	Lactobacillus gasseri	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				186.99999896948069
+28125	0.09884678747940692	Prevotella bivia	Prevotella	Prevotellaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria				60.0
+821	0.008237232289950576	Phocaeicola vulgatus	Phocaeicola		Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria				5.0
+1311	0.07994578987968441	Streptococcus agalactiae	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				48.527094456968435
+2420310	0.28190685437946184	Streptococcus sp. FDAARGOS_522	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				171.11746060833335
+2420308	0.007175364028365568	Streptococcus sp. FDAARGOS_520	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				4.3554459652179
+562	0.0016474464579901153	Escherichia coli	Escherichia	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Proteobacteria		Bacteria				1.0
+2098	0.009884678747940691	Mycoplasma hominis	Mycoplasma	Mycoplasmataceae	Mycoplasmatales	Mollicutes	Tenericutes	Terrabacteria group	Bacteria				5.999999999999999
+1496	0.016474464579901153	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria				10.0
+2702	0.09060955518945635	Gardnerella vaginalis	Gardnerella	Bifidobacteriaceae	Bifidobacteriales	Actinobacteria	Actinobacteria	Terrabacteria group	Bacteria				55.0
+28901	0.0016474464579901153	Salmonella enterica	Salmonella	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Proteobacteria		Bacteria				1.0
+1351	0.004942339373970346	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				2.9999999999999996
+817	0.004942339373970346	Bacteroides fragilis	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria				2.9999999999999996
+unmapped	0.0												0.0
+mapped_unclassified	0.0												1.0

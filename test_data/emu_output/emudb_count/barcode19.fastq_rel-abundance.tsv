@@ -1,0 +1,13 @@
+tax_id	abundance	species	genus	family	order	class	phylum	clade	superkingdom	subspecies	species subgroup	species group	estimated counts
+29388	0.25333333333333335	Staphylococcus capitis	Staphylococcus	Staphylococcaceae	Bacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				19.0
+485	0.48	Neisseria gonorrhoeae	Neisseria	Neisseriaceae	Neisseriales	Betaproteobacteria	Proteobacteria		Bacteria				36.0
+46125	0.04	Abiotrophia defectiva	Abiotrophia	Aerococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				3.0
+43770	0.09333333333333334	Corynebacterium striatum	Corynebacterium	Corynebacteriaceae	Corynebacteriales	Actinobacteria	Actinobacteria	Terrabacteria group	Bacteria				7.0
+35814	0.05333333333333334	Bordetella holmesii	Bordetella	Alcaligenaceae	Burkholderiales	Betaproteobacteria	Proteobacteria		Bacteria				4.0
+470565	0.013333333333333334	Prevotella histicola	Prevotella	Prevotellaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria				1.0
+1273	0.02666666666666667	Micrococcus lylae	Micrococcus	Micrococcaceae	Micrococcales	Actinobacteria	Actinobacteria	Terrabacteria group	Bacteria				2.0
+28037	0.013333333333333334	Streptococcus mitis	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				1.0
+222805	0.013333333333333334	Mycobacterium chimaera	Mycobacterium	Mycobacteriaceae	Corynebacteriales	Actinobacteria	Actinobacteria	Terrabacteria group	Bacteria			Mycobacterium avium complex (MAC)	1.0
+1839799	0.013333333333333334	Streptococcus sp. FDAARGOS_192	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria				1.0
+unmapped	0.0												15.0
+mapped_unclassified	0.0												0.0

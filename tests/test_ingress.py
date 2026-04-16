@@ -7,7 +7,7 @@ from hoshi.lib.ingress import read_emu_abundance
 
 
 def test_read_emu_abundance_from_path():
-    df = read_emu_abundance("test_data/emu-mock01.tsv")
+    df = read_emu_abundance("test_data/emu_output/emu-mock01.tsv")
 
     expected_columns = {
         "tax_id",
@@ -40,7 +40,7 @@ def test_read_emu_abundance_dataframe_input_adds_taxonomy_columns():
 
 
 def test_read_emu_abundance_reorders_and_limits_columns():
-    df = read_emu_abundance("test_data/emu-mock01.tsv", reorder=True)
+    df = read_emu_abundance("test_data/emu_output/emu-mock01.tsv", reorder=True)
 
     expected_columns = [
         "tax_id",

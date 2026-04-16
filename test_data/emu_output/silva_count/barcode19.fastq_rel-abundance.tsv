@@ -1,0 +1,12 @@
+tax_id	abundance	superkingdom	phylum	class	order	family	genus	species	estimated counts
+1710	0.25675675675675674	Bacteria	Firmicutes	Bacilli	Staphylococcales	Staphylococcaceae	Staphylococcus	capitis;	19.0
+3735	0.4864864864864865	Bacteria	Proteobacteria	Gammaproteobacteria	Burkholderiales	Neisseriaceae	Neisseria	gonorrhoeae;	36.0
+1030	0.04054054054054054	Bacteria	Firmicutes	Bacilli	Lactobacillales	Aerococcaceae	Abiotrophia		3.0
+5203	0.0945945945945946	Bacteria	Actinobacteriota	Actinobacteria	Corynebacteriales	Corynebacteriaceae	Corynebacterium	striatum;	7.0
+17411	0.05405405405405406	Bacteria	Proteobacteria	Gammaproteobacteria	Burkholderiales	Alcaligenaceae	Bordetella	holmesii;	4.0
+12911	0.013513513513513514	Bacteria	Bacteroidota	Bacteroidia	Bacteroidales	Prevotellaceae	Prevotella_7	histicola;	1.0
+548	0.02702702702702703	Bacteria	Actinobacteriota	Actinobacteria	Micrococcales	Micrococcaceae	Micrococcus	lylae;	2.0
+1107	0.013513513513513514	Bacteria	Firmicutes	Bacilli	Lactobacillales	Streptococcaceae	Streptococcus	peroris;	1.0
+2044	0.013513513513513514	Bacteria	Actinobacteriota	Actinobacteria	Corynebacteriales	Mycobacteriaceae	Mycobacterium	intracellulare;	1.0
+unmapped	0.0								15.0
+mapped_unclassified	0.0								1.0

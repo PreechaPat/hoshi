@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ page_title }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background-color: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 210mm; /* A4 Width */
+      background-color: transparent;
+    }
+    h1 {
+      margin-bottom: 24px;
+      width: 100%;
+      text-align: left;
+    }
+    .report-panel {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+      padding: 20mm; /* Standard margin for A4 report */
+      min-height: 257mm; /* A4 Height minus padding */
+      box-sizing: border-box;
+    }
+    @media print {
+      body {
+        background-color: #fff;
+        padding: 0;
+      }
+      .report-panel {
+        box-shadow: none;
+        padding: 0;
+        min-height: auto;
+      }
+      .container {
+        max-width: none;
+        width: 100%;
+      }
+      .tabs-header {
+        display: none; /* Hide UI tabs when printing */
+      }
+      .tabs-container {
+        border: none;
+      }
+      .sankey-container {
+        padding: 0;
+        page-break-inside: avoid;
+      }
+      h1 {
+        font-size: 24pt;
+      }
+    }
+    .report-panel h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 32px;
+    }
+    .tabs-container {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .tabs-header {
+      background-color: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px 16px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .tab-button {
+      padding: 6px 12px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .tab-button.active {
+      background: #3b82f6;
+      color: #fff;
+      border-color: #2563eb;
+    }
+    .sankey-container {
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px; /* Reduced from 600 to better fit A4 */
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid #cbd5f5;
+      padding: 8px;
+      text-align: left;
+    }
+    thead th {
+      background-color: #e2e8f0;
+      font-weight: 600;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #f1f5f9;
+    }
+  </style>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>{{ page_title }}</h1>
+    <div class="report-panel">
+      <h2>{{ table.name }}</h2>
+      <div class="table-container">
+        {{ table.html | safe }}
+      </div>
+      <div class="tabs-container">
+        <div class="tabs-header">
+          <button class="tab-button active">Sankey Plot</button>
+          <div style="flex-grow: 1;"></div>
+          <div class="menu-placeholder" style="font-size: 0.8rem; color: #64748b;">(Menu placeholder)</div>
+        </div>
+        <div class="sankey-container">
+          {{ table.sankey_html | safe }}
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
