@@ -20,75 +20,81 @@ def hex_color_from_label(label: str) -> str:
 
 def get_sankey_data(tsv_path: str | Path) -> dict[str, Any]:
     """
-    Converts TSV data into a dictionary structure (JSON-compatible)
+    Converts TSV data into a dictionary structure (JSON-compatible) 
     representing nodes and links for a Sankey diagram.
     """
     df = pd.read_csv(tsv_path, sep="\t")
-
+    
     levels = [l for l in TAXONOMY_LEVELS if l in df.columns]
     val_col = next((c for c in VALUE_COLUMNS if c in df.columns), None)
-
+    
     if len(levels) < 2 or not val_col:
         raise ValueError("Insufficient taxonomy levels or abundance data found in TSV.")
 
-    # FIX 1: Strictly force the value column to numeric, matching your original code
+    # Force abundance column to float
     df[val_col] = pd.to_numeric(df[val_col], errors="coerce").fillna(0.0)
+    
+    link_aggregations = {}
+    node_dict = {}
 
-    # FIX 2: Convert missing values to actual empty strings for safe filtering
-    for level in levels:
-        df[level] = df[level].fillna("").astype(str).str.strip()
+    # Iterate row by row to build unbroken chains, skipping empty taxonomies
+    for _, row in df.iterrows():
+        val = row[val_col]
+        if val <= 0:
+            continue
+            
+        # Extract the sequence of valid, non-empty labels for this specific bacteria
+        valid_nodes = []
+        for i, level in enumerate(levels):
+            label = str(row[level]).strip()
+            if label and label.lower() != "nan":
+                valid_nodes.append((i, label))
+                
+        # Create links that bridge directly between the valid levels
+        for j in range(len(valid_nodes) - 1):
+            src_i, src_label = valid_nodes[j]
+            tgt_i, tgt_label = valid_nodes[j+1]
+            
+            src_id = f"{src_i}::{src_label}"
+            tgt_id = f"{tgt_i}::{tgt_label}"
+            
+            # Store the clean label and column index for positioning
+            node_dict[src_id] = {"label": src_label, "level": src_i}
+            node_dict[tgt_id] = {"label": tgt_label, "level": tgt_i}
+            
+            # Accumulate the abundance values for identical links
+            pair = (src_id, tgt_id)
+            link_aggregations[pair] = link_aggregations.get(pair, 0.0) + val
 
-    links_list = []
-    node_labels = set()
-    node_level_map = {}
-
-    for i in range(len(levels) - 1):
-        src, tgt = levels[i], levels[i + 1]
-
-        # Filter out rows where source or target is an empty string
-        subset = df[(df[src] != "") & (df[tgt] != "")]
-        grouped = subset.groupby([src, tgt], as_index=False)[val_col].sum()
-
-        for _, row in grouped.iterrows():
-            if row[val_col] <= 0:
-                continue
-
-            links_list.append(
-                {
-                    "source": row[src],
-                    "target": row[tgt],
-                    "value": row[val_col],  # Now strictly numeric!
-                }
-            )
-            node_labels.update([row[src], row[tgt]])
-            node_level_map[row[src]] = i
-            node_level_map[row[tgt]] = i + 1
-
-    sorted_labels = sorted(list(node_labels))
-    label_to_idx = {label: i for i, label in enumerate(sorted_labels)}
-
+    # Assign integer indices based on the unique IDs
+    sorted_node_ids = sorted(list(node_dict.keys()))
+    id_to_idx = {node_id: idx for idx, node_id in enumerate(sorted_node_ids)}
+    
     nodes = []
-    for label in sorted_labels:
-        nodes.append(
-            {
-                "label": label,
-                "color": hex_color_from_label(label),
-                "x_pos": node_level_map.get(label, 0) / (len(levels) - 1),
-            }
-        )
+    for node_id in sorted_node_ids:
+        label = node_dict[node_id]["label"]
+        level_idx = node_dict[node_id]["level"]
+        nodes.append({
+            "label": label,
+            "color": hex_color_from_label(label), 
+            "x_pos": level_idx / (len(levels) - 1)
+        })
 
     formatted_links = [
         {
-            "source": label_to_idx[link["source"]],
-            "target": label_to_idx[link["target"]],
-            "value": link["value"],
-            "color": hex_color_from_label(link["source"]),
+            "source": id_to_idx[src_id],
+            "target": id_to_idx[tgt_id],
+            "value": value,
+            "color": hex_color_from_label(node_dict[src_id]["label"])
         }
-        for link in links_list
+        for (src_id, tgt_id), value in link_aggregations.items()
     ]
 
-    return {"nodes": nodes, "links": formatted_links, "levels": levels}
-
+    return {
+        "nodes": nodes,
+        "links": formatted_links,
+        "levels": levels
+    }
 
 def render_sankey_figure(data: dict[str, Any], title: str = "Sankey Diagram") -> go.Figure:
     """Creates a Plotly Figure object from processed Sankey data."""
