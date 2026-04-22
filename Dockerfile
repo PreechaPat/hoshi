@@ -9,7 +9,12 @@ COPY src src
 
 RUN uv build --wheel
 
+# prod
 FROM python:3.13.7-slim-trixie
+
+ARG VERSION
+LABEL org.opencontainers.image.version=${VERSION}
+LABEL maintainer="Preecha Patumcharoenpol"
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
