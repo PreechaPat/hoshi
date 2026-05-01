@@ -17,3 +17,11 @@ def test_short_version_flag(capsys):
     assert exit_code == 0
     assert captured.err == ""
     assert captured.out.strip() == f"hoshi {cli._resolve_version()}"
+
+
+def test_no_args(capsys):
+    exit_code = cli.main([])
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    assert "usage:" in captured.out

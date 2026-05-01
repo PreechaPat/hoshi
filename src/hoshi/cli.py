@@ -32,7 +32,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Show the installed hoshi version and exit.",
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    subparsers.required = True
 
     # Register sub-commands from modules
     contrast.build_parser(subparsers)
