@@ -1,4 +1,5 @@
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm AS builder
+FROM ghcr.io/astral-sh/uv:0.11.8-python3.13-trixie AS builder
+
 WORKDIR /workspace
 
 # Only keep fresh build artifacts inside the container.
@@ -9,7 +10,7 @@ COPY src src
 
 RUN uv build --wheel
 
-# prod
+# production
 FROM python:3.13.7-slim-trixie
 
 ARG VERSION

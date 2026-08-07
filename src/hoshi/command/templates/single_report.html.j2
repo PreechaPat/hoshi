@@ -2,147 +2,430 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{{ page_title }}</title>
+  <title>{{ page_title }} — Microbiome Report</title>
   <style>
+    :root {
+      --color-bg: #f1f5f9;
+      --color-surface: #ffffff;
+      --color-text: #0f172a;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --color-accent: #3b82f6;
+      --color-accent-dark: #1d4ed8;
+      --color-accent-light: #eff6ff;
+      --color-header-bg: #f8fafc;
+      --color-nav: #1e293b;
+      --color-nav-text: #f8fafc;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.04);
+      --page-width: 210mm;
+      --page-padding: 20mm;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 24px;
-      background-color: #f8fafc;
-      color: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      padding-top: 56px; /* offset for fixed navbar */
+    }
+
+    {# === Navbar === #}
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--color-nav);
+      color: var(--color-nav-text);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .navbar .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .navbar .brand span {
+      opacity: 0.6;
+      font-weight: 400;
+      margin-left: 8px;
+      font-size: 0.85rem;
+    }
+
+    .navbar nav {
+      margin-left: auto;
+      display: flex;
+      gap: 4px;
+    }
+
+    .navbar nav a {
+      color: var(--color-nav-text);
+      text-decoration: none;
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 4px;
+      opacity: 0.75;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    .navbar nav a:hover {
+      opacity: 1;
+      background: rgba(255,255,255,0.1);
+    }
+
+    {# === Page container (A4-like) === #}
+    .page-wrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 32px 24px;
+      min-height: calc(100vh - 56px);
     }
-    .container {
+
+    .page {
       width: 100%;
-      max-width: 210mm; /* A4 Width */
-      background-color: transparent;
-    }
-    h1 {
+      max-width: var(--page-width);
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: var(--page-padding);
       margin-bottom: 24px;
-      width: 100%;
-      text-align: left;
+      /* A4 proportion hint for PDF */
+      min-height: 280mm;
     }
-    .report-panel {
-      background: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-      padding: 20mm; /* Standard margin for A4 report */
-      min-height: 257mm; /* A4 Height minus padding */
-      box-sizing: border-box;
+
+    {# === Header === #}
+    .report-header {
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--color-border);
     }
-    @media print {
-      body {
-        background-color: #fff;
-        padding: 0;
-      }
-      .report-panel {
-        box-shadow: none;
-        padding: 0;
-        min-height: auto;
-      }
-      .container {
-        max-width: none;
-        width: 100%;
-      }
-      .tabs-header {
-        display: none; /* Hide UI tabs when printing */
-      }
-      .tabs-container {
-        border: none;
-      }
-      .sankey-container {
-        padding: 0;
-        page-break-inside: avoid;
-      }
-      h1 {
-        font-size: 24pt;
-      }
+
+    .report-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
     }
-    .report-panel h2 {
-      margin-top: 0;
-      font-size: 1.25rem;
+
+    .report-header .subtitle {
+      font-size: 0.85rem;
+      color: var(--color-muted);
     }
-    .table-container {
-      overflow-x: auto;
+
+    .report-header .source-link {
+      font-size: 0.78rem;
+      color: var(--color-muted);
+      margin-top: 8px;
+      word-break: break-all;
+    }
+
+    .report-header .source-link a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+
+    .report-header .source-link a:hover {
+      text-decoration: underline;
+    }
+
+    {# === Section Titles === #}
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-muted);
+      margin-bottom: 12px;
+    }
+
+    {# === Stats Grid === #}
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
       margin-bottom: 32px;
     }
-    .tabs-container {
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      background: #fff;
-      overflow: hidden;
+
+    .stat-card {
+      background: var(--color-header-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
     }
-    .tabs-header {
-      background-color: #f1f5f9;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 8px 16px;
+
+    .stat-card .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-accent-dark);
+      line-height: 1.2;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.68rem;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    {# === Panel === #}
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-header {
       display: flex;
-      gap: 16px;
       align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
     }
-    .tab-button {
-      padding: 6px 12px;
-      background: #fff;
-      border: 1px solid #e2e8f0;
+
+    .section-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    {# === Table Controls === #}
+    .table-controls {
+      display: flex;
+      gap: 4px;
+    }
+
+    .table-controls button {
+      padding: 5px 12px;
+      background: var(--color-header-bg);
+      border: 1px solid var(--color-border);
       border-radius: 4px;
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       font-weight: 500;
+      color: var(--color-muted);
+      transition: all 0.15s;
     }
-    .tab-button.active {
-      background: #3b82f6;
+
+    .table-controls button.active {
+      background: var(--color-accent);
       color: #fff;
-      border-color: #2563eb;
+      border-color: var(--color-accent-dark);
     }
+
+    .table-controls button:hover:not(.active) {
+      background: var(--color-border);
+      color: var(--color-text);
+    }
+
+    .table-view { display: none; }
+    .table-view.active { display: block; }
+
+    {# === Data Table === #}
+    .table-container { overflow-x: auto; }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    table.data-table th,
+    table.data-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    table.data-table thead th {
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--color-muted);
+      border-bottom: 2px solid var(--color-border);
+      background: transparent;
+    }
+
+    table.data-table tbody tr:hover {
+      background-color: var(--color-accent-light);
+    }
+
+    table.data-table td:first-child {
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    {# === Sankey === #}
     .sankey-container {
-      padding: 16px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 400px;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 400px; /* Reduced from 600 to better fit A4 */
+      background: var(--color-header-bg);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      font-size: 0.95rem;
+
+    {# === Footer === #}
+    .report-footer {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      padding-top: 20px;
+      border-top: 1px solid var(--color-border);
+      margin-top: auto;
     }
-    th, td {
-      border: 1px solid #cbd5f5;
-      padding: 8px;
-      text-align: left;
+
+    {# === Print / PDF Styles === #}
+    @media print {
+      body {
+        padding-top: 0;
+        background: #fff;
+      }
+      .navbar {
+        display: none;
+      }
+      .page-wrapper {
+        padding: 0;
+      }
+      .page {
+        box-shadow: none;
+        border-radius: 0;
+        max-width: none;
+        width: 100%;
+        padding: 15mm 20mm;
+        min-height: auto;
+      }
+      .table-controls {
+        display: none;
+      }
+      .table-view { display: block !important; }
+      .table-view.top5 { display: none !important; }
+      .sankey-container {
+        page-break-inside: avoid;
+      }
+      .section {
+        page-break-inside: avoid;
+      }
+      h1 { font-size: 18pt; }
     }
-    thead th {
-      background-color: #e2e8f0;
-      font-weight: 600;
-    }
-    tbody tr:nth-child(even) {
-      background-color: #f1f5f9;
+
+    @page {
+      size: A4;
+      margin: 15mm 20mm;
     }
   </style>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>{{ page_title }}</h1>
-    <div class="report-panel">
-      <h2>{{ table.name }}</h2>
-      <div class="table-container">
-        {{ table.html | safe }}
+
+  {# === Navbar === #}
+  <div class="navbar">
+    <div class="brand">Hoshi<span>16S Microbiome Report</span></div>
+    <nav>
+      <a href="#summary">Summary</a>
+      <a href="#abundance">Abundance</a>
+      <a href="#taxonomy">Taxonomy</a>
+    </nav>
+  </div>
+
+  {# === Page === #}
+  <div class="page-wrapper">
+    <div class="page">
+
+      {# --- Header --- #}
+      <div class="report-header">
+        <h1>{{ page_title }}</h1>
+        <p class="subtitle">16S rRNA Microbiome Profiling Report</p>
+        <div class="source-link">
+          Data: <a href="file://{{ table.source_path }}">{{ table.name }}</a>
+        </div>
       </div>
-      <div class="tabs-container">
-        <div class="tabs-header">
-          <button class="tab-button active">Sankey Plot</button>
-          <div style="flex-grow: 1;"></div>
-          <div class="menu-placeholder" style="font-size: 0.8rem; color: #64748b;">(Menu placeholder)</div>
+
+      {# --- Summary Statistics --- #}
+      <div class="section" id="summary">
+        <p class="section-label">Sample Summary</p>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">{{ "{:,}".format(stats.total_reads) }}</div>
+            <div class="stat-label">Total Reads</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ "{:,}".format(stats.classified_reads) }}</div>
+            <div class="stat-label">Classified</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ stats.species_richness }}</div>
+            <div class="stat-label">Species (S)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ stats.shannon_index }}</div>
+            <div class="stat-label">Shannon (H')</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ stats.simpson_index }}</div>
+            <div class="stat-label">Simpson (1−D)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">{{ stats.evenness }}</div>
+            <div class="stat-label">Evenness (J)</div>
+          </div>
+        </div>
+      </div>
+
+      {# --- Abundance Table --- #}
+      <div class="section" id="abundance">
+        <div class="section-header">
+          <h2>Species Abundance</h2>
+          <div class="table-controls">
+            <button class="active" onclick="switchView('top5', this)">Top 5</button>
+            <button onclick="switchView('top10', this)">Top 10</button>
+          </div>
+        </div>
+        <div class="table-container">
+          <div class="table-view top5 active" id="view-top5">
+            {{ table.top5_html | safe }}
+          </div>
+          <div class="table-view top10" id="view-top10">
+            {{ table.top10_html | safe }}
+          </div>
+        </div>
+      </div>
+
+      {# --- Sankey Diagram --- #}
+      <div class="section" id="taxonomy">
+        <div class="section-header">
+          <h2>Taxonomic Flow</h2>
         </div>
         <div class="sankey-container">
           {{ table.sankey_html | safe }}
         </div>
       </div>
+
+      {# --- Footer --- #}
+      <div class="report-footer">
+        Generated by Hoshi · 16S rRNA Sequencing Report
+      </div>
+
     </div>
   </div>
+
+  <script>
+    function switchView(view, btn) {
+      document.querySelectorAll('.table-view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.table-controls button').forEach(b => b.classList.remove('active'));
+      document.getElementById('view-' + view).classList.add('active');
+      btn.classList.add('active');
+    }
+  </script>
 </body>
 </html>

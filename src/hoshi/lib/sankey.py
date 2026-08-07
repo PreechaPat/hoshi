@@ -18,12 +18,21 @@ def hex_color_from_label(label: str) -> str:
     return f"#{hashlib.md5(label.encode()).hexdigest()[:6]}"
 
 
-def get_sankey_data(tsv_path: str | Path) -> dict[str, Any]:
+def get_sankey_data(input_data: str | Path | pd.DataFrame) -> dict[str, Any]:
     """
     Converts TSV data into a dictionary structure (JSON-compatible) 
     representing nodes and links for a Sankey diagram.
+
+    Parameters
+    ----------
+    input_data : str, Path, or pd.DataFrame
+        Path to a TSV file or an already-loaded DataFrame with taxonomy
+        columns and an abundance/counts value column.
     """
-    df = pd.read_csv(tsv_path, sep="\t")
+    if isinstance(input_data, pd.DataFrame):
+        df = input_data.copy()
+    else:
+        df = pd.read_csv(input_data, sep="\t")
     
     levels = [l for l in TAXONOMY_LEVELS if l in df.columns]
     val_col = next((c for c in VALUE_COLUMNS if c in df.columns), None)

@@ -1,0 +1,15 @@
+tax_id	abundance	species	genus	family	order	class	phylum	clade	superkingdom	subspecies	species subgroup	species group	estimated counts
+1351	0.16502463054187191	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Bacillota						335.0
+1590	0.13399014778325122	Lactiplantibacillus plantarum	Lactiplantibacillus	Lactobacillaceae	Lactobacillales	Bacilli	Bacillota						272.0
+1496	0.3896551724137931	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Peptostreptococcales	Clostridia	Bacillota						791.0
+1680	0.030541871921182268	Bifidobacterium adolescentis	Bifidobacterium	Bifidobacteriaceae	Bifidobacteriales	Actinomycetes	Actinomycetota						62.0
+817	0.09113300492610837	Bacteroides fragilis	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidota	FCB group					185.0
+821	0.09408866995073892	Phocaeicola vulgatus	Phocaeicola	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidota	FCB group					191.0
+28901	0.011822660098522168	Salmonella enterica	Salmonella	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Pseudomonadota						24.0
+550	0.024630541871921183	Enterobacter cloacae	Enterobacter	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Pseudomonadota					Enterobacter cloacae complex	50.0
+562	0.03251231527093596	Escherichia coli	Escherichia	Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Pseudomonadota						66.0
+210	0.0064039408866995075	Helicobacter pylori	Helicobacter	Helicobacteraceae	Campylobacterales	Epsilonproteobacteria	Campylobacterota						13.0
+630	0.02019704433497537	Yersinia enterocolitica	Yersinia	Yersiniaceae	Enterobacterales	Gammaproteobacteria	Pseudomonadota						41.0
+unmapped	0.0												0.0
+mapped_filtered	0.0												0.0
+mapped_unclassified	0.0												7.0

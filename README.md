@@ -9,7 +9,7 @@
 Generate a single HTML report for a single sample:
 
 ```bash
-hoshi report-single test_data/emu-mock01.tsv -o dist/mock01.html
+ hoshi report-single -n sample01 test_data/emu_output/test_01/sample01 -o dist/sample01_report.html
 ```
 
 ### report-multi
