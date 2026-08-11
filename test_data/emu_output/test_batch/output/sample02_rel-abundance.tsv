@@ -1,0 +1,11 @@
+tax_id	abundance	species	genus	family	order	class	phylum	clade	superkingdom	subspecies	species subgroup	species group	estimated counts
+1311	0.33132481316819307	Streptococcus agalactiae	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Bacillota						1169.5765904837215
+2420310	0.059610031024443344	Streptococcus sp. FDAARGOS_522	Streptococcus	Streptococcaceae	Lactobacillales	Bacilli	Bacillota						210.423409516285
+28125	0.12209631728045325	Prevotella bivia	Prevotella	Prevotellaceae	Bacteroidales	Bacteroidia	Bacteroidota	FCB group					431.0
+2702	0.09093484419263456	Gardnerella vaginalis	Gardnerella	Bifidobacteriaceae	Bifidobacteriales	Actinomycetes	Actinomycetota						321.0
+1596	0.30826541941292385	Lactobacillus gasseri	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Bacillota						1088.1769305276212
+109790	0.08181956642277022	Lactobacillus jensenii	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Bacillota						288.82306947237885
+2098	0.00594900849858357	Metamycoplasma hominis	Metamycoplasma	Metamycoplasmataceae	Mycoplasmoidales		Mycoplasmatota						21.0
+unmapped	0.0												0.0
+mapped_filtered	0.0												0.0
+mapped_unclassified	0.0												0.0

@@ -1,0 +1,10 @@
+tax_id	abundance	species	genus	family	order	class	phylum	clade	superkingdom	subspecies	species subgroup	species group	estimated counts
+485	0.4722222222222222	Neisseria gonorrhoeae	Neisseria	Neisseriaceae	Neisseriales	Betaproteobacteria	Pseudomonadota						17.0
+29388	0.25	Staphylococcus capitis	Staphylococcus	Staphylococcaceae	Bacillales	Bacilli	Bacillota						9.0
+46125	0.08333333333333333	Abiotrophia defectiva	Abiotrophia	Aerococcaceae	Lactobacillales	Bacilli	Bacillota						3.0
+43770	0.08333333333333333	Corynebacterium striatum	Corynebacterium	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota						3.0
+35814	0.05555555555555555	Bordetella holmesii	Bordetella	Alcaligenaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota						2.0
+1273	0.05555555555555555	Micrococcus lylae	Micrococcus	Micrococcaceae	Micrococcales	Actinomycetes	Actinomycetota						2.0
+unmapped	0.0												6.0
+mapped_filtered	0.0												0.0
+mapped_unclassified	0.0												0.0

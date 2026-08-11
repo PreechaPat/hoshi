@@ -149,9 +149,9 @@ def test_emu_to_experiment_single_sample():
 
 def test_emu_to_experiment_multi_sample():
     se = emu_to_experiment([
-        "test_data/emu_output/test_01/sample01/sample01_rel-abundance.tsv",
-        "test_data/emu_output/test_01/sample02/sample02_rel-abundance.tsv",
-        "test_data/emu_output/test_01/sample03/sample03_rel-abundance.tsv",
+        "test_data/emu_output/test_ind/sample01/sample01_rel-abundance.tsv",
+        "test_data/emu_output/test_ind/sample02/sample02_rel-abundance.tsv",
+        "test_data/emu_output/test_ind/sample03/sample03_rel-abundance.tsv",
     ])
 
     assert se.n_samples == 3

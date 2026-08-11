@@ -107,6 +107,7 @@ def emu_to_experiment(
     input_paths: str | Path | list[str | Path],
     *,
     sample_names: list[str] | None = None,
+    superkingdom: str | None = "Bacteria",
 ) -> SummarizedExperiment:
     """
     Load one or more Emu rel-abundance TSV files into a SummarizedExperiment.
@@ -119,6 +120,12 @@ def emu_to_experiment(
     sample_names : list of str, optional
         Sample names corresponding to each file. If None, names are derived
         from the filename (stem without '_rel-abundance' suffix).
+
+    superkingdom : str or None, default "Bacteria"
+        Value to fill in the superkingdom column when Emu leaves it empty.
+        Emu 16S output typically does not populate superkingdom, so this
+        override ensures downstream formats (e.g., Kraken2) get a proper
+        domain line. Set to None to skip filling.
 
     Returns
     -------
@@ -181,6 +188,11 @@ def emu_to_experiment(
     # Build row_data from merged taxonomy (take first non-NA per tax_id)
     row_data = pd.concat(taxonomy_frames).groupby(level=0).first()
     row_data = row_data.reindex(abundance_matrix.index)
+
+    # Fill empty superkingdom values with the override
+    if superkingdom and "superkingdom" in row_data.columns:
+        row_data["superkingdom"] = row_data["superkingdom"].fillna(superkingdom)
+        row_data["superkingdom"] = row_data["superkingdom"].replace("", superkingdom)
 
     # Build col_data
     col_data = pd.DataFrame(
