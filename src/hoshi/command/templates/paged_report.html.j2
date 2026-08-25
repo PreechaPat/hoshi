@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ page_title }} — Microbiome Report</title>
+  <style>
+    :root {
+      --color-bg: #f1f5f9;
+      --color-surface: #ffffff;
+      --color-text: #0f172a;
+      --color-muted: #64748b;
+      --color-border: #e2e8f0;
+      --color-accent: #3b82f6;
+      --color-accent-dark: #1d4ed8;
+      --color-accent-light: #eff6ff;
+      --color-header-bg: #f8fafc;
+      --color-nav: #1e293b;
+      --color-nav-text: #f8fafc;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      padding-top: 56px;
+    }
+
+    {# === Navbar (screen only) === #}
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--color-nav);
+      color: var(--color-nav-text);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .navbar .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .navbar .brand span {
+      opacity: 0.6;
+      font-weight: 400;
+      margin-left: 8px;
+      font-size: 0.85rem;
+    }
+
+    .navbar nav {
+      margin-left: auto;
+      display: flex;
+      gap: 4px;
+    }
+
+    .navbar nav a {
+      color: var(--color-nav-text);
+      text-decoration: none;
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: 4px;
+      opacity: 0.75;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    .navbar nav a:hover {
+      opacity: 1;
+      background: rgba(255,255,255,0.1);
+    }
+
+    {# === Page wrapper for screen display === #}
+    .page-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px;
+    }
+
+    {# === Each page article === #}
+    article.page {
+      width: 100%;
+      max-width: 210mm;
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20mm;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      min-height: 257mm; /* A4 height (297mm) minus top+bottom margins (20mm each) */
+    }
+
+    {# === Cover page === #}
+    .cover-content {
+      min-height: 200mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .cover-content h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+      color: var(--color-accent-dark);
+    }
+
+    .cover-content .cover-subtitle {
+      font-size: 1.2rem;
+      color: var(--color-muted);
+      margin-bottom: 40px;
+    }
+
+    .cover-meta {
+      margin-top: 40px;
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      line-height: 2;
+    }
+
+    .cover-meta strong {
+      color: var(--color-text);
+    }
+
+    .cover-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .cover-stats .stat-item {
+      text-align: center;
+    }
+
+    .cover-stats .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--color-accent-dark);
+    }
+
+    .cover-stats .stat-label {
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    {# === Section === #}
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .section-header {
+      margin-bottom: 14px;
+    }
+
+    .section-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-muted);
+      margin-bottom: 12px;
+    }
+
+    {# === Simple tables (data + info) === #}
+    table.data-table,
+    table.info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    table.data-table th,
+    table.data-table td,
+    table.info-table th,
+    table.info-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    table.data-table thead th,
+    table.info-table thead th {
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--color-muted);
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    table.info-table td:first-child {
+      font-weight: 600;
+      color: var(--color-muted);
+      width: 40%;
+    }
+
+    table.data-table td:first-child {
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    {# === Description text === #}
+    .description-text {
+      font-size: 0.88rem;
+      color: var(--color-text);
+      line-height: 1.8;
+    }
+
+    .description-text p + p {
+      margin-top: 12px;
+    }
+
+    {# === Sankey === #}
+    .sankey-container {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--color-header-bg);
+    }
+
+    {# === Stats Grid (for diversity on page 3) === #}
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--color-header-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-accent-dark);
+      line-height: 1.2;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.68rem;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    {# === Appendix === #}
+    .appendix-section {
+      margin-bottom: 28px;
+    }
+
+    .appendix-section h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--color-accent-dark);
+    }
+
+    .appendix-section p,
+    .appendix-section li {
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .appendix-section ul {
+      padding-left: 20px;
+      margin-top: 6px;
+    }
+
+    .appendix-section li {
+      margin-bottom: 4px;
+    }
+
+    .citation-block {
+      background: var(--color-header-bg);
+      border-left: 3px solid var(--color-accent);
+      padding: 12px 16px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .disclaimer-box {
+      background: #fef9c3;
+      border: 1px solid #fbbf24;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: #78350f;
+    }
+
+    {# === Page number + footer === #}
+    .page-footer {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.62rem;
+      color: var(--color-muted);
+      opacity: 0.6;
+    }
+
+    {# ═══════════════════════════════════════════════════════════
+       PDF / Print — this is the key fix for page splitting
+    ═══════════════════════════════════════════════════════════ #}
+    @page {
+      size: A4;
+      margin: 20mm;
+
+      @bottom-center {
+        content: "Generated by Hoshi · 16S rRNA Sequencing Report";
+        font-size: 7pt;
+        color: #64748b;
+      }
+
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 7pt;
+        color: #64748b;
+      }
+    }
+
+    @media print {
+      body {
+        padding-top: 0;
+        background: #fff;
+      }
+      .navbar {
+        display: none;
+      }
+      .page-wrapper {
+        padding: 0;
+        display: block;
+      }
+      article.page {
+        box-shadow: none;
+        border-radius: 0;
+        max-width: none;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        min-height: auto;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        page-break-after: always;
+        break-after: page;
+      }
+      article.page:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+      .page-footer {
+        display: none; /* Use @page margin boxes instead */
+      }
+    }
+
+    {# WeasyPrint uses these directly (not inside @media print) #}
+    article.page {
+      page-break-after: always;
+      break-after: page;
+    }
+    article.page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+  </style>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+  {# === Navbar (hidden in PDF) === #}
+  <div class="navbar">
+    <div class="brand">Hoshi<span>16S Microbiome Report</span></div>
+    <nav>
+      <a href="#page-cover">Cover</a>
+      <a href="#page-raw">Raw Sequences</a>
+      <a href="#page-species">Species</a>
+      <a href="#page-sankey">Taxonomy</a>
+      <a href="#page-appendix">Appendix</a>
+    </nav>
+  </div>
+
+  <div class="page-wrapper">
+
+    {# ═══════════════════════════════════════════════════════════════════
+       PAGE 1 — Cover
+    ═══════════════════════════════════════════════════════════════════ #}
+    <article class="page" id="page-cover">
+      <div class="cover-content">
+        <h1>{{ page_title }}</h1>
+        <p class="cover-subtitle">16S rRNA Microbiome Profiling Report</p>
+
+        <div class="cover-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ "{:,}".format(stats.total_reads) }}</div>
+            <div class="stat-label">Total Reads</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ stats.species_richness }}</div>
+            <div class="stat-label">Species (S)</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ stats.shannon_index }}</div>
+            <div class="stat-label">Shannon (H')</div>
+          </div>
+        </div>
+
+        <div class="cover-meta">
+          <strong>Sample:</strong> {{ table.name }}<br>
+          {% if table.sample_dir %}
+          <strong>Source:</strong> {{ table.sample_dir }}<br>
+          {% endif %}
+          <strong>Generated:</strong> {{ report_date }}
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span>Generated by Hoshi · 16S rRNA Sequencing Report</span>
+        <span>Page 1 of 5</span>
+      </div>
+    </article>
+
+    {# ═══════════════════════════════════════════════════════════════════
+       PAGE 2 — Raw Sequences Information
+    ═══════════════════════════════════════════════════════════════════ #}
+    <article class="page" id="page-raw">
+
+      <div class="section">
+        <div class="section-header">
+          <h2>Raw Sequences Information</h2>
+        </div>
+
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <td>Total Reads</td>
+              <td>{{ "{:,}".format(stats.total_reads) }}</td>
+            </tr>
+            <tr>
+              <td>Classified Reads</td>
+              <td>{{ "{:,}".format(stats.classified_reads) }} ({{ "%.1f"|format(stats.classified_reads / stats.total_reads * 100 if stats.total_reads > 0 else 0) }}%)</td>
+            </tr>
+            <tr>
+              <td>Unclassified Reads</td>
+              <td>{{ "{:,}".format(stats.unclassified_reads) }}</td>
+            </tr>
+            <tr>
+              <td>Classification Tool</td>
+              <td>EMU (16S rRNA)</td>
+            </tr>
+            <tr>
+              <td>Reference Database</td>
+              <td>NCBI RefSeq (EMU default)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <h2>Methods &amp; Pipeline</h2>
+        </div>
+        <div class="description-text">
+          <p>
+            Genomic DNA was extracted from the sample and the 16S rRNA gene region was
+            amplified using standard primers targeting the V3–V4 hypervariable region.
+            Sequencing was performed on a nanopore-based platform generating long-read
+            amplicon data. Raw reads were quality-filtered and trimmed prior to taxonomic
+            classification.
+          </p>
+          <p>
+            Taxonomic profiling was performed using EMU (Exact Mapping of Unmapped reads),
+            which utilizes an expectation-maximization algorithm to assign full-length 16S
+            rRNA reads to species-level taxonomy. The reference database used is the EMU
+            default database derived from NCBI RefSeq.
+          </p>
+          <p>
+            Diversity indices (Shannon H', Simpson 1−D, Pielou's evenness) were computed
+            from the classified species-level abundance profile. Relative abundance
+            represents the proportion of classified reads assigned to each taxon.
+          </p>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span>Generated by Hoshi · 16S rRNA Sequencing Report</span>
+        <span>Page 2 of 5</span>
+      </div>
+    </article>
+
+    {# ═══════════════════════════════════════════════════════════════════
+       PAGE 3 — Species Abundance Table
+    ═══════════════════════════════════════════════════════════════════ #}
+    <article class="page" id="page-species">
+
+      <div class="section">
+        <div class="section-header">
+          <h2>Species Abundance</h2>
+        </div>
+        <p class="section-label">Top species ranked by relative abundance</p>
+        <div class="table-container">
+          {{ table.top10_html | safe }}
+        </div>
+      </div>
+
+      <div class="section" style="margin-top: 32px;">
+        <div class="section-header">
+          <h2>Diversity Summary</h2>
+        </div>
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <td>Species Richness (S)</td>
+              <td>{{ stats.species_richness }}</td>
+            </tr>
+            <tr>
+              <td>Shannon Index (H')</td>
+              <td>{{ stats.shannon_index }}</td>
+            </tr>
+            <tr>
+              <td>Simpson Index (1−D)</td>
+              <td>{{ stats.simpson_index }}</td>
+            </tr>
+            <tr>
+              <td>Evenness (J)</td>
+              <td>{{ stats.evenness }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="page-footer">
+        <span>Generated by Hoshi · 16S rRNA Sequencing Report</span>
+        <span>Page 3 of 5</span>
+      </div>
+    </article>
+
+    {# ═══════════════════════════════════════════════════════════════════
+       PAGE 4 — Taxonomy Flow (Sankey Diagram)
+    ═══════════════════════════════════════════════════════════════════ #}
+    <article class="page" id="page-sankey">
+
+      <div class="section">
+        <div class="section-header">
+          <h2>Taxonomic Flow</h2>
+        </div>
+        <p class="section-label">Phylum → Class → Order → Family → Genus → Species</p>
+        <div class="sankey-container">
+          {% if table.sankey_svg %}
+          {{ table.sankey_svg | safe }}
+          {% else %}
+          {{ table.sankey_html | safe }}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span>Generated by Hoshi · 16S rRNA Sequencing Report</span>
+        <span>Page 4 of 5</span>
+      </div>
+    </article>
+
+    {# ═══════════════════════════════════════════════════════════════════
+       PAGE 5 — Appendix / Citations / Disclaimer
+    ═══════════════════════════════════════════════════════════════════ #}
+    <article class="page" id="page-appendix">
+
+      <div class="section">
+        <div class="section-header">
+          <h2>Appendix</h2>
+        </div>
+      </div>
+
+      <div class="appendix-section">
+        <h3>Citations</h3>
+        <p>If you use this report or the EMU tool in your research, please cite:</p>
+        <div class="citation-block">
+          Curry KD, Wang Q, Nute MG, et al. "Emu: species-level microbial community
+          profiling of full-length 16S rRNA Oxford Nanopore sequencing data."
+          <em>Nature Methods</em>, 19, 845–853 (2022).
+          https://doi.org/10.1038/s41592-022-01520-4
+        </div>
+        <div class="citation-block" style="margin-top: 8px;">
+          Shannon CE. "A mathematical theory of communication."
+          <em>Bell System Technical Journal</em>, 27(3), 379–423 (1948).
+        </div>
+      </div>
+
+      <div class="appendix-section">
+        <h3>Software &amp; Databases</h3>
+        <ul>
+          <li><strong>EMU</strong> — Species-level 16S rRNA profiling via expectation-maximization</li>
+          <li><strong>Hoshi</strong> — Report generation and visualization pipeline</li>
+          <li><strong>NCBI RefSeq</strong> — Reference database for taxonomic classification</li>
+          <li><strong>Plotly</strong> — Interactive Sankey diagram rendering</li>
+        </ul>
+      </div>
+
+      <div class="appendix-section">
+        <h3>Glossary</h3>
+        <ul>
+          <li><strong>Shannon Index (H')</strong> — Measures species diversity accounting for both richness and evenness.</li>
+          <li><strong>Simpson Index (1−D)</strong> — Probability that two randomly chosen reads belong to different species.</li>
+          <li><strong>Pielou's Evenness (J)</strong> — How evenly species abundances are distributed. 1.0 = perfectly even.</li>
+          <li><strong>Species Richness (S)</strong> — Total number of distinct species detected.</li>
+        </ul>
+      </div>
+
+      <div class="appendix-section">
+        <h3>Disclaimer</h3>
+        <div class="disclaimer-box">
+          This report is generated for research purposes only and is not intended for
+          clinical diagnosis or treatment decisions. The taxonomic assignments are based
+          on computational algorithms and reference databases that may contain errors or
+          incomplete coverage. Results should be interpreted in conjunction with
+          appropriate controls and validated by independent methods when used for
+          critical applications.
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <span>Generated by Hoshi · 16S rRNA Sequencing Report</span>
+        <span>Page 5 of 5</span>
+      </div>
+    </article>
+
+  </div>
+
+</body>
+</html>

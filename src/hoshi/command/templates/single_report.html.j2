@@ -18,8 +18,7 @@
       --color-nav-text: #f8fafc;
       --radius: 8px;
       --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.04);
-      --page-width: 210mm;
-      --page-padding: 20mm;
+      --sidebar-width: 240px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,11 +28,96 @@
       background-color: var(--color-bg);
       color: var(--color-text);
       line-height: 1.6;
-      padding-top: 56px; /* offset for fixed navbar */
     }
 
-    {# === Navbar === #}
-    .navbar {
+    {# ═══════════════════════════════════════════════════════════
+       SCREEN LAYOUT — Sidebar + scrollable main content
+    ═══════════════════════════════════════════════════════════ #}
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    {# --- Left Sidebar --- #}
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background: var(--color-nav);
+      color: var(--color-nav-text);
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar-brand {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-brand h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .sidebar-brand p {
+      font-size: 0.72rem;
+      opacity: 0.5;
+      margin-top: 4px;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--color-nav-text);
+      text-decoration: none;
+      font-size: 0.82rem;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      opacity: 0.7;
+      transition: opacity 0.15s, background 0.15s;
+    }
+
+    .sidebar-nav a:hover {
+      opacity: 1;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .sidebar-nav a.active {
+      opacity: 1;
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      font-weight: 500;
+    }
+
+    .sidebar-nav a .nav-icon {
+      width: 18px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.68rem;
+      opacity: 0.4;
+    }
+
+    {# --- Mobile hamburger --- #}
+    .mobile-header {
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
@@ -41,104 +125,65 @@
       height: 56px;
       background: var(--color-nav);
       color: var(--color-nav-text);
-      display: flex;
       align-items: center;
-      padding: 0 24px;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 0 16px;
+      z-index: 1001;
     }
 
-    .navbar .brand {
+    .mobile-header .brand {
       font-weight: 700;
-      font-size: 1.1rem;
-      letter-spacing: -0.02em;
+      font-size: 1rem;
     }
 
-    .navbar .brand span {
-      opacity: 0.6;
-      font-weight: 400;
-      margin-left: 8px;
-      font-size: 0.85rem;
-    }
-
-    .navbar nav {
-      margin-left: auto;
-      display: flex;
-      gap: 4px;
-    }
-
-    .navbar nav a {
+    .hamburger {
+      background: none;
+      border: none;
       color: var(--color-nav-text);
-      text-decoration: none;
-      font-size: 0.8rem;
-      padding: 6px 12px;
-      border-radius: 4px;
-      opacity: 0.75;
-      transition: opacity 0.15s, background 0.15s;
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 8px;
+      margin-right: 12px;
     }
 
-    .navbar nav a:hover {
-      opacity: 1;
-      background: rgba(255,255,255,0.1);
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
     }
 
-    {# === Page container (A4-like) === #}
-    .page-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 32px 24px;
-      min-height: calc(100vh - 56px);
+    {# --- Main Content --- #}
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 40px 48px;
+      max-width: 900px;
     }
 
-    .page {
-      width: 100%;
-      max-width: var(--page-width);
-      background: var(--color-surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: var(--page-padding);
-      margin-bottom: 24px;
-      /* A4 proportion hint for PDF */
-      min-height: 280mm;
+    {# --- Sections --- #}
+    .content-section {
+      margin-bottom: 56px;
+      scroll-margin-top: 24px;
     }
 
-    {# === Header === #}
-    .report-header {
-      margin-bottom: 28px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid var(--color-border);
+    .content-section:last-child {
+      margin-bottom: 80px;
     }
 
-    .report-header h1 {
-      font-size: 1.75rem;
+    .section-title {
+      font-size: 1.4rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
     }
 
-    .report-header .subtitle {
+    .section-subtitle {
       font-size: 0.85rem;
       color: var(--color-muted);
+      margin-bottom: 24px;
     }
 
-    .report-header .source-link {
-      font-size: 0.78rem;
-      color: var(--color-muted);
-      margin-top: 8px;
-      word-break: break-all;
-    }
-
-    .report-header .source-link a {
-      color: var(--color-accent);
-      text-decoration: none;
-    }
-
-    .report-header .source-link a:hover {
-      text-decoration: underline;
-    }
-
-    {# === Section Titles === #}
     .section-label {
       font-size: 0.68rem;
       font-weight: 600;
@@ -148,24 +193,56 @@
       margin-bottom: 12px;
     }
 
-    {# === Stats Grid === #}
+    {# --- Overview header --- #}
+    .overview-header {
+      background: linear-gradient(135deg, var(--color-accent-light) 0%, var(--color-surface) 100%);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .overview-header h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--color-accent-dark);
+      margin-bottom: 4px;
+    }
+
+    .overview-header .subtitle {
+      font-size: 1rem;
+      color: var(--color-muted);
+      margin-bottom: 20px;
+    }
+
+    .overview-meta {
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      line-height: 2;
+    }
+
+    .overview-meta strong {
+      color: var(--color-text);
+    }
+
+    {# --- Stats Grid --- #}
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
 
     .stat-card {
-      background: var(--color-header-bg);
+      background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 20px 16px;
       text-align: center;
     }
 
     .stat-card .stat-value {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--color-accent-dark);
       line-height: 1.2;
@@ -176,72 +253,40 @@
       color: var(--color-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
-    {# === Panel === #}
-    .section {
-      margin-bottom: 32px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    .section-header h2 {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    {# === Table Controls === #}
-    .table-controls {
-      display: flex;
-      gap: 4px;
-    }
-
-    .table-controls button {
-      padding: 5px 12px;
-      background: var(--color-header-bg);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--color-muted);
-      transition: all 0.15s;
-    }
-
-    .table-controls button.active {
-      background: var(--color-accent);
-      color: #fff;
-      border-color: var(--color-accent-dark);
-    }
-
-    .table-controls button:hover:not(.active) {
-      background: var(--color-border);
-      color: var(--color-text);
-    }
-
-    .table-view { display: none; }
-    .table-view.active { display: block; }
-
-    {# === Data Table === #}
-    .table-container { overflow-x: auto; }
-
+    {# --- Tables --- #}
+    table.info-table,
     table.data-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.85rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
     }
 
+    table.info-table th,
+    table.info-table td,
     table.data-table th,
     table.data-table td {
-      padding: 10px 12px;
+      padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid var(--color-border);
+    }
+
+    table.info-table tr:last-child td,
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.info-table td:first-child {
+      font-weight: 600;
+      color: var(--color-muted);
+      width: 40%;
+      background: var(--color-header-bg);
     }
 
     table.data-table thead th {
@@ -251,7 +296,7 @@
       letter-spacing: 0.4px;
       color: var(--color-muted);
       border-bottom: 2px solid var(--color-border);
-      background: transparent;
+      background: var(--color-header-bg);
     }
 
     table.data-table tbody tr:hover {
@@ -263,169 +308,570 @@
       font-style: italic;
     }
 
-    {# === Sankey === #}
+    {# --- Description text --- #}
+    .description-text {
+      font-size: 0.88rem;
+      color: var(--color-text);
+      line-height: 1.8;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .description-text p + p {
+      margin-top: 12px;
+    }
+
+    {# --- Sankey --- #}
     .sankey-container {
       border: 1px solid var(--color-border);
       border-radius: var(--radius);
       overflow: hidden;
-      min-height: 400px;
+      min-height: 500px;
       display: flex;
       justify-content: center;
       align-items: center;
+      background: var(--color-surface);
+    }
+
+    {# --- Appendix --- #}
+    .appendix-section {
+      margin-bottom: 28px;
+    }
+
+    .appendix-section h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--color-accent-dark);
+    }
+
+    .appendix-section p,
+    .appendix-section li {
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .appendix-section ul {
+      padding-left: 20px;
+      margin-top: 6px;
+    }
+
+    .appendix-section li {
+      margin-bottom: 4px;
+    }
+
+    .citation-block {
       background: var(--color-header-bg);
+      border-left: 3px solid var(--color-accent);
+      padding: 12px 16px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin-top: 8px;
     }
 
-    {# === Footer === #}
-    .report-footer {
-      text-align: center;
-      font-size: 0.72rem;
-      color: var(--color-muted);
-      padding-top: 20px;
-      border-top: 1px solid var(--color-border);
-      margin-top: auto;
+    .disclaimer-box {
+      background: #fef9c3;
+      border: 1px solid #fbbf24;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: #78350f;
     }
 
-    {# === Print / PDF Styles === #}
-    @media print {
-      body {
-        padding-top: 0;
-        background: #fff;
-      }
-      .navbar {
-        display: none;
-      }
-      .page-wrapper {
-        padding: 0;
-      }
-      .page {
-        box-shadow: none;
-        border-radius: 0;
-        max-width: none;
-        width: 100%;
-        padding: 15mm 20mm;
-        min-height: auto;
-      }
-      .table-controls {
-        display: none;
-      }
-      .table-view { display: block !important; }
-      .table-view.top5 { display: none !important; }
-      .sankey-container {
-        page-break-inside: avoid;
-      }
-      .section {
-        page-break-inside: avoid;
-      }
-      h1 { font-size: 18pt; }
+    {# --- PDF-only elements (hidden on screen) --- #}
+    .pdf-only {
+      display: none;
     }
 
+    {# --- Screen-only elements (hidden in PDF) --- #}
+    .screen-only {
+      display: block;
+    }
+
+    {# ═══════════════════════════════════════════════════════════
+       MOBILE — Sidebar collapses
+    ═══════════════════════════════════════════════════════════ #}
+    @media screen and (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
+      .mobile-header {
+        display: flex;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 72px 16px 40px;
+        max-width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .overview-header h2 {
+        font-size: 1.4rem;
+      }
+    }
+
+    {# ═══════════════════════════════════════════════════════════
+       PRINT / PDF — Paged A4 layout (used by WeasyPrint)
+    ═══════════════════════════════════════════════════════════ #}
     @page {
       size: A4;
-      margin: 15mm 20mm;
+      margin: 20mm;
+
+      @bottom-center {
+        content: "Generated by Hoshi · 16S rRNA Sequencing Report";
+        font-size: 7pt;
+        color: #64748b;
+      }
+
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 7pt;
+        color: #64748b;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      {# Hide screen-only navigation #}
+      .sidebar,
+      .mobile-header,
+      .sidebar-overlay,
+      .screen-only {
+        display: none !important;
+      }
+
+      {# Show PDF-only elements #}
+      .pdf-only {
+        display: block !important;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .main-content {
+        margin-left: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      {# Each section becomes a page #}
+      .content-section {
+        page-break-after: always;
+        break-after: page;
+        margin-bottom: 0;
+        padding: 0;
+      }
+
+      .content-section:last-child {
+        page-break-after: auto;
+        break-after: auto;
+        margin-bottom: 0;
+      }
+
+      {# Overview becomes a centered cover page #}
+      .overview-header {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        min-height: 200mm;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .overview-header h2 {
+        font-size: 2.4rem;
+      }
+
+      .overview-header .subtitle {
+        font-size: 1.2rem;
+        margin-bottom: 40px;
+      }
+
+      .overview-meta {
+        margin-top: 40px;
+      }
+
+      .stats-grid {
+        justify-content: center;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      {# Sankey: use SVG for PDF, hide interactive version #}
+      .sankey-interactive {
+        display: none !important;
+      }
+
+      .sankey-static {
+        display: flex !important;
+      }
+
+      {# Remove decorative borders/shadows #}
+      table.info-table,
+      table.data-table,
+      .description-text {
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .stat-card {
+        border-radius: 4px;
+      }
+
+      .section-title {
+        font-size: 1.2rem;
+      }
+
+      .sankey-container {
+        min-height: auto;
+        border: none;
+      }
     }
   </style>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
 
-  {# === Navbar === #}
-  <div class="navbar">
-    <div class="brand">Hoshi<span>16S Microbiome Report</span></div>
-    <nav>
-      <a href="#summary">Summary</a>
-      <a href="#abundance">Abundance</a>
-      <a href="#taxonomy">Taxonomy</a>
-    </nav>
+  {# === Mobile header (screen only) === #}
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation">☰</button>
+    <span class="brand">Hoshi</span>
   </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-  {# === Page === #}
-  <div class="page-wrapper">
-    <div class="page">
+  <div class="layout">
 
-      {# --- Header --- #}
-      <div class="report-header">
-        <h1>{{ page_title }}</h1>
-        <p class="subtitle">16S rRNA Microbiome Profiling Report</p>
-        <div class="source-link">
-          Data: <a href="file://{{ table.source_path }}">{{ table.name }}</a>
-        </div>
+    {# === Left Sidebar (screen only, hidden in print) === #}
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <h1>Hoshi</h1>
+        <p>16S rRNA Microbiome Report</p>
       </div>
 
-      {# --- Summary Statistics --- #}
-      <div class="section" id="summary">
-        <p class="section-label">Sample Summary</p>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value">{{ "{:,}".format(stats.total_reads) }}</div>
-            <div class="stat-label">Total Reads</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ "{:,}".format(stats.classified_reads) }}</div>
-            <div class="stat-label">Classified</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ stats.species_richness }}</div>
-            <div class="stat-label">Species (S)</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ stats.shannon_index }}</div>
-            <div class="stat-label">Shannon (H')</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ stats.simpson_index }}</div>
-            <div class="stat-label">Simpson (1−D)</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ stats.evenness }}</div>
-            <div class="stat-label">Evenness (J)</div>
-          </div>
-        </div>
-      </div>
+      <nav class="sidebar-nav">
+        <a href="#overview" class="active">
+          <span class="nav-icon">◉</span> Overview
+        </a>
+        <a href="#raw-sequences">
+          <span class="nav-icon">◎</span> Raw Sequences
+        </a>
+        <a href="#species-abundance">
+          <span class="nav-icon">◎</span> Species Abundance
+        </a>
+        <a href="#taxonomy-flow">
+          <span class="nav-icon">◎</span> Taxonomy Flow
+        </a>
+        <a href="#appendix">
+          <span class="nav-icon">◎</span> Appendix
+        </a>
+      </nav>
 
-      {# --- Abundance Table --- #}
-      <div class="section" id="abundance">
-        <div class="section-header">
-          <h2>Species Abundance</h2>
-          <div class="table-controls">
-            <button class="active" onclick="switchView('top5', this)">Top 5</button>
-            <button onclick="switchView('top10', this)">Top 10</button>
-          </div>
-        </div>
-        <div class="table-container">
-          <div class="table-view top5 active" id="view-top5">
-            {{ table.top5_html | safe }}
-          </div>
-          <div class="table-view top10" id="view-top10">
-            {{ table.top10_html | safe }}
-          </div>
-        </div>
+      <div class="sidebar-footer">
+        Generated {{ report_date }}
       </div>
+    </aside>
 
-      {# --- Sankey Diagram --- #}
-      <div class="section" id="taxonomy">
-        <div class="section-header">
-          <h2>Taxonomic Flow</h2>
+    {# === Main Content === #}
+    <main class="main-content">
+
+      {# ─── Section 1: Overview / Cover ─── #}
+      <section class="content-section" id="overview">
+        <div class="overview-header">
+          <h2>{{ page_title }}</h2>
+          <p class="subtitle">16S rRNA Microbiome Profiling Report</p>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">{{ "{:,}".format(stats.total_reads) }}</div>
+              <div class="stat-label">Total Reads</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ stats.species_richness }}</div>
+              <div class="stat-label">Species (S)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ stats.shannon_index }}</div>
+              <div class="stat-label">Shannon (H')</div>
+            </div>
+          </div>
+
+          <div class="overview-meta">
+            <strong>Sample:</strong> {{ table.name }}<br>
+            {% if table.sample_dir %}
+            <strong>Source:</strong> {{ table.sample_dir }}<br>
+            {% endif %}
+            <strong>Generated:</strong> {{ report_date }}
+          </div>
         </div>
+
+        {# Extra stats shown only on screen #}
+        <div class="screen-only">
+          <p class="section-label">All Metrics</p>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">{{ "{:,}".format(stats.total_reads) }}</div>
+              <div class="stat-label">Total Reads</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ "{:,}".format(stats.classified_reads) }}</div>
+              <div class="stat-label">Classified</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ stats.species_richness }}</div>
+              <div class="stat-label">Species (S)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ stats.shannon_index }}</div>
+              <div class="stat-label">Shannon (H')</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ stats.simpson_index }}</div>
+              <div class="stat-label">Simpson (1−D)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ stats.evenness }}</div>
+              <div class="stat-label">Evenness (J)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {# ─── Section 2: Raw Sequences ─── #}
+      <section class="content-section" id="raw-sequences">
+        <h2 class="section-title">Raw Sequences Information</h2>
+        <p class="section-subtitle">Sequencing and classification summary</p>
+
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <td>Total Reads</td>
+              <td>{{ "{:,}".format(stats.total_reads) }}</td>
+            </tr>
+            <tr>
+              <td>Classified Reads</td>
+              <td>{{ "{:,}".format(stats.classified_reads) }} ({{ "%.1f"|format(stats.classified_reads / stats.total_reads * 100 if stats.total_reads > 0 else 0) }}%)</td>
+            </tr>
+            <tr>
+              <td>Unclassified Reads</td>
+              <td>{{ "{:,}".format(stats.unclassified_reads) }}</td>
+            </tr>
+            <tr>
+              <td>Classification Tool</td>
+              <td>EMU (16S rRNA)</td>
+            </tr>
+            <tr>
+              <td>Reference Database</td>
+              <td>NCBI RefSeq (EMU default)</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      {# ─── Section 3: Species Abundance ─── #}
+      <section class="content-section" id="species-abundance">
+        <h2 class="section-title">Species Abundance</h2>
+        <p class="section-subtitle">Top species ranked by relative abundance</p>
+
+        <div style="margin-bottom: 24px;">
+          {{ table.top10_html | safe }}
+        </div>
+
+        <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px;">Diversity Summary</h3>
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <td>Species Richness (S)</td>
+              <td>{{ stats.species_richness }}</td>
+            </tr>
+            <tr>
+              <td>Shannon Index (H')</td>
+              <td>{{ stats.shannon_index }}</td>
+            </tr>
+            <tr>
+              <td>Simpson Index (1−D)</td>
+              <td>{{ stats.simpson_index }}</td>
+            </tr>
+            <tr>
+              <td>Evenness (J)</td>
+              <td>{{ stats.evenness }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      {# ─── Section 4: Taxonomy Flow ─── #}
+      <section class="content-section" id="taxonomy-flow">
+        <h2 class="section-title">Taxonomic Flow</h2>
+        <p class="section-subtitle">Phylum → Class → Order → Family → Genus → Species</p>
+
         <div class="sankey-container">
-          {{ table.sankey_html | safe }}
+          {# Interactive Plotly for screen #}
+          <div class="sankey-interactive">
+            {{ table.sankey_html | safe }}
+          </div>
+          {# Static SVG for PDF (hidden on screen) #}
+          {% if table.sankey_svg %}
+          <div class="sankey-static pdf-only">
+            {{ table.sankey_svg | safe }}
+          </div>
+          {% endif %}
         </div>
-      </div>
+      </section>
 
-      {# --- Footer --- #}
-      <div class="report-footer">
-        Generated by Hoshi · 16S rRNA Sequencing Report
-      </div>
+      {# ─── Section 5: Appendix ─── #}
+      <section class="content-section" id="appendix">
+        <h2 class="section-title">Appendix</h2>
+        <p class="section-subtitle">Citations, methods, and disclaimers</p>
 
-    </div>
+        {# --- Appendix 1: Citations --- #}
+        <div class="appendix-section">
+          <h3>Appendix 1 — Citations</h3>
+          <p>If you use this report or the EMU tool in your research, please cite:</p>
+          <div class="citation-block">
+            Curry KD, Wang Q, Nute MG, et al. "Emu: species-level microbial community
+            profiling of full-length 16S rRNA Oxford Nanopore sequencing data."
+            <em>Nature Methods</em>, 19, 845–853 (2022).
+            https://doi.org/10.1038/s41592-022-01520-4
+          </div>
+          <div class="citation-block" style="margin-top: 8px;">
+            Shannon CE. "A mathematical theory of communication."
+            <em>Bell System Technical Journal</em>, 27(3), 379–423 (1948).
+          </div>
+        </div>
+
+        {# --- Appendix 2: Methods & Pipeline --- #}
+        <div class="appendix-section">
+          <h3>Appendix 2 — Methods &amp; Pipeline</h3>
+          <div class="description-text">
+            <p>
+              Genomic DNA was extracted from the sample and the 16S rRNA gene region was
+              amplified using standard primers targeting the V3–V4 hypervariable region.
+              Sequencing was performed on a nanopore-based platform generating long-read
+              amplicon data. Raw reads were quality-filtered and trimmed prior to taxonomic
+              classification.
+            </p>
+            <p>
+              Taxonomic profiling was performed using EMU (Exact Mapping of Unmapped reads),
+              which utilizes an expectation-maximization algorithm to assign full-length 16S
+              rRNA reads to species-level taxonomy. The reference database used is the EMU
+              default database derived from NCBI RefSeq.
+            </p>
+            <p>
+              Diversity indices (Shannon H', Simpson 1−D, Pielou's evenness) were computed
+              from the classified species-level abundance profile. Relative abundance
+              represents the proportion of classified reads assigned to each taxon.
+            </p>
+          </div>
+        </div>
+
+        {# --- Appendix 3: Software & Databases --- #}
+        <div class="appendix-section">
+          <h3>Appendix 3 — Software &amp; Databases</h3>
+          <ul>
+            <li><strong>EMU</strong> — Species-level 16S rRNA profiling via expectation-maximization</li>
+            <li><strong>Hoshi</strong> — Report generation and visualization pipeline</li>
+            <li><strong>NCBI RefSeq</strong> — Reference database for taxonomic classification</li>
+            <li><strong>Plotly</strong> — Interactive Sankey diagram rendering</li>
+          </ul>
+        </div>
+
+        {# --- Appendix 4: Glossary --- #}
+        <div class="appendix-section">
+          <h3>Appendix 4 — Glossary</h3>
+          <ul>
+            <li><strong>Shannon Index (H')</strong> — Measures species diversity accounting for both richness and evenness.</li>
+            <li><strong>Simpson Index (1−D)</strong> — Probability that two randomly chosen reads belong to different species.</li>
+            <li><strong>Pielou's Evenness (J)</strong> — How evenly species abundances are distributed. 1.0 = perfectly even.</li>
+            <li><strong>Species Richness (S)</strong> — Total number of distinct species detected.</li>
+          </ul>
+        </div>
+
+        {# --- Appendix 5: Disclaimer --- #}
+        <div class="appendix-section">
+          <h3>Appendix 5 — Disclaimer</h3>
+          <div class="disclaimer-box">
+            This report is generated for research purposes only and is not intended for
+            clinical diagnosis or treatment decisions. The taxonomic assignments are based
+            on computational algorithms and reference databases that may contain errors or
+            incomplete coverage. Results should be interpreted in conjunction with
+            appropriate controls and validated by independent methods when used for
+            critical applications.
+          </div>
+        </div>
+      </section>
+
+    </main>
   </div>
 
   <script>
-    function switchView(view, btn) {
-      document.querySelectorAll('.table-view').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.table-controls button').forEach(b => b.classList.remove('active'));
-      document.getElementById('view-' + view).classList.add('active');
-      btn.classList.add('active');
+    {# Sidebar toggle for mobile #}
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebar-overlay').classList.toggle('open');
     }
+
+    {# Close sidebar on mobile nav click #}
+    document.querySelectorAll('.sidebar-nav a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+          toggleSidebar();
+        }
+      });
+    });
+
+    {# Highlight active section on scroll #}
+    (function() {
+      var sections = document.querySelectorAll('.content-section');
+      var navLinks = document.querySelectorAll('.sidebar-nav a');
+
+      function setActive() {
+        var scrollPos = window.scrollY + 100;
+
+        sections.forEach(function(section, index) {
+          var top = section.offsetTop;
+          var bottom = top + section.offsetHeight;
+
+          if (scrollPos >= top && scrollPos < bottom) {
+            navLinks.forEach(function(link) { link.classList.remove('active'); });
+            navLinks[index].classList.add('active');
+            navLinks.forEach(function(link) {
+              link.querySelector('.nav-icon').textContent = '◎';
+            });
+            navLinks[index].querySelector('.nav-icon').textContent = '◉';
+          }
+        });
+      }
+
+      window.addEventListener('scroll', setActive);
+      setActive();
+    })();
   </script>
 </body>
 </html>
