@@ -8,6 +8,8 @@ from typing import Sequence
 from hoshi.command import contrast
 from hoshi.command import convert
 from hoshi.command import enrich
+from hoshi.command import prepare_medical
+from hoshi.command import report_medical
 from hoshi.command import report_multi
 from hoshi.command import report_single
 
@@ -38,6 +40,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     contrast.build_parser(subparsers)
     convert.build_parser(subparsers)
     enrich.build_parser(subparsers)
+    prepare_medical.build_parser(subparsers)
+    report_medical.build_parser(subparsers)
     report_multi.build_parser(subparsers)
     report_single.build_parser(subparsers)
 

@@ -1,0 +1,6 @@
+abundance	genus	family	order	class	phylum	clade	superkingdom
+0.41333333333333333	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria
+0.21666666666666667	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria
+0.14666666666666667	Lactiplantibacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria
+0.11333333333333333	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria
+0.11	Phocaeicola		Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria

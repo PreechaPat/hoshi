@@ -211,6 +211,236 @@ def emu_to_experiment(
     )
 
 
+def read_savont_abundance(
+    feature_table: str | Path,
+    asv_mapping: str | Path,
+) -> pd.DataFrame:
+    """
+    Load Savont feature table and ASV mapping to build a species-level abundance table.
+
+    Reads the feature table (ASV read counts) and ASV mapping (taxonomy
+    assignments per ASV), resolves each ASV to a single species (first hit),
+    and aggregates read counts by species to compute relative abundance.
+
+    Parameters
+    ----------
+    feature_table : str or Path
+        Path to ``feature-table.tsv`` containing ASV read counts.
+
+    asv_mapping : str or Path
+        Path to ``asv_mappings.tsv`` containing taxonomy assignments per ASV.
+
+    Returns
+    -------
+    pd.DataFrame
+        Species-level abundance table with columns:
+        abundance, tax_id, species, genus, family, order, class, phylum,
+        superkingdom, estimated counts.
+        Indexed by a positional integer index (tax_id is a regular column).
+
+    Raises
+    ------
+    ValueError
+        If required files are missing or cannot be parsed.
+    """
+    SAVONT_TAXONOMY_COLUMNS = (
+        "tax_id",
+        "species",
+        "genus",
+        "family",
+        "order",
+        "class",
+        "phylum",
+        "superkingdom",
+    )
+
+    feature_path = Path(feature_table)
+    mapping_path = Path(asv_mapping)
+
+    if not feature_path.is_file():
+        raise ValueError(f"Feature table not found: {feature_path}")
+    if not mapping_path.is_file():
+        raise ValueError(f"ASV mapping not found: {mapping_path}")
+
+    # Read feature table: columns are "#OTU ID" and one or more sample columns
+    feature_df = pd.read_csv(feature_path, sep="\t")
+    if "#OTU ID" not in feature_df.columns:
+        raise ValueError(
+            f"feature-table.tsv missing '#OTU ID' column. "
+            f"Found: {list(feature_df.columns)}"
+        )
+
+    # Extract depth per ASV (sum across sample columns for multi-column case)
+    sample_cols = [c for c in feature_df.columns if c != "#OTU ID"]
+    if not sample_cols:
+        raise ValueError("feature-table.tsv has no sample columns.")
+
+    feature_df = feature_df.set_index("#OTU ID")
+    asv_counts = feature_df[sample_cols].sum(axis=1).astype(int)
+    asv_counts.name = "depth"
+
+    # Read ASV mappings
+    mapping_df = pd.read_csv(mapping_path, sep="\t")
+    required_mapping_cols = ["asv_header", "tax_id", "species"]
+    missing = [c for c in required_mapping_cols if c not in mapping_df.columns]
+    if missing:
+        raise ValueError(f"asv_mappings.tsv missing columns: {missing}")
+
+    # Resolve each ASV to a single tax_id (first hit per ASV)
+    first_hits = mapping_df.drop_duplicates(subset=["asv_header"], keep="first")
+
+    resolved_rows = []
+    for _, hit in first_hits.iterrows():
+        asv_id = hit["asv_header"]
+        if asv_id not in asv_counts.index:
+            continue
+
+        row = {"asv_header": asv_id, "depth": asv_counts[asv_id]}
+        for col in SAVONT_TAXONOMY_COLUMNS:
+            row[col] = hit.get(col, pd.NA)
+        resolved_rows.append(row)
+
+    if not resolved_rows:
+        raise ValueError("No ASVs could be resolved from the mapping file.")
+
+    resolved_df = pd.DataFrame(resolved_rows)
+    resolved_df["tax_id"] = resolved_df["tax_id"].astype(int).astype(str)
+
+    # Aggregate by tax_id: sum depths, keep first taxonomy
+    agg_df = (
+        resolved_df.groupby("tax_id", as_index=False)
+        .agg(
+            {
+                "depth": "sum",
+                "species": "first",
+                "genus": "first",
+                "family": "first",
+                "order": "first",
+                "class": "first",
+                "phylum": "first",
+                "superkingdom": "first",
+            }
+        )
+    )
+
+    # Compute relative abundance
+    total_depth = agg_df["depth"].sum()
+    agg_df["abundance"] = agg_df["depth"] / total_depth if total_depth > 0 else 0.0
+    agg_df = agg_df.rename(columns={"depth": "estimated counts"})
+
+    # Reorder columns
+    output_columns = [
+        "abundance",
+        "tax_id",
+        "species",
+        "genus",
+        "family",
+        "order",
+        "class",
+        "phylum",
+        "superkingdom",
+        "estimated counts",
+    ]
+    for col in output_columns:
+        if col not in agg_df.columns:
+            agg_df[col] = pd.NA
+
+    agg_df = agg_df[output_columns].sort_values("abundance", ascending=False).reset_index(drop=True)
+
+    return agg_df
+
+
+def savont_to_experiment(
+    input_dirs: str | Path | list[str | Path],
+    *,
+    sample_names: list[str],
+) -> SummarizedExperiment:
+    """
+    Load one or more Savont output directories into a SummarizedExperiment.
+
+    Parameters
+    ----------
+    input_dirs : str, Path, or list thereof
+        Path(s) to Savont output directories. Each directory represents one
+        sample and must contain ``feature-table.tsv`` and ``asv_mappings.tsv``.
+
+    sample_names : list of str
+        Sample names corresponding to each directory.
+
+    Returns
+    -------
+    SummarizedExperiment
+        Container with:
+        - assays["abundance"]: relative abundance matrix (features × samples)
+        - assays["counts"]: estimated counts matrix (features × samples)
+        - row_data: taxonomy annotations per feature (indexed by tax_id)
+        - col_data: sample metadata (indexed by sample name)
+        - metadata: {"source": "savont"}
+    """
+    SAVONT_TAXONOMY_COLUMNS = (
+        "species",
+        "genus",
+        "family",
+        "order",
+        "class",
+        "phylum",
+        "superkingdom",
+    )
+
+    # Normalise to list
+    if isinstance(input_dirs, (str, Path)):
+        input_dirs = [input_dirs]
+    input_dirs = [Path(d) for d in input_dirs]
+
+    if len(sample_names) != len(input_dirs):
+        raise ValueError(
+            f"Length mismatch: {len(input_dirs)} directories but "
+            f"{len(sample_names)} sample names."
+        )
+
+    # Collect per-sample data
+    abundance_series: dict[str, pd.Series] = {}
+    counts_series: dict[str, pd.Series] = {}
+    taxonomy_frames: list[pd.DataFrame] = []
+
+    for dir_path, name in zip(input_dirs, sample_names):
+        df = read_savont_abundance(
+            dir_path / "feature-table.tsv",
+            dir_path / "asv_mappings.tsv",
+        )
+        df = df.set_index("tax_id")
+
+        abundance_series[name] = df["abundance"]
+        counts_series[name] = df["estimated counts"].astype(float)
+
+        tax_cols = [c for c in SAVONT_TAXONOMY_COLUMNS if c in df.columns]
+        taxonomy_frames.append(df[tax_cols])
+
+    # Build assay matrices (features × samples), filling missing features with 0
+    abundance_matrix = pd.DataFrame(abundance_series).fillna(0.0)
+    counts_matrix = pd.DataFrame(counts_series).fillna(0.0)
+
+    # Build row_data from merged taxonomy (take first non-NA per tax_id)
+    row_data = pd.concat(taxonomy_frames).groupby(level=0).first()
+    row_data = row_data.reindex(abundance_matrix.index)
+
+    # Build col_data
+    col_data = pd.DataFrame(
+        {
+            "sample_name": sample_names,
+            "source_file": [str(d) for d in input_dirs],
+        },
+        index=sample_names,
+    )
+
+    return SummarizedExperiment(
+        assays={"abundance": abundance_matrix, "counts": counts_matrix},
+        row_data=row_data,
+        col_data=col_data,
+        metadata={"source": "savont"},
+    )
+
+
 def _derive_sample_name(path: Path) -> str:
     """Derive a sample name from an Emu output filename."""
     stem = path.stem

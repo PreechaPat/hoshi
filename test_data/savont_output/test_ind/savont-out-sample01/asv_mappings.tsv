@@ -1,0 +1,27 @@
+asv_header	depth	alignment_identity	number_mismatches	tax_id	species	genus	family	order	class	phylum	clade	superkingdom	reference
+final_consensus_0_depth_71	71	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:32631
+final_consensus_0_depth_71	71	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:32608
+final_consensus_0_depth_71	71	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:49065
+final_consensus_0_depth_71	71	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:10624
+final_consensus_0_depth_71	71	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:32610
+final_consensus_1_depth_53	53	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:32632
+final_consensus_1_depth_53	53	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:49069
+final_consensus_1_depth_53	53	100.00	0	1496	Clostridioides difficile	Clostridioides	Peptostreptococcaceae	Clostridiales	Clostridia	Firmicutes	Terrabacteria group	Bacteria	1496:emu_db:32607
+final_consensus_2_depth_47	47	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:29745
+final_consensus_2_depth_47	47	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:49053
+final_consensus_2_depth_47	47	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:29744
+final_consensus_2_depth_47	47	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:29735
+final_consensus_2_depth_47	47	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:49052
+final_consensus_2_depth_47	47	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:29734
+final_consensus_3_depth_44	44	100.00	0	1589	Lactobacillus pentosus	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1589:emu_db:17515
+final_consensus_3_depth_44	44	100.00	0	1589	Lactobacillus pentosus	Lactobacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1589:emu_db:33367
+final_consensus_3_depth_44	44	100.00	0	1590	Lactiplantibacillus plantarum	Lactiplantibacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1590:emu_db:33368
+final_consensus_3_depth_44	44	100.00	0	1590	Lactiplantibacillus plantarum	Lactiplantibacillus	Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1590:emu_db:33385
+final_consensus_4_depth_34	34	100.00	0	817	Bacteroides fragilis	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria	817:emu_db:10803
+final_consensus_4_depth_34	34	100.00	0	817	Bacteroides fragilis	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria	817:emu_db:28039
+final_consensus_4_depth_34	34	100.00	0	817	Bacteroides fragilis	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria	817:emu_db:28077
+final_consensus_4_depth_34	34	100.00	0	817	Bacteroides fragilis	Bacteroides	Bacteroidaceae	Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria	817:emu_db:2101
+final_consensus_5_depth_33	33	100.00	0	821	Phocaeicola vulgatus	Phocaeicola		Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria	821:emu_db:28087
+final_consensus_5_depth_33	33	100.00	0	821	Phocaeicola vulgatus	Phocaeicola		Bacteroidales	Bacteroidia	Bacteroidetes	FCB group	Bacteria	821:emu_db:20251
+final_consensus_6_depth_18	18	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:29733
+final_consensus_6_depth_18	18	100.00	0	1351	Enterococcus faecalis	Enterococcus	Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Terrabacteria group	Bacteria	1351:emu_db:29771

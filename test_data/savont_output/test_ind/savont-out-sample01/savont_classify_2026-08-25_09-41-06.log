@@ -1,0 +1,22 @@
+(2026-08-25 09:41:06.419) INFO [savont] COMMAND: /home/preecha/.pixi/envs/bio/bin/savont classify --db /home/preecha/works/db/savont/emu-1 --input-dir savont-out
+(2026-08-25 09:41:06.419) INFO [savont] VERSION: 0.6.3
+(2026-08-25 09:41:06.419) INFO [savont] Starting classification...
+(2026-08-25 09:41:06.420) INFO [savont::databases] Detected database type 'emu-1' for /home/preecha/works/db/savont/emu-1
+(2026-08-25 09:41:06.420) INFO [savont::taxonomy] Loading taxonomy from /home/preecha/works/db/savont/emu-1/taxonomy.tsv
+(2026-08-25 09:41:06.439) INFO [savont::taxonomy] Loaded 17556 taxonomy entries
+(2026-08-25 09:41:06.439) INFO [savont::classify] Loading consensus sequences from savont-out/final_asvs.fasta
+(2026-08-25 09:41:06.439) INFO [savont::classify] Loaded 7 consensus sequences
+(2026-08-25 09:41:06.439) INFO [savont::classify] Building minimap2 index from database FASTA: /home/preecha/works/db/savont/emu-1/species_taxid.fasta
+(2026-08-25 09:41:06.439) INFO [savont::classify] Loading pre-built minimap2 index: /home/preecha/works/db/savont/emu-1/species_taxid.fasta.mmi
+(2026-08-25 09:41:06.587) INFO [savont::classify] Aligning 7 consensus sequences to database
+(2026-08-25 09:41:06.826) INFO [savont::classify] Collected 26 total mappings from 7 ASVs
+(2026-08-25 09:41:06.826) INFO [savont::classify] Found 6 unique taxonomic IDs
+(2026-08-25 09:41:06.826) INFO [savont::classify] Running EM algorithm to distribute abundances
+(2026-08-25 09:41:06.826) INFO [savont::classify] Starting EM algorithm with 6 taxa and 26 mappings
+(2026-08-25 09:41:06.826) INFO [savont::classify] EM converged after 2 iterations (max change: 1.110223e-16)
+(2026-08-25 09:41:06.826) INFO [savont::classify] Wrote species abundance table to savont-out/species_abundance.tsv
+(2026-08-25 09:41:06.826) INFO [savont::classify] Wrote genus abundance table to savont-out/genus_abundance.tsv
+(2026-08-25 09:41:06.827) INFO [savont::classify] Wrote ASV mappings table to savont-out/asv_mappings.tsv
+(2026-08-25 09:41:06.827) INFO [savont::classify] Classification complete! Classified 7/7 ASVs
+(2026-08-25 09:41:06.827) INFO [savont::classify] Classified 7/7 ASVs at species level
+(2026-08-25 09:41:06.827) INFO [savont::classify] Classified 7/7 ASVs at genus level

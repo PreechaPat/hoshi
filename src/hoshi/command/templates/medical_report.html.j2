@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title | default("Full-Length 16S rRNA Bacterial Detection Report") }}</title>
+
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:#fff;
+    color:#1a1a1a;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:13px;
+    line-height:1.6;
+  }
+  .page{
+    max-width:780px;
+    margin:0 auto;
+    padding:32px 40px;
+  }
+  h1{
+    font-size:18px;
+    font-weight:700;
+    margin:0 0 4px;
+    text-align:center;
+  }
+  .lab-name{
+    text-align:center;
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:2px;
+  }
+  .subtitle{
+    text-align:center;
+    font-size:12px;
+    color:#444;
+    margin-bottom:20px;
+  }
+  .meta{
+    text-align:right;
+    font-size:12px;
+    margin-bottom:4px;
+  }
+  .separator{
+    border:none;
+    border-top:2px solid #1a1a1a;
+    margin:16px 0;
+  }
+  .section-title{
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    margin:20px 0 8px;
+  }
+  p{
+    margin:0 0 10px;
+  }
+  .field{
+    margin-bottom:4px;
+  }
+  .field-label{
+    display:inline-block;
+    width:140px;
+    color:#444;
+  }
+  .field-value{
+    font-weight:600;
+  }
+  .result-block{
+    border:2px solid #1a1a1a;
+    padding:14px 18px;
+    margin-bottom:12px;
+  }
+  .conclusion{
+    font-size:18px;
+    font-weight:800;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:12px;
+    font-size:12px;
+  }
+  th, td{
+    border:1px solid #888;
+    padding:6px 10px;
+    text-align:left;
+    vertical-align:top;
+  }
+  th{
+    font-weight:700;
+    background:#f5f5f5;
+  }
+  .footer{
+    margin-top:28px;
+    padding-top:12px;
+    border-top:2px solid #1a1a1a;
+    font-size:11px;
+    color:#444;
+    display:flex;
+    justify-content:space-between;
+  }
+
+  /* Status colors — reused across conclusion, QC, and species table */
+  .status-danger{color:#9b1c1c; font-weight:700}
+  .status-ok{color:#137333; font-weight:700}
+  .status-warn{color:#c05600; font-weight:700}
+
+  @media print{
+    .page{max-width:none;padding:16mm 20mm}
+  }
+</style>
+
+</head>
+<body>
+<div class="page">
+
+  {# ─── Header ─── #}
+  <p class="lab-name">{{ lab_name or "Molecular Microbiology Laboratory" }}</p>
+  <h1>Full-Length 16S rRNA Bacterial Detection</h1>
+  <p class="subtitle">Broad-range bacterial detection and identification from clinical specimens</p>
+
+  <p class="meta"><strong>Report ID:</strong> {{ report_id }}</p>
+  <p class="meta"><strong>Reported:</strong> {{ report_date }}</p>
+  <p class="meta"><strong>Status:</strong> {{ status or "Final" }}</p>
+
+  <hr class="separator">
+
+  {# ─── Patient & Specimen Information ─── #}
+  <div class="section-title">Patient &amp; Specimen Information</div>
+  <p class="field"><span class="field-label">Patient ID</span><span class="field-value">{{ patient_id }}</span></p>
+  <p class="field"><span class="field-label">Specimen ID</span><span class="field-value">{{ specimen_id }}</span></p>
+  <p class="field"><span class="field-label">Specimen type</span><span class="field-value">{{ specimen_type }}</span></p>
+  <p class="field"><span class="field-label">Collection date</span><span class="field-value">{{ collection_date }}</span></p>
+
+  {# ─── Results ─── #}
+  <div class="section-title">Result</div>
+
+  {# Conclusion box #}
+  <div class="result-block">
+    <p><strong>Conclusion:</strong>
+    {% if conclusion == "pathogen_detected" %}
+      <span class="conclusion status-danger">PATHOGEN DETECTED</span>
+    {% elif conclusion == "organism_detected" %}
+      <span class="conclusion status-danger">ORGANISM DETECTED IN NORMALLY STERILE SPECIMEN</span>
+    {% elif conclusion == "not_detected" %}
+      <span class="conclusion status-ok">NOT DETECTED</span>
+    {% else %}
+      <span class="conclusion">NORMAL FLORA</span>
+    {% endif %}
+    </p>
+  </div>
+
+  {# Species table #}
+  {% if organisms %}
+  <table>
+    <tr>
+      <th>Species</th>
+      <th>Abundance (%)</th>
+      <th>Sequence identity (%)</th>
+      <th>Pathogenic</th>
+    </tr>
+    {% for org in organisms %}
+    <tr>
+      <td><em>{{ org.name }}</em></td>
+      <td>{{ org.abundance }}</td>
+      <td>{{ org.identity if org.identity is not none else "N/A" }}</td>
+      {% if org.pathogenic is none %}
+      <td>N/A</td>
+      {% elif org.pathogenic %}
+      <td class="status-danger">Yes</td>
+      {% else %}
+      <td class="status-ok">No</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p>No bacterial taxon met the laboratory-established reporting criteria.</p>
+  {% endif %}
+
+  {# ─── Quality Control ─── #}
+  <div class="section-title">Quality Control</div>
+  <table>
+    <tr><th>Parameter</th><th>Status</th></tr>
+    {% for qc in qc_items %}
+    <tr>
+      <td>{{ qc.name }}</td>
+      <td class="{{ 'status-ok' if qc.status == 'pass' else 'status-warn' }}">{{ qc.status | upper }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {# ─── Analytical Evidence ─── #}
+  <div class="section-title">Analytical Evidence</div>
+  <table>
+    <tr><th style="width:170px">Target</th><td>Full-length bacterial 16S rRNA gene (V1-V9)</td></tr>
+    {% if organisms %}
+    <tr><th style="width:170px">Reporting criteria</th><td>Met laboratory-validated detection and background thresholds</td></tr>
+    {% else %}
+    <tr><th style="width:170px">Result classification</th><td>Not detected</td></tr>
+    <tr><th style="width:170px">Reporting criteria</th><td>No bacterial taxon exceeded validated detection and background thresholds</td></tr>
+    {% endif %}
+    <tr><th style="width:170px">Reference database</th><td>{{ reference_db or "Validated bacterial 16S reference database" }}</td></tr>
+  </table>
+
+  {# ─── Method ─── #}
+  <div class="section-title">Method</div>
+  <p>{{ method or "Broad-range amplification of the bacterial full-length 16S rRNA gene followed by long-read sequencing and validated taxonomic classification." }}</p>
+
+  {# ─── Limitations ─── #}
+  <div class="section-title">Limitations</div>
+  {% if organisms %}
+  <p>This assay detects bacterial DNA and does not determine organism viability or antimicrobial susceptibility.
+  Some closely related bacterial species cannot be reliably distinguished by 16S rRNA sequencing alone.
+  Results should be interpreted with conventional microbiology and clinical findings.</p>
+  {% else %}
+  <p>A negative result does not exclude bacterial infection below the analytical limit of detection.
+  PCR inhibitors, low bacterial burden, sequence variation at primer-binding sites, or specimen quality may affect assay sensitivity.
+  Antimicrobial susceptibility is not assessed by this test.</p>
+  {% endif %}
+
+  {# ─── Footer ─── #}
+  <div class="footer">
+    <span>Authorized by: {{ authorized_by or "__________________________" }}</span>
+    <span>Page 1 of 1</span>
+  </div>
+
+</div>
+</body>
+</html>
