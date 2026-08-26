@@ -16,7 +16,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
-_REPORT_TEMPLATE = "medical_report.html.j2"
+_REPORT_TEMPLATE = "medical/medical_report.html.j2"
 
 
 def _load_report_data(json_path: Path) -> dict:

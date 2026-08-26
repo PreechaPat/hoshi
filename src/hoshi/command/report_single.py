@@ -19,7 +19,7 @@ from hoshi.lib.ingress import emu_to_experiment
 from hoshi.lib.sankey import get_sankey_data, render_sankey_figure
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
-_REPORT_TEMPLATE = "single_report.html.j2"
+_REPORT_TEMPLATE = "microbiome/singlesample.html.j2"
 
 
 def _find_emu_files(sample_dir: Path) -> dict[str, Path | None]:

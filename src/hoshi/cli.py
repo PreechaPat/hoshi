@@ -5,7 +5,6 @@ import importlib.metadata
 import sys
 from typing import Sequence
 
-from hoshi.command import contrast
 from hoshi.command import convert
 from hoshi.command import enrich
 from hoshi.command import prepare_medical
@@ -37,7 +36,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Register sub-commands from modules
-    contrast.build_parser(subparsers)
     convert.build_parser(subparsers)
     enrich.build_parser(subparsers)
     prepare_medical.build_parser(subparsers)
