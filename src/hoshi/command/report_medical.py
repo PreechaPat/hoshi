@@ -9,8 +9,9 @@ report via Jinja2 in a single step.
     inputs -> _load_experiment -> build_medical_report -> Report
            -> report_to_medical_data -> Jinja2 -> HTML
 
-The metadata JSON is optional; any omitted clinical field falls back to
-``"N/A"``.
+The metadata JSON is optional; any omitted clinical field is passed to the
+template as ``None`` and the template renders its own fallback (``"N/A"`` for
+identifying fields, a blank signature line for ``authorized_by``).
 """
 
 from __future__ import annotations
@@ -32,8 +33,9 @@ _REPORT_TEMPLATE = "medical/medical_report.html.j2"
 
 _SUPPORTED_INPUT_FORMATS = ("emu", "savont")
 
-# Clinical fields sourced from the metadata JSON; missing ones fall back to N/A.
-_NA = "N/A"
+# Clinical fields sourced from the metadata JSON. Missing ones are passed to the
+# template as ``None``; the template owns all presentation defaults (``N/A`` for
+# identifying fields, a blank signature line for ``authorized_by``).
 _CLINICAL_KEYS = (
     "report_id",
     "patient_id",
@@ -171,12 +173,14 @@ def _load_metadata(metadata_path: Path | None) -> dict:
 
 
 def _build_clinical(meta: dict) -> dict:
-    """Build the clinical envelope from metadata, defaulting missing keys to N/A."""
-    clinical: dict = {}
-    for key in _CLINICAL_KEYS:
-        value = meta.get(key)
-        clinical[key] = value if value is not None else _NA
-    return clinical
+    """Build the clinical envelope from metadata.
+
+    Missing keys are passed through as ``None`` (not the literal ``"N/A"``).
+    Presentation defaults are owned entirely by the Jinja2 template, which
+    renders ``"N/A"`` for absent identifying fields and a blank signature line
+    (``____``) for an absent ``authorized_by``.
+    """
+    return {key: meta.get(key) for key in _CLINICAL_KEYS}
 
 
 def _determine_conclusion(organisms: list[dict]) -> str:
@@ -272,7 +276,8 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
             "Consumes a single-sample classifier output (EMU *_rel-abundance.tsv file "
             "or a Savont output directory) plus an optional clinical metadata JSON, "
             "builds a Report intermediate, and renders HTML in one step. Missing "
-            "clinical fields fall back to 'N/A'."
+            "clinical fields fall back to 'N/A' (an omitted authorized_by renders "
+            "as a blank signature line)."
         ),
     )
     parser.add_argument(

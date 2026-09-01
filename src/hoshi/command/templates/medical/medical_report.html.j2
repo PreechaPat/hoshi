@@ -195,7 +195,7 @@
       <p class="subtitle">Broad-range bacterial detection and identification from clinical specimens</p>
     </div>
     <div class="report-header-meta">
-      <p class="meta"><strong>Report ID:</strong> {{ report_id }}</p>
+      <p class="meta"><strong>Report ID:</strong> {{ report_id or "N/A" }}</p>
       <p class="meta"><strong>Reported:</strong> {{ report_date }}</p>
       <p class="meta"><strong>Status:</strong> {{ status or "Final" }}</p>
     </div>
@@ -205,10 +205,10 @@
 
   {# ─── Patient & Specimen Information ─── #}
   <div class="section-title">Patient &amp; Specimen Information</div>
-  <p class="field"><span class="field-label">Patient ID</span><span class="field-value">{{ patient_id }}</span></p>
-  <p class="field"><span class="field-label">Specimen ID</span><span class="field-value">{{ specimen_id }}</span></p>
-  <p class="field"><span class="field-label">Specimen type</span><span class="field-value">{{ specimen_type }}</span></p>
-  <p class="field"><span class="field-label">Collection date</span><span class="field-value">{{ collection_date }}</span></p>
+  <p class="field"><span class="field-label">Patient ID</span><span class="field-value">{{ patient_id or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Specimen ID</span><span class="field-value">{{ specimen_id or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Specimen type</span><span class="field-value">{{ specimen_type or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Collection date</span><span class="field-value">{{ collection_date or "N/A" }}</span></p>
 
   {# ─── Results ─── #}
   <div class="section-title">Result</div>
