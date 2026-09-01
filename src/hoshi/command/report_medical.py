@@ -1,8 +1,16 @@
-"""Generate a 16S rRNA medical detection report as HTML.
+"""Generate a 16S rRNA medical detection report as HTML — end to end.
 
-Accepts a JSON input file describing patient information, specimen details,
-organisms detected, and QC status. Produces a clinical-style HTML report
-suitable for printing or PDF conversion.
+Consumes a single-sample classifier output (EMU ``*_rel-abundance.tsv`` file or
+a Savont output directory) plus an optional clinical metadata JSON, builds a
+:class:`Report` intermediate (organisms derived from the experiment; clinical
+fields carried in ``Report.metadata``), and renders a clinical-style HTML
+report via Jinja2 in a single step.
+
+    inputs -> _load_experiment -> build_medical_report -> Report
+           -> report_to_medical_data -> Jinja2 -> HTML
+
+The metadata JSON is optional; any omitted clinical field falls back to
+``"N/A"``.
 """
 
 from __future__ import annotations
@@ -15,70 +23,30 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from hoshi.lib.experiment import SummarizedExperiment
+from hoshi.lib.medical import build_medical_report, report_to_medical_data
+from hoshi.lib.report import Report
+
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 _REPORT_TEMPLATE = "medical/medical_report.html.j2"
 
+_SUPPORTED_INPUT_FORMATS = ("emu", "savont")
 
-def _load_report_data(json_path: Path) -> dict:
-    """Load and validate report data from a JSON file.
-
-    Expected JSON structure:
-    {
-        "report_id": "16S-2026-000184",
-        "patient_id": "HN-XXXXXX",
-        "specimen_id": "SP-26-001842",
-        "specimen_type": "Synovial fluid",
-        "collection_date": "23 Aug 2026",
-        "conclusion": "pathogen_detected",
-        "organisms": [
-            {
-                "name": "Streptococcus intermedius",
-                "abundance": 85.2,
-                "identity": 99.8,
-                "pathogenic": true
-            }
-        ],
-        "qc_items": [
-            {"name": "Read quality", "status": "pass"},
-            {"name": "Read support", "status": "pass"}
-        ],
-        "lab_name": "Molecular Microbiology Laboratory",
-        "reference_db": "Validated bacterial 16S reference database, version 2026.08",
-        "authorized_by": "Dr. Smith"
-    }
-
-    conclusion values:
-        "pathogen_detected" - known pathogen found
-        "organism_detected" - organism found in normally sterile specimen
-        "normal"            - normal flora only
-        "not_detected"      - no bacterial DNA detected
-
-    Each organism entry:
-        "name"       - species name (required)
-        "abundance"  - relative abundance percentage
-        "identity"   - sequence identity percentage
-        "pathogenic" - boolean
-
-    Each qc_items entry has "name" and "status" ("pass" or "fail").
-    """
-    with open(json_path, encoding="utf-8") as f:
-        data = json.load(f)
-
-    # Validate required fields
-    required = ["report_id", "patient_id", "specimen_id", "specimen_type", "collection_date"]
-    missing = [k for k in required if k not in data]
-    if missing:
-        raise ValueError(f"Missing required fields in JSON: {', '.join(missing)}")
-
-    # Normalize organisms: ensure it's a list
-    if "organisms" not in data:
-        data["organisms"] = []
-
-    for org in data["organisms"]:
-        if "name" not in org:
-            raise ValueError("Each organism must have a 'name' field")
-
-    return data
+# Clinical fields sourced from the metadata JSON; missing ones fall back to N/A.
+_NA = "N/A"
+_CLINICAL_KEYS = (
+    "report_id",
+    "patient_id",
+    "specimen_id",
+    "specimen_type",
+    "collection_date",
+    "status",
+    "conclusion",
+    "lab_name",
+    "reference_db",
+    "method",
+    "authorized_by",
+)
 
 
 def generate_medical_report(data: dict, report_date: str | None = None) -> str:
@@ -100,13 +68,12 @@ def generate_medical_report(data: dict, report_date: str | None = None) -> str:
     if report_date is None:
         report_date = datetime.now().strftime("%d %b %Y %H:%M")
 
-    # Build QC items list
+    # Build QC items list; default to a pass/pass pair when none supplied.
     qc_items = data.get("qc_items")
     if qc_items is None:
-        # Backward compat: build from legacy single qc_status field
         qc_items = [
-            {"name": "Read quality", "status": data.get("qc_status", "pass")},
-            {"name": "Read support", "status": data.get("qc_status", "pass")},
+            {"name": "Read quality", "status": "pass"},
+            {"name": "Read support", "status": "pass"},
         ]
 
     return template.render(
@@ -128,25 +95,170 @@ def generate_medical_report(data: dict, report_date: str | None = None) -> str:
     )
 
 
-def run(args: argparse.Namespace) -> int:
-    json_path = Path(args.input)
+def generate_medical_report_from_report(
+    report: Report,
+    *,
+    report_date: str | None = None,
+    top: int | None = None,
+) -> str:
+    """Render the medical report HTML from a :class:`Report` intermediate.
 
-    if not json_path.is_file():
-        print(f"Error: Input file not found: {json_path}", file=sys.stderr)
+    This is the ``inputs -> Report -> Jinja2`` path: the ``Report`` is flattened
+    into the render dict (organisms derived from the experiment, clinical fields
+    and pathogenicity combined from ``metadata``), then handed to
+    :func:`generate_medical_report`.
+    """
+    data = report_to_medical_data(report, top=top)
+    return generate_medical_report(data, report_date=report_date)
+
+
+def _load_experiment(input_format: str, input_path: Path) -> SummarizedExperiment:
+    """Load a single-sample classifier output into a SummarizedExperiment."""
+    # Imported lazily to keep the heavy ingress deps off the JSON-only path.
+    from hoshi.lib.ingress import (  # noqa: PLC0415
+        read_emu_abundance_into_summarizedexperiment,
+        read_savont_abundance_into_summarizedexperiment,
+    )
+
+    if input_format == "emu":
+        if not input_path.is_file():
+            raise ValueError(f"EMU input must be a TSV file: {input_path}")
+        return read_emu_abundance_into_summarizedexperiment(input_path)
+
+    if input_format == "savont":
+        if not input_path.is_dir():
+            raise ValueError(f"Savont input must be a directory: {input_path}")
+        return read_savont_abundance_into_summarizedexperiment(
+            input_path, sample_names=[input_path.name]
+        )
+
+    raise ValueError(
+        f"Unsupported input format '{input_format}'. "
+        f"Supported: {', '.join(_SUPPORTED_INPUT_FORMATS)}"
+    )
+
+
+def _extract_confidence(experiment: SummarizedExperiment) -> dict[str, float]:
+    """Pull per-``tax_id`` confidence for the single sample, if the source has it.
+
+    Savont stores ``metadata["species_confidence"][sample] = {tax_id: pct}``.
+    Sources without a per-call identity signal (e.g. EMU) yield ``{}``.
+    """
+    per_sample = experiment.metadata.get("species_confidence")
+    if not per_sample:
+        return {}
+    if experiment.n_samples != 1:
+        return {}
+    sample = str(experiment.sample_ids[0])
+    return dict(per_sample.get(sample, {}))
+
+
+def _load_metadata(metadata_path: Path | None) -> dict:
+    """Load the optional clinical metadata JSON.
+
+    Returns an empty dict when no path is given. Only recognized clinical keys
+    plus ``qc_items`` are carried through; everything else is ignored.
+    """
+    if metadata_path is None:
+        return {}
+    if not metadata_path.is_file():
+        raise ValueError(f"Metadata file not found: {metadata_path}")
+    with open(metadata_path, encoding="utf-8") as f:
+        raw = json.load(f)
+    if not isinstance(raw, dict):
+        raise ValueError("Metadata JSON must be a JSON object.")
+    return raw
+
+
+def _build_clinical(meta: dict) -> dict:
+    """Build the clinical envelope from metadata, defaulting missing keys to N/A."""
+    clinical: dict = {}
+    for key in _CLINICAL_KEYS:
+        value = meta.get(key)
+        clinical[key] = value if value is not None else _NA
+    return clinical
+
+
+def _determine_conclusion(organisms: list[dict]) -> str:
+    """Default conclusion when the metadata JSON does not specify one."""
+    return "not_detected" if not organisms else "organism_detected"
+
+
+def _generate_pdf(html_content: str, output_path: Path) -> None:
+    """Convert HTML to PDF using WeasyPrint.
+
+    The medical template carries print/``@page`` CSS (margins, non-splitting
+    tables, repeating footer) that WeasyPrint applies during conversion.
+    """
+    try:
+        from weasyprint import HTML  # noqa: PLC0415
+    except ImportError as exc:
+        raise RuntimeError(
+            "WeasyPrint is required for PDF generation. "
+            "Install it with: pip install weasyprint"
+        ) from exc
+
+    HTML(string=html_content).write_pdf(str(output_path))
+
+
+def _default_pdf_path(html_path: Path, pdf_arg: str | None) -> Path:
+    """Resolve the PDF output path: explicit arg, else HTML path with .pdf suffix."""
+    if pdf_arg:
+        return Path(pdf_arg)
+    return html_path.with_suffix(".pdf")
+
+
+def run(args: argparse.Namespace) -> int:
+    # Classifier output + optional metadata JSON -> Report -> HTML.
+    input_path = Path(args.input)
+    if not input_path.exists():
+        print(f"Error: input not found: {input_path}", file=sys.stderr)
         return 1
 
     try:
-        data = _load_report_data(json_path)
-    except (json.JSONDecodeError, ValueError) as exc:
+        experiment = _load_experiment(args.input_format, input_path)
+        meta = _load_metadata(Path(args.metadata) if args.metadata else None)
+    except (ValueError, KeyError, FileNotFoundError, json.JSONDecodeError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    html = generate_medical_report(data)
+    confidence = _extract_confidence(experiment)
+    clinical = _build_clinical(meta)
+    qc_items = meta.get("qc_items")
+
+    report = build_medical_report(
+        experiment,
+        clinical=clinical,
+        qc_items=qc_items,
+        confidence=confidence,
+    )
+
+    # Conclusion comes from the metadata JSON; auto-derive only when absent.
+    data = report_to_medical_data(report, top=args.top)
+    if meta.get("conclusion") is None:
+        report = report.with_metadata(conclusion=_determine_conclusion(data["organisms"]))
+
+    try:
+        html = generate_medical_report_from_report(report, top=args.top)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html, encoding="utf-8")
-    print(f"Medical report: {output_path}")
+    print(f"HTML report: {output_path}")
+
+    # Optionally also render a PDF via WeasyPrint.
+    if args.pdf or args.output_pdf:
+        pdf_path = _default_pdf_path(output_path, args.output_pdf)
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            _generate_pdf(html, pdf_path)
+        except RuntimeError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+        print(f"PDF report:  {pdf_path}")
 
     return 0
 
@@ -154,22 +266,61 @@ def run(args: argparse.Namespace) -> int:
 def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     parser = subparsers.add_parser(
         "report-medical",
-        help="Generate a 16S rRNA medical detection report as HTML.",
+        help="Generate a 16S rRNA medical detection report as HTML (end to end).",
         description=(
             "Generate a clinical-style HTML report for 16S rRNA bacterial detection. "
-            "Input is a JSON file describing patient information, specimen details, "
-            "detected organisms, and QC status."
+            "Consumes a single-sample classifier output (EMU *_rel-abundance.tsv file "
+            "or a Savont output directory) plus an optional clinical metadata JSON, "
+            "builds a Report intermediate, and renders HTML in one step. Missing "
+            "clinical fields fall back to 'N/A'."
         ),
     )
     parser.add_argument(
         "input",
-        help="Path to JSON file with report data (patient info, organisms, etc.).",
+        help=(
+            "Classifier output path. For --input-format emu: an EMU "
+            "*_rel-abundance.tsv file. For --input-format savont: a Savont output "
+            "directory."
+        ),
+    )
+    parser.add_argument(
+        "--input-format",
+        choices=_SUPPORTED_INPUT_FORMATS,
+        default="emu",
+        help="Classifier input format (default: emu).",
+    )
+    parser.add_argument(
+        "-m",
+        "--metadata",
+        help=(
+            "Path to an optional clinical metadata JSON (report_id, patient_id, "
+            "specimen_*, conclusion, authorized_by, qc_items, ...). Omitted fields "
+            "fall back to 'N/A'."
+        ),
+    )
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=5,
+        help="Number of top organisms to include (default: 5).",
     )
     parser.add_argument(
         "-o",
         "--output",
         default="report_medical.html",
         help="Path to write the generated HTML report (default: report_medical.html).",
+    )
+    parser.add_argument(
+        "--pdf",
+        action="store_true",
+        help="Also render a PDF (via WeasyPrint) next to the HTML output.",
+    )
+    parser.add_argument(
+        "--output-pdf",
+        help=(
+            "Path to write the PDF report. Implies --pdf. Defaults to the HTML "
+            "output path with a .pdf suffix."
+        ),
     )
 
     parser.set_defaults(func=run)

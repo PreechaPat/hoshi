@@ -5,7 +5,7 @@ import pytest
 
 from hoshi.lib.egress import experiment_to_kraken2, write_kraken2_report
 from hoshi.lib.experiment import SummarizedExperiment
-from hoshi.lib.ingress import emu_to_experiment
+from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment
 
 
 # ─── Fixtures ────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ def simple_experiment():
 @pytest.fixture
 def real_experiment():
     """Load a real Emu sample from test data."""
-    return emu_to_experiment(
+    return read_emu_abundance_into_summarizedexperiment(
         "test_data/emu_output/test_ind/sample02/sample02_rel-abundance.tsv"
     )
 
@@ -106,7 +106,7 @@ def test_experiment_to_kraken2_species_direct_counts(simple_experiment):
     result = experiment_to_kraken2(simple_experiment)
     lines = result.strip().split("\n")
 
-    species_lines = [l for l in lines if l.split("\t")[3] == "S"]
+    species_lines = [line for line in lines if line.split("\t")[3] == "S"]
     assert len(species_lines) == 3  # 3 species in our fixture
 
     for line in species_lines:
@@ -136,7 +136,7 @@ def test_experiment_to_kraken2_clade_aggregation(simple_experiment):
     lines = result.strip().split("\n")
 
     # Find the Bacteria (superkingdom/domain) line — should have all 350 counts
-    domain_lines = [l for l in lines if l.split("\t")[3] == "D"]
+    domain_lines = [line for line in lines if line.split("\t")[3] == "D"]
     assert len(domain_lines) == 1  # Only one domain: Bacteria
 
     fields = domain_lines[0].split("\t")
@@ -144,8 +144,8 @@ def test_experiment_to_kraken2_clade_aggregation(simple_experiment):
     assert clade_count == 350  # 100 + 200 + 50
 
     # Bacillota phylum should have 300 (100 + 200)
-    phylum_lines = [l for l in lines if l.split("\t")[3] == "P"]
-    bacillota_line = [l for l in phylum_lines if "Bacillota" in l]
+    phylum_lines = [line for line in lines if line.split("\t")[3] == "P"]
+    bacillota_line = [line for line in phylum_lines if "Bacillota" in line]
     assert len(bacillota_line) == 1
     fields = bacillota_line[0].split("\t")
     assert int(fields[1]) == 300
@@ -157,8 +157,8 @@ def test_experiment_to_kraken2_percentage_sums(simple_experiment):
     lines = result.strip().split("\n")
 
     # Domain-level lines should sum to 100%
-    domain_lines = [l for l in lines if l.split("\t")[3] == "D"]
-    total_pct = sum(float(l.split("\t")[0]) for l in domain_lines)
+    domain_lines = [line for line in lines if line.split("\t")[3] == "D"]
+    total_pct = sum(float(line.split("\t")[0]) for line in domain_lines)
     assert total_pct == pytest.approx(100.0, abs=0.1)
 
 
@@ -268,7 +268,7 @@ def test_real_emu_to_kraken2_tax_ids(real_experiment):
     result = experiment_to_kraken2(real_experiment)
     lines = result.strip().split("\n")
 
-    species_lines = [l for l in lines if l.split("\t")[3] == "S"]
+    species_lines = [line for line in lines if line.split("\t")[3] == "S"]
     for line in species_lines:
         fields = line.split("\t")
         tax_id = fields[4]
@@ -282,13 +282,13 @@ def test_real_emu_to_kraken2_counts_consistent(real_experiment):
 
     # Find the top-level rank (first non-U rank that appears)
     # In sample02, superkingdom is blank so root is phylum
-    non_u_lines = [l for l in lines if l.split("\t")[3] != "U"]
+    non_u_lines = [line for line in lines if line.split("\t")[3] != "U"]
     assert len(non_u_lines) > 0, "Should have taxonomy output"
 
     # The top-level rank is the first rank code that appears
     top_rank = non_u_lines[0].split("\t")[3]
-    top_lines = [l for l in lines if l.split("\t")[3] == top_rank]
-    total_from_report = sum(int(l.split("\t")[1]) for l in top_lines)
+    top_lines = [line for line in lines if line.split("\t")[3] == top_rank]
+    total_from_report = sum(int(line.split("\t")[1]) for line in top_lines)
 
     # Compare with actual total counts from the experiment
     total_counts = int(round(

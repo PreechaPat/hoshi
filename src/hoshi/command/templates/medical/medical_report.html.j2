@@ -38,6 +38,31 @@
     color:#444;
     margin-bottom:20px;
   }
+  /* Two-box header: title block (6) beside meta block (3). */
+  .report-header{
+    display:flex;
+    align-items:stretch;
+    gap:12px;
+    margin-bottom:8px;
+  }
+  .report-header-title{
+    flex:6;
+    border:1px solid #888;
+    padding:10px 14px;
+  }
+  .report-header-meta{
+    flex:3;
+    border:1px solid #888;
+    padding:10px 14px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  /* Header boxes are compact — drop the standalone-header vertical spacing. */
+  .report-header .lab-name{margin-bottom:2px}
+  .report-header h1{margin:0 0 4px}
+  .report-header .subtitle{margin-bottom:0}
+  .report-header .meta{margin-bottom:2px}
   .meta{
     text-align:right;
     font-size:12px;
@@ -94,7 +119,6 @@
     background:#f5f5f5;
   }
   .footer{
-    margin-top:28px;
     padding-top:12px;
     border-top:2px solid #1a1a1a;
     font-size:11px;
@@ -108,8 +132,50 @@
   .status-ok{color:#137333; font-weight:700}
   .status-warn{color:#c05600; font-weight:700}
 
+  /* Keep tables (and their rows) from being split across page breaks. */
+  table{break-inside:avoid; page-break-inside:avoid}
+  tr, th, td{break-inside:avoid; page-break-inside:avoid}
+  .result-block{break-inside:avoid; page-break-inside:avoid}
+
+  /* Screen: footer sits at the end of the content flow. */
+  .footer{margin-top:28px}
+
+  /* Screen: the print-only string carrier is hidden. */
+  .print-string-carrier{display:none;}
+
+  @page{
+    size:A4;
+    margin:14mm 14mm 22mm;   /* reserve bottom space for the repeating footer */
+    @bottom-left{
+      content:string(authorized);
+      font-family:Arial, Helvetica, sans-serif;
+      font-size:10px;
+      color:#444;
+    }
+    @bottom-right{
+      content:"Page " counter(page) " of " counter(pages);
+      font-family:Arial, Helvetica, sans-serif;
+      font-size:10px;
+      color:#444;
+    }
+  }
+
   @media print{
-    .page{max-width:none;padding:16mm 20mm}
+    .page{max-width:none; padding:0}
+    /* Capture the authorization line into a named string from page 1. The
+       carrier is taken out of flow (not display:none, which would prevent
+       string-set from running) so it occupies no space and is invisible. */
+    .print-string-carrier{
+      display:block;
+      position:absolute;
+      top:0;
+      left:-9999px;
+      string-set: authorized content();
+    }
+    /* The footer is repeated per page via the @page margin boxes above
+       (authorization text + page number), so hide the in-flow footer div
+       to avoid overlapping the flowing content. */
+    .footer{display:none}
   }
 </style>
 
@@ -117,14 +183,23 @@
 <body>
 <div class="page">
 
-  {# ─── Header ─── #}
-  <p class="lab-name">{{ lab_name or "Molecular Microbiology Laboratory" }}</p>
-  <h1>Full-Length 16S rRNA Bacterial Detection</h1>
-  <p class="subtitle">Broad-range bacterial detection and identification from clinical specimens</p>
+  {# Print-only carrier: sets the "authorized" string early (page 1) so the
+     @bottom-left margin box can repeat it on every page. Hidden on screen. #}
+  <div class="print-string-carrier">Authorized by: {{ authorized_by or "__________________________" }}</div>
 
-  <p class="meta"><strong>Report ID:</strong> {{ report_id }}</p>
-  <p class="meta"><strong>Reported:</strong> {{ report_date }}</p>
-  <p class="meta"><strong>Status:</strong> {{ status or "Final" }}</p>
+  {# ─── Header ─── #}
+  <div class="report-header">
+    <div class="report-header-title">
+      <p class="lab-name">{{ lab_name or "Molecular Microbiology Laboratory" }}</p>
+      <h1>Full-Length 16S rRNA Bacterial Detection</h1>
+      <p class="subtitle">Broad-range bacterial detection and identification from clinical specimens</p>
+    </div>
+    <div class="report-header-meta">
+      <p class="meta"><strong>Report ID:</strong> {{ report_id }}</p>
+      <p class="meta"><strong>Reported:</strong> {{ report_date }}</p>
+      <p class="meta"><strong>Status:</strong> {{ status or "Final" }}</p>
+    </div>
+  </div>
 
   <hr class="separator">
 
@@ -222,10 +297,14 @@
   Antimicrobial susceptibility is not assessed by this test.</p>
   {% endif %}
 
+  {# ─── Disclaimer ─── #}
+  <div class="section-title">Disclaimer</div>
+  <p>The integrated molecular classification result using nanopore sequencing is a tool development for <b>research use only (RUO)</b>. The test results are based on current knowledge and technology. It has not been verified or clinically validated and must not be used for diagnosis purposes.</p>
+
   {# ─── Footer ─── #}
   <div class="footer">
-    <span>Authorized by: {{ authorized_by or "__________________________" }}</span>
-    <span>Page 1 of 1</span>
+    <span class="authorized-by">Authorized by: {{ authorized_by or "__________________________" }}</span>
+    <span class="page-number">Page 1 of 1</span>
   </div>
 
 </div>

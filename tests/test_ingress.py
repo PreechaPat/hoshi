@@ -1,9 +1,12 @@
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from hoshi.lib.ingress import read_emu_abundance, read_savont_abundance, savont_to_experiment
+from hoshi.lib.ingress import (
+    read_emu_abundance,
+    read_savont_abundance,
+    read_savont_abundance_into_summarizedexperiment,
+)
 
 
 def test_read_emu_abundance_from_path():
@@ -121,8 +124,8 @@ def test_read_savont_abundance_missing_file():
         read_savont_abundance("/nonexistent/feature-table.tsv", SAVONT_ASV_MAPPING)
 
 
-def test_savont_to_experiment_single_sample():
-    se = savont_to_experiment(SAVONT_SAMPLE_DIR, sample_names=["sample01"])
+def test_savont_into_summarizedexperiment_single_sample():
+    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["sample01"])
 
     assert se.metadata["source"] == "savont"
     assert se.n_samples == 1
@@ -138,13 +141,13 @@ def test_savont_to_experiment_single_sample():
     assert se.assays["abundance"]["sample01"].sum() == pytest.approx(1.0)
 
 
-def test_savont_to_experiment_custom_sample_name():
-    se = savont_to_experiment(SAVONT_SAMPLE_DIR, sample_names=["my_sample"])
+def test_savont_into_summarizedexperiment_custom_sample_name():
+    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["my_sample"])
 
     assert se.sample_ids[0] == "my_sample"
     assert se.col_data.loc["my_sample", "sample_name"] == "my_sample"
 
 
-def test_savont_to_experiment_name_mismatch_raises():
+def test_savont_into_summarizedexperiment_name_mismatch_raises():
     with pytest.raises(ValueError, match="Length mismatch"):
-        savont_to_experiment(SAVONT_SAMPLE_DIR, sample_names=["a", "b"])
+        read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["a", "b"])

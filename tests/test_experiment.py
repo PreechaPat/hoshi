@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from hoshi.lib.experiment import SummarizedExperiment
-from hoshi.lib.ingress import emu_to_experiment, _derive_sample_name
+from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment, _derive_sample_name
 
 
 # ─── SummarizedExperiment tests ──────────────────────────────────────
@@ -119,11 +119,11 @@ def test_derive_sample_name(filename, expected):
     assert _derive_sample_name(Path(filename)) == expected
 
 
-# ─── emu_to_experiment tests ─────────────────────────────────────────
+# ─── read_emu_abundance_into_summarizedexperiment tests ──────────────
 
 
-def test_emu_to_experiment_single_sample():
-    se = emu_to_experiment(
+def test_emu_into_summarizedexperiment_single_sample():
+    se = read_emu_abundance_into_summarizedexperiment(
         "test_data/emu_output/emu-mock01.tsv",
         sample_names=["mock01"],
     )
@@ -147,8 +147,8 @@ def test_emu_to_experiment_single_sample():
     assert total == pytest.approx(1.0, abs=0.01)
 
 
-def test_emu_to_experiment_multi_sample():
-    se = emu_to_experiment([
+def test_emu_into_summarizedexperiment_multi_sample():
+    se = read_emu_abundance_into_summarizedexperiment([
         "test_data/emu_output/test_ind/sample01/sample01_rel-abundance.tsv",
         "test_data/emu_output/test_ind/sample02/sample02_rel-abundance.tsv",
         "test_data/emu_output/test_ind/sample03/sample03_rel-abundance.tsv",
@@ -163,16 +163,16 @@ def test_emu_to_experiment_multi_sample():
     assert (abundance >= 0).all().all()
 
 
-def test_emu_to_experiment_auto_derives_sample_names():
-    se = emu_to_experiment(
+def test_emu_into_summarizedexperiment_auto_derives_sample_names():
+    se = read_emu_abundance_into_summarizedexperiment(
         "test_data/emu_output/silva_count/barcode11.fastq_rel-abundance.tsv"
     )
     assert list(se.sample_ids) == ["barcode11"]
 
 
-def test_emu_to_experiment_mismatched_names_raises():
+def test_emu_into_summarizedexperiment_mismatched_names_raises():
     with pytest.raises(ValueError, match="Length mismatch"):
-        emu_to_experiment(
+        read_emu_abundance_into_summarizedexperiment(
             ["test_data/emu_output/emu-mock01.tsv"],
             sample_names=["a", "b"],
         )

@@ -34,7 +34,7 @@ def get_sankey_data(input_data: str | Path | pd.DataFrame) -> dict[str, Any]:
     else:
         df = pd.read_csv(input_data, sep="\t")
     
-    levels = [l for l in TAXONOMY_LEVELS if l in df.columns]
+    levels = [level for level in TAXONOMY_LEVELS if level in df.columns]
     val_col = next((c for c in VALUE_COLUMNS if c in df.columns), None)
     
     if len(levels) < 2 or not val_col:
@@ -127,10 +127,10 @@ def render_sankey_figure(data: dict[str, Any], title: str = "Sankey Diagram") ->
                 line=dict(color="black", width=0.5),
             ),
             link=dict(
-                source=[l["source"] for l in data["links"]],
-                target=[l["target"] for l in data["links"]],
-                value=[float(l["value"]) for l in data["links"]],  # Ensuring float values
-                color=[l["color"] for l in data["links"]],
+                source=[link["source"] for link in data["links"]],
+                target=[link["target"] for link in data["links"]],
+                value=[float(link["value"]) for link in data["links"]],  # Ensuring float values
+                color=[link["color"] for link in data["links"]],
             ),
         )
     )

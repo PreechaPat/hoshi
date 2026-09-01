@@ -1,0 +1,19 @@
+{
+  "report_id": "16S-2026-000184",
+  "patient_id": "HN-440012",
+  "specimen_id": "SP-26-001842",
+  "specimen_type": "Synovial fluid",
+  "collection_date": "23 Aug 2026",
+  "conclusion": "pathogen_detected",
+  "status": "Final",
+  "lab_name": "Molecular Microbiology Laboratory",
+  "reference_db": "Validated bacterial 16S reference database, version 2026.08",
+  "method": "Broad-range amplification of the bacterial full-length 16S rRNA gene followed by long-read sequencing and validated taxonomic classification.",
+  "authorized_by": "Dr. Somchai Prasertkul",
+  "qc_items": [
+    {"name": "Read quality", "status": "pass"},
+    {"name": "Read support", "status": "pass"},
+    {"name": "Positive control", "status": "pass"},
+    {"name": "Negative control", "status": "pass"}
+  ]
+}

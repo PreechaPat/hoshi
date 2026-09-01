@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 from hoshi.lib.egress import experiment_to_kraken2
-from hoshi.lib.ingress import emu_to_experiment
+from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment
 
 _SUPPORTED_INPUT_FORMATS = ("emu",)
 _SUPPORTED_OUTPUT_FORMATS = ("kraken2",)
@@ -39,7 +39,7 @@ def run(args: argparse.Namespace) -> int:
 
     # Load into SummarizedExperiment (single sample)
     if input_format == "emu":
-        experiment = emu_to_experiment(input_path)
+        experiment = read_emu_abundance_into_summarizedexperiment(input_path)
     else:
         print(
             f"Error: unsupported input format '{input_format}'. "

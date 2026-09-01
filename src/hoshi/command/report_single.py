@@ -15,7 +15,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from hoshi.lib.diversity import compute_diversity
 from hoshi.lib.experiment import SummarizedExperiment
-from hoshi.lib.ingress import emu_to_experiment
+from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment
 from hoshi.lib.sankey import get_sankey_data, render_sankey_figure
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -209,7 +209,7 @@ def run(args: argparse.Namespace) -> int:
 
     # Pipeline: Emu TSV → SummarizedExperiment → generate reports
     name = args.name or sample_dir.name
-    se = emu_to_experiment(abundance_file, sample_names=[name])
+    se = read_emu_abundance_into_summarizedexperiment(abundance_file, sample_names=[name])
 
     # Generate responsive HTML report
     html = generate_single_html_report(se, page_title=args.title, sample_name=name)
