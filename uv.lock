@@ -215,7 +215,6 @@ dependencies = [
     { name = "jinja2" },
     { name = "kaleido" },
     { name = "pandas" },
-    { name = "playwright" },
     { name = "plotly" },
     { name = "taxopy" },
     { name = "weasyprint" },
@@ -223,6 +222,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "playwright" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -232,7 +232,6 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "kaleido", specifier = ">=1.0.0" },
     { name = "pandas", specifier = ">=2.3.0" },
-    { name = "playwright", specifier = ">=1.54.0" },
     { name = "plotly", specifier = ">=6.2.0" },
     { name = "taxopy", specifier = ">=0.14.0" },
     { name = "weasyprint", specifier = ">=66.0" },
@@ -240,6 +239,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "playwright", specifier = ">=1.54.0" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "ruff", specifier = ">=0.12.9" },
 ]

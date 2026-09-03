@@ -1,0 +1,62 @@
+(2026-09-03 08:33:32.350) INFO [savont] COMMAND: savont asv --single-strand -t 4 -o savont-out-negative01 negative01.fastq.gz
+(2026-09-03 08:33:32.350) INFO [savont] VERSION: 0.6.4
+(2026-09-03 08:33:32.350) INFO [savont] SYSTEM NAME: Debian GNU/Linux
+(2026-09-03 08:33:32.350) INFO [savont] SYSTEM HOST NAME: 3e72137bc84f
+(2026-09-03 08:33:32.350) INFO [savont] Created temp directory for intermediate files: savont-out-negative01/temp
+(2026-09-03 08:33:32.350) INFO [savont] === SAVONT STARTED: Generating ASVs ===
+(2026-09-03 08:33:32.350) INFO [savont] === STAGE 1: Processing k-mers and polymorphic markers ===
+(2026-09-03 08:33:32.352) INFO [savont::seq_parse] Finished with k-mer counting in 1.252971ms. Total SNPmers after bloom filter: 10690
+(2026-09-03 08:33:32.352) INFO [savont::utils] Memory usage after second round of k-mer counting processing --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.352) INFO [savont::seq_parse] Removed 8631 SNPmers with counts < 1 in both strands and <= 3 multiplicity.
+(2026-09-03 08:33:32.352) INFO [savont] Time elapsed in for counting k-mers is: 2.17521ms
+(2026-09-03 08:33:32.353) INFO [savont::kmer_comp] Finding snpmers...
+(2026-09-03 08:33:32.353) INFO [savont::kmer_comp] Number of snpmers: 6. 
+(2026-09-03 08:33:32.353) INFO [savont] Time elapsed in for parsing snpmers is: 646.529µs
+(2026-09-03 08:33:32.353) INFO [savont::utils] STAGE 1 DONE: Obtained SNPmers --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.353) INFO [savont] Using blockmers: false
+(2026-09-03 08:33:32.353) INFO [savont] Getting reads...
+(2026-09-03 08:33:32.355) INFO [savont::kmer_comp] Number of reads removed due to length filtering: 0.
+(2026-09-03 08:33:32.356) INFO [savont::kmer_comp] Number of valid reads  - 42. Number of reads below quality threshold - 35.
+(2026-09-03 08:33:32.356) WARN [savont::kmer_comp] More than 50% of reads are below the quality threshold of 98%. This may imply that these reads are not high enough quality for ASV reconstruction. Proceed with caution!
+(2026-09-03 08:33:32.356) INFO [savont::kmer_comp] Mean SNPmer density: 0.18%
+(2026-09-03 08:33:32.356) INFO [savont::kmer_comp] Mean Blockmer density: 0.00%
+(2026-09-03 08:33:32.356) INFO [savont] Total reads: 7, Reads without SNPmers: 1 (14.29%)
+(2026-09-03 08:33:32.356) WARN [savont] High fraction of reads without SNPmers: 14.29%. This may indicate low polymorphism in the sample. SAVONT MAY FAIL!
+(2026-09-03 08:33:32.356) INFO [savont] === STAGE 2: Clustering reads by k-mers ===
+(2026-09-03 08:33:32.356) INFO [savont::asv_cluster] Starting greedy k-mer based clustering...
+(2026-09-03 08:33:32.356) INFO [savont::asv_cluster] Greedy clustering complete. 4 cluster representatives found
+(2026-09-03 08:33:32.356) INFO [savont::asv_cluster] K-mer clustering complete. 0 clusters found. Largest cluster: 0 reads
+(2026-09-03 08:33:32.356) INFO [savont::asv_cluster] Wrote k-mer clusters to savont-out-negative01/temp/kmer_clusters_stage2.tsv
+(2026-09-03 08:33:32.357) INFO [savont::utils] STAGE 2 DONE: Clustered reads by k-mers --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.357) INFO [savont] === STAGE 3: Secondary clustering of reads by polymorphic markers ===
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] Starting greedy SNPmer-based clustering within k-mer clusters...
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] Wrote SNPmer clusters to savont-out-negative01/temp/snpmer_clusters_before_reclust2.5.tsv
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] Starting iterative reclustering using consensus representatives...
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] Starting with 0 k-mer groups containing 0 total SNPmer clusters
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] Iteration 1: 0 total merges, 0 total reassignments across 0 k-mer groups
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] Convergence reached after 1 iterations
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] Final result: 0 total clusters across 0 k-mer groups
+(2026-09-03 08:33:32.357) INFO [savont::asv_cluster] SNPmer clustering complete. 0 total SNPmer clusters from 0 k-mer clusters
+(2026-09-03 08:33:32.358) INFO [savont::utils] STAGE 3 DONE: Clustered reads by polymorphic markers --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.358) INFO [savont] === STAGE 4: Generating consensus sequences and analyzing pileupes ===
+(2026-09-03 08:33:32.358) INFO [savont::alignment] Generating consensus sequences from SNPmer clusters...
+(2026-09-03 08:33:32.358) INFO [savont::alignment] Wrote 0 consensus sequences to consensus_sequences.fasta
+(2026-09-03 08:33:32.358) INFO [savont::alignment] Analyzing quality error rates from top 0 clusters
+(2026-09-03 08:33:32.358) INFO [savont::alignment] Low quality consensus sequences: []
+(2026-09-03 08:33:32.358) INFO [savont::alignment] Wrote low quality cluster information to low_quality_clusters.tsv
+(2026-09-03 08:33:32.358) INFO [savont::alignment] Wrote cluster information before filtering to clusters_after_quality_filter_stage4.tsv
+(2026-09-03 08:33:32.358) INFO [savont::alignment] Polishing complete
+(2026-09-03 08:33:32.358) INFO [savont::utils] STAGE 4 DONE: Analyzed pileups and estimated consensus qualities --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.358) INFO [savont] === STAGE 5: Merging similar consensus sequences ===
+(2026-09-03 08:33:32.359) INFO [savont::utils] STAGE 5 DONE: Merged similar consensus sequences --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.359) INFO [savont] === STAGE 6: Detecting and filtering chimeric consensus sequences ===
+(2026-09-03 08:33:32.359) INFO [savont::chimera] Filtered 0 chimeric consensuses with mean chimera score NaN and std NaN, 0 remaining
+(2026-09-03 08:33:32.359) INFO [savont::utils] STAGE 6 DONE: Filtered chimeric consensus sequences --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.359) INFO [savont] === Final consensus count after chimera filtering: 0 ===
+(2026-09-03 08:33:32.359) INFO [savont] === STAGE 7: Refining ASV depths with alignments and EM algorithm ===
+(2026-09-03 08:33:32.359) WARN [savont::alignment] No consensuses to refine
+(2026-09-03 08:33:32.360) INFO [savont::utils] STAGE 7 DONE: Refined ASV depths with EM algorithm --- Memory usage: 0.01 GB
+(2026-09-03 08:33:32.360) INFO [savont] Final consensus count after EM refinement: 0
+(2026-09-03 08:33:32.360) INFO [savont] Wrote 0 final consensus sequences to final_asvs.fasta
+(2026-09-03 08:33:32.360) INFO [savont] Wrote feature-table.tsv (QIIME2-compatible)
+(2026-09-03 08:33:32.360) INFO [savont] === SAVONT COMPLETED SUCCESSFULLY in 0 SECONDS ===

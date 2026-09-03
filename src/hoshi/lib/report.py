@@ -41,6 +41,38 @@ class Report:
     confidence: dict[str, float] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    # ─── Construction ────────────────────────────────────────────────
+
+    @classmethod
+    def from_experiment(
+        cls,
+        experiment: SummarizedExperiment,
+        *,
+        metadata: dict[str, Any] | None = None,
+    ) -> Report:
+        """Build a ``Report`` from an experiment, auto-extracting confidence.
+
+        Species-calling confidence is read from
+        ``experiment.metadata["species_confidence"]`` when present (Savont
+        populates it; EMU does not). For a single-sample experiment the sample's
+        ``{tax_id: pct}`` map is used; multi-sample experiments start with no
+        headline confidence (each sample is reported per-column downstream).
+
+        This is the shared entry point for all report commands so they layer
+        report-time data on the experiment the same way.
+        """
+        per_sample = experiment.metadata.get("species_confidence")
+        confidence: dict[str, float] = {}
+        if per_sample and experiment.n_samples == 1:
+            sample = str(experiment.sample_ids[0])
+            confidence = dict(per_sample.get(sample, {}))
+
+        return cls(
+            experiment=experiment,
+            confidence=confidence,
+            metadata=dict(metadata or {}),
+        )
+
     # ─── Convenience ─────────────────────────────────────────────────
 
     @property

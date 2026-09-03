@@ -201,14 +201,12 @@ def read_emu_abundance_into_summarizedexperiment(
 
 
 def _derive_sample_name(path: Path) -> str:
-    """Derive a sample name from an Emu output filename."""
-    stem = path.stem
-    # Strip common Emu suffixes
-    for suffix in ("_rel-abundance", ".fastq_rel-abundance", "_rel_abundance"):
-        if stem.endswith(suffix):
-            stem = stem[: -len(suffix)]
-            break
-    # Also handle patterns like "barcode11.fastq_rel-abundance"
-    if stem.endswith(".fastq"):
-        stem = stem[: -len(".fastq")]
-    return stem
+    """Derive a sample name from an Emu output filename.
+
+    Canonical implementation lives in :func:`hoshi.lib.emu_reader._derive_sample_name`
+    (the EMU-specific naming rule belongs with the EMU reader). Re-exported here
+    for backward compatibility with ``from hoshi.lib.ingress import _derive_sample_name``.
+    """
+    from hoshi.lib.emu_reader import _derive_sample_name as _derive  # noqa: PLC0415
+
+    return _derive(path)

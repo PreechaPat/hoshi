@@ -31,7 +31,7 @@ from hoshi.lib.report import Report
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 _REPORT_TEMPLATE = "medical/medical_report.html.j2"
 
-_SUPPORTED_INPUT_FORMATS = ("emu", "savont")
+_SUPPORTED_INPUT_FORMATS = ("savont", "emu")
 
 # Clinical fields sourced from the metadata JSON. Missing ones are passed to the
 # template as ``None``; the template owns all presentation defaults (``N/A`` for
@@ -140,21 +140,6 @@ def _load_experiment(input_format: str, input_path: Path) -> SummarizedExperimen
     )
 
 
-def _extract_confidence(experiment: SummarizedExperiment) -> dict[str, float]:
-    """Pull per-``tax_id`` confidence for the single sample, if the source has it.
-
-    Savont stores ``metadata["species_confidence"][sample] = {tax_id: pct}``.
-    Sources without a per-call identity signal (e.g. EMU) yield ``{}``.
-    """
-    per_sample = experiment.metadata.get("species_confidence")
-    if not per_sample:
-        return {}
-    if experiment.n_samples != 1:
-        return {}
-    sample = str(experiment.sample_ids[0])
-    return dict(per_sample.get(sample, {}))
-
-
 def _load_metadata(metadata_path: Path | None) -> dict:
     """Load the optional clinical metadata JSON.
 
@@ -226,15 +211,15 @@ def run(args: argparse.Namespace) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    confidence = _extract_confidence(experiment)
     clinical = _build_clinical(meta)
     qc_items = meta.get("qc_items")
 
+    # Confidence is auto-extracted from the experiment inside build_medical_report
+    # (Savont populates it; EMU does not), so we don't pull it out here.
     report = build_medical_report(
         experiment,
         clinical=clinical,
         qc_items=qc_items,
-        confidence=confidence,
     )
 
     # Conclusion comes from the metadata JSON; auto-derive only when absent.
@@ -291,8 +276,8 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
     parser.add_argument(
         "--input-format",
         choices=_SUPPORTED_INPUT_FORMATS,
-        default="emu",
-        help="Classifier input format (default: emu).",
+        default="savont",
+        help="Classifier input format (default: savont).",
     )
     parser.add_argument(
         "-m",

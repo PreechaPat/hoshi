@@ -8,57 +8,35 @@ Taxonomy Sankey, Appendix/Citation/Disclaimer) generated via WeasyPrint.
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import datetime
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from hoshi.lib.diversity import compute_diversity
-from hoshi.lib.experiment import SummarizedExperiment
-from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment
+from hoshi.lib.reader import (
+    DEFAULT_INPUT_FORMAT,
+    SUPPORTED_INPUT_FORMATS,
+    build_reader,
+)
+from hoshi.lib.report import Report
 from hoshi.lib.sankey import get_sankey_data, render_sankey_figure
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 _REPORT_TEMPLATE = "microbiome/singlesample.html.j2"
 
 
-def _find_emu_files(sample_dir: Path) -> dict[str, Path | None]:
-    """Discover EMU output files in a sample directory.
-
-    Returns a dict with keys: 'abundance', 'read_assignments', 'unclassified', 'unmapped'.
-    Values are Path objects or None if not found.
-    """
-    files: dict[str, Path | None] = {
-        "abundance": None,
-        "read_assignments": None,
-        "unclassified": None,
-        "unmapped": None,
-    }
-
-    for f in sample_dir.iterdir():
-        if not f.is_file():
-            continue
-        name = f.name
-        if name.endswith("_rel-abundance.tsv"):
-            files["abundance"] = f
-        elif name.endswith("_read-assignment-distributions.tsv"):
-            files["read_assignments"] = f
-        elif name.endswith("_unclassified_mapped.fastq.gz"):
-            files["unclassified"] = f
-        elif name.endswith("_unmapped.fastq.gz"):
-            files["unmapped"] = f
-
-    return files
-
-
 def _prepare_report_data(
-    se: SummarizedExperiment,
+    report: Report,
     sample_name: str,
 ) -> tuple[dict, object]:
-    """Prepare shared report data from a SummarizedExperiment.
+    """Prepare shared report data from a :class:`Report`.
 
-    Returns (report_data dict, DiversityStats).
+    Returns (report_data dict, DiversityStats). Confidence carried on the
+    ``Report`` is surfaced as a headline percentage and per-species column.
     """
+    se = report.experiment
     df = se.to_dataframe()
     stats = compute_diversity(df)
 
@@ -66,7 +44,17 @@ def _prepare_report_data(
     meta_ids = {"unmapped", "mapped_filtered", "mapped_unclassified"}
     df_display = df[~df["tax_id"].astype(str).isin(meta_ids)].copy()
     df_display = df_display.sort_values("abundance", ascending=False).reset_index(drop=True)
-    df_subset = df_display[["species", "tax_id", "abundance", "estimated counts"]]
+
+    # Surface per-species confidence (Savont) as an extra column when present.
+    confidence = report.confidence
+    if confidence:
+        df_display["confidence"] = (
+            df_display["tax_id"].astype(str).map(confidence).round(1)
+        )
+        display_cols = ["species", "tax_id", "abundance", "estimated counts", "confidence"]
+    else:
+        display_cols = ["species", "tax_id", "abundance", "estimated counts"]
+    df_subset = df_display[display_cols]
 
     top5_html = df_subset.head(5).to_html(index=False, border=0, classes="data-table")
     top10_html = df_subset.head(10).to_html(index=False, border=0, classes="data-table")
@@ -93,10 +81,14 @@ def _prepare_report_data(
         source_file = se.col_data.iloc[0]["source_file"]
         sample_dir = str(Path(source_file).parent.resolve())
 
+    confidence_pct = report.confidence_pct
+
     report_data = {
         "name": sample_name,
         "source_path": source_file,
         "sample_dir": sample_dir,
+        "source": se.metadata.get("source", ""),
+        "confidence_pct": round(confidence_pct, 1) if confidence_pct is not None else None,
         "top5_html": top5_html,
         "top10_html": top10_html,
         "sankey_html": sankey_html,
@@ -107,7 +99,7 @@ def _prepare_report_data(
 
 
 def generate_single_html_report(
-    se: SummarizedExperiment,
+    report: Report,
     *,
     page_title: str | None = None,
     sample_name: str | None = None,
@@ -119,17 +111,18 @@ def generate_single_html_report(
 
     Parameters
     ----------
-    se : SummarizedExperiment
-        A single-sample experiment container with assays and row_data.
+    report : Report
+        A single-sample report composed over a SummarizedExperiment.
     page_title : str, optional
         Override the full page title.
     sample_name : str, optional
-        Sample name for the report header. Falls back to SE's sample_id.
+        Sample name for the report header. Falls back to the experiment's
+        sample_id.
     """
-    name = sample_name or str(se.sample_ids[0])
+    name = sample_name or str(report.experiment.sample_ids[0])
     title = page_title or name
 
-    report_data, stats = _prepare_report_data(se, name)
+    report_data, stats = _prepare_report_data(report, name)
 
     env = Environment(
         loader=FileSystemLoader(str(_TEMPLATE_DIR)),
@@ -145,7 +138,7 @@ def generate_single_html_report(
 
 
 def generate_paged_html_report(
-    se: SummarizedExperiment,
+    report: Report,
     *,
     page_title: str | None = None,
     sample_name: str | None = None,
@@ -155,10 +148,10 @@ def generate_paged_html_report(
     The unified template renders as paged A4 when processed by WeasyPrint
     because WeasyPrint applies @media print and @page CSS rules.
     """
-    name = sample_name or str(se.sample_ids[0])
+    name = sample_name or str(report.experiment.sample_ids[0])
     title = page_title or name
 
-    report_data, stats = _prepare_report_data(se, name)
+    report_data, stats = _prepare_report_data(report, name)
 
     env = Environment(
         loader=FileSystemLoader(str(_TEMPLATE_DIR)),
@@ -191,39 +184,47 @@ def _generate_pdf(html_content: str, output_path: Path) -> None:
     HTML(string=html_content).write_pdf(str(output_path))
 
 
+def _default_pdf_path(html_path: Path, pdf_arg: str | None) -> Path:
+    """Resolve the PDF output path: explicit arg, else HTML path with .pdf suffix."""
+    if pdf_arg:
+        return Path(pdf_arg)
+    return html_path.with_suffix(".pdf")
+
+
 def run(args: argparse.Namespace) -> int:
     sample_dir = Path(args.sample_dir)
 
     if not sample_dir.is_dir():
         raise NotADirectoryError(f"Expected a sample directory, got: {sample_dir}")
 
-    # Discover Emu files
-    emu_files = _find_emu_files(sample_dir)
-    abundance_file = emu_files["abundance"]
-
-    if abundance_file is None:
-        raise FileNotFoundError(
-            f"No *_rel-abundance.tsv file found in {sample_dir}. "
-            "Is this an EMU output directory?"
-        )
-
-    # Pipeline: Emu TSV → SummarizedExperiment → generate reports
+    # Pipeline: reader (savont default / emu) → SummarizedExperiment → Report
+    # → reports. The reader owns its own folder layout and file discovery; the
+    # Report composite layers report-time data (confidence) on the experiment.
     name = args.name or sample_dir.name
-    se = read_emu_abundance_into_summarizedexperiment(abundance_file, sample_names=[name])
+    reader = build_reader(args.input_format, sample_dir, sample_name=name)
+    se = reader.to_summarized_experiment()
+    report = Report.from_experiment(se)
 
     # Generate responsive HTML report
-    html = generate_single_html_report(se, page_title=args.title, sample_name=name)
-    html_path = Path(args.output_html)
-    html_path.parent.mkdir(parents=True, exist_ok=True)
-    html_path.write_text(html, encoding="utf-8")
-    print(f"HTML report: {html_path}")
+    html = generate_single_html_report(report, page_title=args.title, sample_name=name)
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(html, encoding="utf-8")
+    print(f"HTML report: {output_path}")
 
-    # Generate PDF report
-    paged_html = generate_paged_html_report(se, page_title=args.title, sample_name=name)
-    pdf_path = Path(args.output_pdf)
-    pdf_path.parent.mkdir(parents=True, exist_ok=True)
-    _generate_pdf(paged_html, pdf_path)
-    print(f"PDF report:  {pdf_path}")
+    # Optionally also render a PDF via WeasyPrint.
+    if args.pdf or args.output_pdf:
+        paged_html = generate_paged_html_report(
+            report, page_title=args.title, sample_name=name
+        )
+        pdf_path = _default_pdf_path(output_path, args.output_pdf)
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            _generate_pdf(paged_html, pdf_path)
+        except RuntimeError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+        print(f"PDF report:  {pdf_path}")
 
     return 0
 
@@ -231,26 +232,33 @@ def run(args: argparse.Namespace) -> int:
 def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentParser:
     parser = subparsers.add_parser(
         "report-single",
-        help="Generate a single-sample HTML report from an EMU output folder.",
+        help="Generate a single-sample HTML report from a classifier output folder.",
         description=(
-            "Generate an HTML microbiome report from an EMU output directory. "
-            "Automatically discovers *_rel-abundance.tsv and other EMU files. "
-            "Produces both a responsive HTML report and a formal 5-page A4 PDF."
+            "Generate an HTML microbiome report from a classifier output directory. "
+            "Defaults to Savont input; pass --input-format emu for an EMU output "
+            "folder (the reader discovers *_rel-abundance.tsv and other files). "
+            "Renders a responsive HTML report; pass --pdf for a formal A4 PDF too."
         ),
     )
     parser.add_argument(
         "sample_dir",
-        help="Path to the EMU sample output directory (contains *_rel-abundance.tsv).",
+        help=(
+            "Path to the sample output directory. For --input-format savont: a "
+            "Savont output directory. For --input-format emu: an EMU output "
+            "directory containing *_rel-abundance.tsv."
+        ),
     )
     parser.add_argument(
-        "--output-html",
-        default="output.html",
-        help="Path to write the generated HTML report (default: output.html).",
+        "--input-format",
+        choices=SUPPORTED_INPUT_FORMATS,
+        default=DEFAULT_INPUT_FORMAT,
+        help=f"Classifier input format (default: {DEFAULT_INPUT_FORMAT}).",
     )
     parser.add_argument(
-        "--output-pdf",
-        default="output.pdf",
-        help="Path to write the generated PDF report (default: output.pdf).",
+        "-o",
+        "--output",
+        default="report_single.html",
+        help="Path to write the generated HTML report (default: report_single.html).",
     )
     parser.add_argument(
         "-n",
@@ -261,6 +269,18 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
     parser.add_argument(
         "--title",
         help="Override the full page title (takes precedence over --name).",
+    )
+    parser.add_argument(
+        "--pdf",
+        action="store_true",
+        help="Also render a PDF (via WeasyPrint) next to the HTML output.",
+    )
+    parser.add_argument(
+        "--output-pdf",
+        help=(
+            "Path to write the PDF report. Implies --pdf. Defaults to the HTML "
+            "output path with a .pdf suffix."
+        ),
     )
 
     parser.set_defaults(func=run)

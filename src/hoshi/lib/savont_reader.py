@@ -34,6 +34,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from hoshi.lib.experiment import SummarizedExperiment
+
 # Fixed filenames within a Savont sample directory.
 _FEATURE_TABLE = "feature-table.tsv"
 _ASV_MAPPINGS = "asv_mappings.tsv"
@@ -75,6 +77,9 @@ class SavontReader:
     ----------
     directory : str or Path
         Path to a single Savont output directory.
+    sample_name : str, optional
+        Sample name used when producing a :class:`SummarizedExperiment`.
+        Defaults to the directory name.
 
     Raises
     ------
@@ -83,13 +88,15 @@ class SavontReader:
     """
 
     directory: Path
+    sample_name: str
 
-    def __init__(self, directory: str | Path) -> None:
+    def __init__(self, directory: str | Path, *, sample_name: str | None = None) -> None:
         path = Path(directory)
         if not path.is_dir():
             raise ValueError(f"Savont directory not found: {path}")
         # frozen dataclass: set via object.__setattr__
         object.__setattr__(self, "directory", path)
+        object.__setattr__(self, "sample_name", sample_name or path.name)
 
     # ─── Fixed-layout path properties ────────────────────────────────
 
@@ -261,3 +268,62 @@ class SavontReader:
             .dropna()
         )
         return {str(tax_id): float(value) for tax_id, value in per_species.items()}
+
+    # ─── Unified reader interface ────────────────────────────────────
+
+    _SE_TAXONOMY_COLUMNS = (
+        "species",
+        "genus",
+        "family",
+        "order",
+        "class",
+        "phylum",
+        "superkingdom",
+    )
+
+    def to_summarized_experiment(self) -> SummarizedExperiment:
+        """Build a single-sample :class:`SummarizedExperiment` for this directory.
+
+        The sample is labelled with :attr:`sample_name`. Per-species calling
+        confidence (see :meth:`species_confidence`) is carried in
+        ``metadata["species_confidence"][sample_name]``; the abundance table
+        itself stays confidence-free.
+
+        Returns
+        -------
+        SummarizedExperiment
+            Container with:
+            - assays["abundance"]: relative abundance matrix (features × 1)
+            - assays["counts"]: estimated counts matrix (features × 1)
+            - row_data: taxonomy annotations per feature (indexed by tax_id)
+            - col_data: sample metadata (indexed by sample name)
+            - metadata: {"source": "savont", "species_confidence": {...}}
+        """
+        name = self.sample_name
+        df = self.abundance().set_index("tax_id")
+
+        abundance_matrix = pd.DataFrame({name: df["abundance"]}).fillna(0.0)
+        counts_matrix = pd.DataFrame(
+            {name: df["estimated counts"].astype(float)}
+        ).fillna(0.0)
+
+        tax_cols = [c for c in self._SE_TAXONOMY_COLUMNS if c in df.columns]
+        row_data = df[tax_cols].reindex(abundance_matrix.index)
+
+        col_data = pd.DataFrame(
+            {
+                "sample_name": [name],
+                "source_file": [str(self.directory)],
+            },
+            index=[name],
+        )
+
+        return SummarizedExperiment(
+            assays={"abundance": abundance_matrix, "counts": counts_matrix},
+            row_data=row_data,
+            col_data=col_data,
+            metadata={
+                "source": "savont",
+                "species_confidence": {name: self.species_confidence()},
+            },
+        )

@@ -70,8 +70,10 @@ def build_medical_report(
         QC rows (each ``{"name": ..., "status": "pass"|"fail"}``). Stored under
         ``metadata["qc_items"]``.
     confidence : dict[str, float], optional
-        Per-``tax_id`` species-calling confidence (percent). Populates the
-        typed ``Report.confidence`` field and surfaces as organism ``identity``.
+        Per-``tax_id`` species-calling confidence (percent). When omitted it is
+        auto-extracted from the experiment (Savont populates
+        ``metadata["species_confidence"]``; EMU does not). Surfaces as organism
+        ``identity``.
     """
     metadata: dict[str, Any] = dict(clinical or {})
     if pathogens is not None:
@@ -79,7 +81,9 @@ def build_medical_report(
     if qc_items is not None:
         metadata["qc_items"] = list(qc_items)
 
-    report = Report(experiment=experiment, metadata=metadata)
+    # Report.from_experiment auto-extracts confidence from the experiment; an
+    # explicit ``confidence`` argument (when given) overrides it.
+    report = Report.from_experiment(experiment, metadata=metadata)
     if confidence:
         report = report.with_confidence(confidence)
     return report

@@ -20,9 +20,19 @@ LABEL maintainer="Preecha Patumcharoenpol"
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Add ps, since nextflow need it.
+# Install runtime dependencies:
+# - procps: provides `ps`, required by nextflow
+# - libpango/libgdk-pixbuf/libffi/libharfbuzz: native libraries required by
+#   WeasyPrint for PDF generation (libgobject/libglib come in transitively)
 RUN apt-get update \
- && apt-get install -y --no-install-recommends procps
+ && apt-get install -y --no-install-recommends \
+    procps \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libffi8 \
+    libharfbuzz0b \
+    fonts-dejavu-core
 
 WORKDIR /app
 
