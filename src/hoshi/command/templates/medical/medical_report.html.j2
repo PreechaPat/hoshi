@@ -140,17 +140,17 @@
   /* Screen: footer sits at the end of the content flow. */
   .footer{margin-top:28px}
 
-  /* Screen: the print-only string carrier is hidden. */
-  .print-string-carrier{display:none;}
+  /* Screen: the print-only running footer is hidden (the in-flow .footer
+     handles the on-screen HTML view). */
+  .auth-footer{display:none;}
 
   @page{
     size:A4;
     margin:14mm 14mm 22mm;   /* reserve bottom space for the repeating footer */
     @bottom-left{
-      content:string(authorized);
-      font-family:Arial, Helvetica, sans-serif;
-      font-size:10px;
-      color:#444;
+      /* Replay the whole .auth-footer element (see position:running below),
+         so it can carry markup — not just a flattened string. */
+      content:element(authFooter);
     }
     @bottom-right{
       content:"Page " counter(page) " of " counter(pages);
@@ -162,19 +162,19 @@
 
   @media print{
     .page{max-width:none; padding:0}
-    /* Capture the authorization line into a named string from page 1. The
-       carrier is taken out of flow (not display:none, which would prevent
-       string-set from running) so it occupies no space and is invisible. */
-    .print-string-carrier{
+    /* Pull the authorization footer out of normal flow and park it under the
+       name "authFooter". The @bottom-left margin box above replays it on every
+       page via content:element(). This is WeasyPrint's native running-element
+       mechanism — no off-screen positioning hack, and it preserves markup. */
+    .auth-footer{
       display:block;
-      position:absolute;
-      top:0;
-      left:-9999px;
-      string-set: authorized content();
+      position:running(authFooter);
+      font-family:Arial, Helvetica, sans-serif;
+      font-size:10px;
+      color:#444;
     }
-    /* The footer is repeated per page via the @page margin boxes above
-       (authorization text + page number), so hide the in-flow footer div
-       to avoid overlapping the flowing content. */
+    /* The in-flow footer is replaced by the repeating running element, so hide
+       it in print to avoid duplicating the authorization line. */
     .footer{display:none}
   }
 </style>
@@ -183,9 +183,11 @@
 <body>
 <div class="page">
 
-  {# Print-only carrier: sets the "authorized" string early (page 1) so the
-     @bottom-left margin box can repeat it on every page. Hidden on screen. #}
-  <div class="print-string-carrier">Authorized by: {{ authorized_by or "__________________________" }}</div>
+  {# Print-only running footer: pulled out of flow via position:running(authFooter)
+     and replayed by the @bottom-left margin box on every page. Hidden on screen
+     (the in-flow .footer below handles the HTML view). Because it's a real
+     element (not a flattened string), it can carry markup. #}
+  <div class="auth-footer">Authorized by: {{ authorized_by or "__________________________" }}</div>
 
   {# ─── Header ─── #}
   <div class="report-header">
@@ -301,10 +303,9 @@
   <div class="section-title">Disclaimer</div>
   <p>The integrated molecular classification result using nanopore sequencing is a tool development for <b>research use only (RUO)</b>. The test results are based on current knowledge and technology. It has not been verified or clinically validated and must not be used for diagnosis purposes.</p>
 
-  {# ─── Footer ─── #}
+  {# ─── Footer (on-screen HTML only; print uses the repeating running footer) ─── #}
   <div class="footer">
     <span class="authorized-by">Authorized by: {{ authorized_by or "__________________________" }}</span>
-    <span class="page-number">Page 1 of 1</span>
   </div>
 
 </div>
