@@ -4,7 +4,7 @@ The sheet is a curated CSV of known pathogens with NCBI ``taxid`` as the
 primary key. Rather than passing raw dicts around, callers construct a
 :class:`PathogenDB` once and query it by ``tax_id``:
 
-    db = PathogenDB.from_csv("assets/pathogen_sheet.csv")
+    db = PathogenDB.from_csv(DEFAULT_PATHOGEN_SHEET)
     db.classification("1496")        # -> "opportunistic"
     db.commensal_sites("817")        # -> "gut, stool"
     db.describe("1496")              # -> "opportunistic"
@@ -25,6 +25,12 @@ import pandas as pd
 # Columns the DB relies on. taxid + general_classification are required; the
 # rest are optional and simply yield empty values when absent.
 _REQUIRED_COLUMNS = ("taxid", "general_classification")
+
+# The pathogen sheet ships with the package (see pyproject package-data), so the
+# default resolves relative to this module rather than the process CWD. This
+# keeps the default working when hoshi is installed as a wheel or run inside a
+# container, where there is no repo-root ``assets/`` directory.
+DEFAULT_PATHOGEN_SHEET = Path(__file__).resolve().parent.parent / "assets" / "pathogen_sheet.csv"
 
 
 def _clean(value: object) -> str:

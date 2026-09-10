@@ -122,8 +122,9 @@ Run `uv run hoshi <command> --help` for the full flag list of any command.
   items, conclusion, lab identity, …). Any omitted field renders as `N/A`; an
   omitted `authorized_by` renders as a blank signature line.
 - `--pathogen-sheet PATH` — CSV mapping NCBI `tax_id` → pathogen class
-  (commensal / potential / opportunistic / primary). Default:
-  `assets/pathogen_sheet.csv`. Pass an empty value to disable the column.
+  (commensal / potential / opportunistic / primary). Default: the pathogen
+  sheet bundled with hoshi (`src/hoshi/assets/pathogen_sheet.csv`). Pass an
+  empty value to disable the column.
 - `--top N` — number of top organisms to include (default: 5).
 
 ## Architecture at a glance

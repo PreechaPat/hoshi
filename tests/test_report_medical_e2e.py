@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 from hoshi.command import report_medical
+from hoshi.lib.pathogen import DEFAULT_PATHOGEN_SHEET
 
 _EMU_TSV = "test_data/emu_output/test_ind/sample01/sample01_rel-abundance.tsv"
 _SAVONT_DIR = "test_data/savont_output/test_ind/savont-out-sample01"
@@ -20,7 +21,7 @@ def _args(input_path: str, output: Path, **overrides) -> argparse.Namespace:
         input=input_path,
         input_format="emu",
         metadata=None,
-        pathogen_sheet="assets/pathogen_sheet.csv",
+        pathogen_sheet=str(DEFAULT_PATHOGEN_SHEET),
         top=5,
         output=str(output),
         pdf=False,

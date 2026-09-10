@@ -39,3 +39,4 @@ include = ["hoshi*"]
 
 [tool.setuptools.package-data]
 "hoshi.command" = ["templates/**/*.j2", "templates/*.j2"]
+"hoshi" = ["assets/*.csv"]

@@ -26,6 +26,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from hoshi.lib.experiment import SummarizedExperiment
 from hoshi.lib.medical import build_medical_report, report_to_medical_data
+from hoshi.lib.pathogen import DEFAULT_PATHOGEN_SHEET
 from hoshi.lib.report import Report
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -355,12 +356,12 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
     )
     parser.add_argument(
         "--pathogen-sheet",
-        default="assets/pathogen_sheet.csv",
+        default=str(DEFAULT_PATHOGEN_SHEET),
         help=(
             "Path to the pathogen sheet CSV used to classify organisms "
             "(commensal / potential / opportunistic / primary), keyed by NCBI "
             "tax_id. Pass an empty value to disable the classification column "
-            "(default: assets/pathogen_sheet.csv)."
+            "(default: the sheet bundled with hoshi)."
         ),
     )
     parser.add_argument(
