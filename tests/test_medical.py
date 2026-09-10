@@ -8,7 +8,10 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from hoshi.command.report_medical import generate_medical_report_from_report
+from hoshi.command.report_medical import (
+    _determine_conclusion,
+    generate_medical_report_from_report,
+)
 from hoshi.lib.experiment import SummarizedExperiment
 from hoshi.lib.medical import (
     build_medical_report,
@@ -110,6 +113,54 @@ def test_flatten_requires_clinical_fields():
         report_to_medical_data(report)
 
 
+def test_flatten_carries_new_optional_fields():
+    clinical = dict(
+        _CLINICAL,
+        patient_name="Somsri Chaiyaphum",
+        dob="14 Mar 1978",
+        age="48",
+        gender="Female",
+        received_date="23 Aug 2026 16:40",
+        ordering_physician="Dr. Anong Wattana",
+        healthcare_provider="Bangkok Central Hospital",
+        reason_for_testing="Suspected septic arthritis",
+        test_performed="Full-length 16S rRNA detection",
+        report_date="24 Aug 2026 09:15",
+    )
+    report = build_medical_report(_make_experiment(), clinical=clinical)
+    data = report_to_medical_data(report)
+
+    assert data["patient_name"] == "Somsri Chaiyaphum"
+    assert data["dob"] == "14 Mar 1978"
+    assert data["age"] == "48"
+    assert data["gender"] == "Female"
+    assert data["received_date"] == "23 Aug 2026 16:40"
+    assert data["ordering_physician"] == "Dr. Anong Wattana"
+    assert data["healthcare_provider"] == "Bangkok Central Hospital"
+    assert data["reason_for_testing"] == "Suspected septic arthritis"
+    assert data["test_performed"] == "Full-length 16S rRNA detection"
+    assert data["report_date"] == "24 Aug 2026 09:15"
+
+
+def test_flatten_new_optional_fields_default_to_none():
+    report = build_medical_report(_make_experiment(), clinical=_CLINICAL)
+    data = report_to_medical_data(report)
+
+    for key in (
+        "patient_name",
+        "dob",
+        "age",
+        "gender",
+        "received_date",
+        "ordering_physician",
+        "healthcare_provider",
+        "reason_for_testing",
+        "test_performed",
+        "report_date",
+    ):
+        assert data[key] is None
+
+
 # ─── end-to-end render ───────────────────────────────────────────────
 
 
@@ -127,3 +178,32 @@ def test_render_from_report_produces_html_with_report_values():
     assert "PATHOGEN DETECTED" in html
     assert "Clostridioides difficile" in html
     assert "99.8" in html
+
+
+# ─── _determine_conclusion (bacterial-DNA result logic) ──────────────
+
+
+def test_determine_conclusion_no_organisms_is_not_detected():
+    assert _determine_conclusion([]) == "not_detected"
+
+
+def test_determine_conclusion_non_commensal_is_pathogen_detected():
+    organisms = [
+        {"name": "Escherichia coli", "pathogenic": "commensal (gut, stool)"},
+        {"name": "Clostridioides difficile", "pathogenic": "primary"},
+    ]
+    assert _determine_conclusion(organisms) == "pathogen_detected"
+
+
+def test_determine_conclusion_unknown_classification_is_pathogen_detected():
+    # Unknown (None/empty) classification is treated as non-commensal.
+    assert _determine_conclusion([{"name": "X", "pathogenic": None}]) == "pathogen_detected"
+    assert _determine_conclusion([{"name": "Y", "pathogenic": ""}]) == "pathogen_detected"
+
+
+def test_determine_conclusion_all_commensal_is_organism_detected():
+    organisms = [
+        {"name": "Escherichia coli", "pathogenic": "commensal (gut, stool)"},
+        {"name": "Bacteroides fragilis", "pathogenic": "Commensal (gut)"},
+    ]
+    assert _determine_conclusion(organisms) == "organism_detected"

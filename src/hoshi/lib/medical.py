@@ -31,14 +31,28 @@ _META_TAX_IDS = {"unmapped", "mapped_filtered", "mapped_unclassified"}
 _REQUIRED = object()
 
 _CLINICAL_FIELDS: dict[str, Any] = {
+    # Report identity
     "report_id": _REQUIRED,
+    "report_date": None,
+    # Patient
     "patient_id": _REQUIRED,
+    "patient_name": None,
+    "dob": None,
+    "age": None,
+    "gender": None,
+    # Specimen
     "specimen_id": _REQUIRED,
     "specimen_type": _REQUIRED,
     "collection_date": _REQUIRED,
-    "conclusion": "not_detected",
+    "received_date": None,
+    # Ordering / provider
+    "ordering_physician": None,
+    "healthcare_provider": None,
+    "reason_for_testing": None,
+    "test_performed": None,
+    # Report-level result / method
     "status": "Final",
-    "lab_name": None,
+    "conclusion": "not_detected",
     "reference_db": None,
     "method": None,
     "authorized_by": None,
@@ -63,9 +77,11 @@ def build_medical_report(
     clinical : dict, optional
         Clinical envelope (report_id, patient_id, specimen_*, conclusion, ...).
         Stored verbatim in ``Report.metadata``.
-    pathogens : dict[str, bool], optional
-        Per-``tax_id`` pathogenicity flags, combined with the organism table at
-        render time. Stored under ``metadata["pathogens"]``.
+    pathogens : dict[str, str], optional
+        Per-``tax_id`` pathogen classification string (e.g. ``"primary"``,
+        ``"opportunistic"``, ``"commensal (gut, stool)"``), combined with the
+        organism table at render time. Stored under ``metadata["pathogens"]``.
+        Absent tax_ids render as ``N/A`` (unknown).
     qc_items : list[dict], optional
         QC rows (each ``{"name": ..., "status": "pass"|"fail"}``). Stored under
         ``metadata["qc_items"]``.
@@ -93,7 +109,9 @@ def _organisms_from_report(report: Report, *, top: int | None = None) -> list[di
     """Derive the organism table from the experiment, combining pathogens.
 
     Organisms are sorted by abundance descending. ``identity`` comes from
-    ``Report.confidence`` and ``pathogenic`` from ``metadata["pathogens"]`` —
+    ``Report.confidence``; ``pathogenic`` holds the pathogen *classification*
+    string from ``metadata["pathogens"]`` (e.g. ``"primary"``,
+    ``"commensal (gut, stool)"``, or ``None`` when the tax_id is unknown) —
     both combined here at render time, keyed by ``tax_id``.
     """
     df = report.experiment.to_dataframe()
@@ -113,11 +131,15 @@ def _organisms_from_report(report: Report, *, top: int | None = None) -> list[di
     for _, row in df.iterrows():
         tax_id = str(row["tax_id"])
 
+        # Fall back to genus when the classifier did not resolve a species. This
+        # covers both an empty/NaN species and the literal "UNCLASSIFIED" sentinel
+        # some classifiers (e.g. Savont) write when the closest reference hit did
+        # not clear the species-level threshold. The tax_id/identity on such a row
+        # still describe the closest match and are carried through unchanged.
         name = row.get("species", "")
-        if not name or pd.isna(name):
-            name = row.get("genus", "Unknown")
-            if pd.isna(name):
-                name = "Unknown"
+        if not name or pd.isna(name) or str(name).strip().upper() == "UNCLASSIFIED":
+            genus = row.get("genus", "Unknown")
+            name = "Unknown" if pd.isna(genus) or not str(genus).strip() else genus
 
         identity = confidence.get(tax_id)
         organisms.append(

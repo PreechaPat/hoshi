@@ -37,14 +37,28 @@ _SUPPORTED_INPUT_FORMATS = ("savont", "emu")
 # template as ``None``; the template owns all presentation defaults (``N/A`` for
 # identifying fields, a blank signature line for ``authorized_by``).
 _CLINICAL_KEYS = (
+    # Report identity
     "report_id",
+    "report_date",
+    # Patient
     "patient_id",
+    "patient_name",
+    "dob",
+    "age",
+    "gender",
+    # Specimen
     "specimen_id",
     "specimen_type",
     "collection_date",
+    "received_date",
+    # Ordering / provider
+    "ordering_physician",
+    "healthcare_provider",
+    "reason_for_testing",
+    "test_performed",
+    # Report-level result / method
     "status",
     "conclusion",
-    "lab_name",
     "reference_db",
     "method",
     "authorized_by",
@@ -68,7 +82,7 @@ def generate_medical_report(data: dict, report_date: str | None = None) -> str:
     template = env.get_template(_REPORT_TEMPLATE)
 
     if report_date is None:
-        report_date = datetime.now().strftime("%d %b %Y %H:%M")
+        report_date = data.get("report_date") or datetime.now().strftime("%d %b %Y %H:%M")
 
     # Build QC items list; default to a pass/pass pair when none supplied.
     qc_items = data.get("qc_items")
@@ -83,11 +97,19 @@ def generate_medical_report(data: dict, report_date: str | None = None) -> str:
         report_id=data["report_id"],
         report_date=report_date,
         status=data.get("status", "Final"),
-        lab_name=data.get("lab_name"),
         patient_id=data["patient_id"],
+        patient_name=data.get("patient_name"),
+        dob=data.get("dob"),
+        age=data.get("age"),
+        gender=data.get("gender"),
         specimen_id=data["specimen_id"],
         specimen_type=data["specimen_type"],
         collection_date=data["collection_date"],
+        received_date=data.get("received_date"),
+        ordering_physician=data.get("ordering_physician"),
+        healthcare_provider=data.get("healthcare_provider"),
+        reason_for_testing=data.get("reason_for_testing"),
+        test_performed=data.get("test_performed"),
         conclusion=data.get("conclusion", "not_detected"),
         organisms=data.get("organisms", []),
         qc_items=qc_items,
@@ -157,6 +179,19 @@ def _load_metadata(metadata_path: Path | None) -> dict:
     return raw
 
 
+def _load_pathogens(sheet_arg: str | None) -> dict[str, str] | None:
+    """Load per-tax_id pathogen classification from the sheet.
+
+    Returns ``None`` when no sheet is configured (disables the column). A
+    configured-but-missing file is an error.
+    """
+    if not sheet_arg:
+        return None
+    from hoshi.lib.pathogen import PathogenDB  # noqa: PLC0415
+
+    return PathogenDB.from_csv(sheet_arg).describe_lookup()
+
+
 def _build_clinical(meta: dict) -> dict:
     """Build the clinical envelope from metadata.
 
@@ -168,9 +203,29 @@ def _build_clinical(meta: dict) -> dict:
     return {key: meta.get(key) for key in _CLINICAL_KEYS}
 
 
+def _is_commensal(pathogenic: str | None) -> bool:
+    """True when an organism's pathogen classification is commensal.
+
+    The ``pathogenic`` value is the describe() string from the pathogen sheet
+    (e.g. ``"primary"``, ``"opportunistic"``, ``"commensal (gut, stool)"``).
+    Only strings beginning with ``"commensal"`` count as commensal; unknown
+    (``None``/empty) classifications are treated as non-commensal.
+    """
+    return bool(pathogenic) and str(pathogenic).strip().lower().startswith("commensal")
+
+
 def _determine_conclusion(organisms: list[dict]) -> str:
-    """Default conclusion when the metadata JSON does not specify one."""
-    return "not_detected" if not organisms else "organism_detected"
+    """Default conclusion when the metadata JSON does not specify one.
+
+    - No organisms detected            -> ``"not_detected"``
+    - Any non-commensal organism found -> ``"pathogen_detected"``
+    - All detected organisms commensal -> ``"organism_detected"``
+    """
+    if not organisms:
+        return "not_detected"
+    if any(not _is_commensal(org.get("pathogenic")) for org in organisms):
+        return "pathogen_detected"
+    return "organism_detected"
 
 
 def _generate_pdf(html_content: str, output_path: Path) -> None:
@@ -214,11 +269,21 @@ def run(args: argparse.Namespace) -> int:
     clinical = _build_clinical(meta)
     qc_items = meta.get("qc_items")
 
+    # Per-tax_id pathogen classification from the sheet (commensal / potential /
+    # opportunistic / primary; commensal carries its body sites). Absent tax_ids
+    # render as N/A. A missing sheet path simply disables the column.
+    try:
+        pathogens = _load_pathogens(getattr(args, "pathogen_sheet", None))
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
     # Confidence is auto-extracted from the experiment inside build_medical_report
     # (Savont populates it; EMU does not), so we don't pull it out here.
     report = build_medical_report(
         experiment,
         clinical=clinical,
+        pathogens=pathogens,
         qc_items=qc_items,
     )
 
@@ -286,6 +351,16 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
             "Path to an optional clinical metadata JSON (report_id, patient_id, "
             "specimen_*, conclusion, authorized_by, qc_items, ...). Omitted fields "
             "fall back to 'N/A'."
+        ),
+    )
+    parser.add_argument(
+        "--pathogen-sheet",
+        default="assets/pathogen_sheet.csv",
+        help=(
+            "Path to the pathogen sheet CSV used to classify organisms "
+            "(commensal / potential / opportunistic / primary), keyed by NCBI "
+            "tax_id. Pass an empty value to disable the classification column "
+            "(default: assets/pathogen_sheet.csv)."
         ),
     )
     parser.add_argument(

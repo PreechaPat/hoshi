@@ -87,7 +87,7 @@
   }
   .field-label{
     display:inline-block;
-    width:140px;
+    width:150px;
     color:#444;
   }
   .field-value{
@@ -192,7 +192,7 @@
   {# ─── Header ─── #}
   <div class="report-header">
     <div class="report-header-title">
-      <p class="lab-name">{{ lab_name or "Molecular Microbiology Laboratory" }}</p>
+      <p class="lab-name">Molecular Microbiology Laboratory</p>
       <h1>Full-Length 16S rRNA Bacterial Detection</h1>
       <p class="subtitle">Broad-range bacterial detection and identification from clinical specimens</p>
     </div>
@@ -205,27 +205,40 @@
 
   <hr class="separator">
 
-  {# ─── Patient & Specimen Information ─── #}
-  <div class="section-title">Patient &amp; Specimen Information</div>
-  <p class="field"><span class="field-label">Patient ID</span><span class="field-value">{{ patient_id or "N/A" }}</span></p>
+  {# ─── Patient Information ─── #}
+  <div class="section-title">Patient Information</div>
+  <p class="field"><span class="field-label">Patient name</span><span class="field-value">{{ patient_name or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">HN</span><span class="field-value">{{ patient_id or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Date of birth</span><span class="field-value">{{ dob or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Age</span><span class="field-value">{{ age or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Gender</span><span class="field-value">{{ gender or "N/A" }}</span></p>
+
+  {# ─── Specimen Information ─── #}
+  <div class="section-title">Specimen Information</div>
   <p class="field"><span class="field-label">Specimen ID</span><span class="field-value">{{ specimen_id or "N/A" }}</span></p>
   <p class="field"><span class="field-label">Specimen type</span><span class="field-value">{{ specimen_type or "N/A" }}</span></p>
   <p class="field"><span class="field-label">Collection date</span><span class="field-value">{{ collection_date or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Received date</span><span class="field-value">{{ received_date or "N/A" }}</span></p>
+
+  {# ─── Ordering & Test Information ─── #}
+  <div class="section-title">Ordering &amp; Test Information</div>
+  <p class="field"><span class="field-label">Ordering physician</span><span class="field-value">{{ ordering_physician or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Healthcare provider</span><span class="field-value">{{ healthcare_provider or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Reason for testing</span><span class="field-value">{{ reason_for_testing or "N/A" }}</span></p>
+  <p class="field"><span class="field-label">Test performed</span><span class="field-value">{{ test_performed or "N/A" }}</span></p>
 
   {# ─── Results ─── #}
   <div class="section-title">Result</div>
 
-  {# Conclusion box #}
+  {# Bacterial DNA result box #}
   <div class="result-block">
-    <p><strong>Conclusion:</strong>
+    <p><strong>Bacterial DNA:</strong>
     {% if conclusion == "pathogen_detected" %}
       <span class="conclusion status-danger">PATHOGEN DETECTED</span>
     {% elif conclusion == "organism_detected" %}
-      <span class="conclusion status-danger">ORGANISM DETECTED IN NORMALLY STERILE SPECIMEN</span>
+      <span class="conclusion status-warn">ORGANISM DETECTED</span>
     {% elif conclusion == "not_detected" %}
       <span class="conclusion status-ok">NOT DETECTED</span>
-    {% else %}
-      <span class="conclusion">NORMAL FLORA</span>
     {% endif %}
     </p>
   </div>
@@ -244,12 +257,14 @@
       <td><em>{{ org.name }}</em></td>
       <td>{{ org.abundance }}</td>
       <td>{{ org.identity if org.identity is not none else "N/A" }}</td>
-      {% if org.pathogenic is none %}
+      {% if org.pathogenic is none or org.pathogenic == "" %}
       <td>N/A</td>
-      {% elif org.pathogenic %}
-      <td class="status-danger">Yes</td>
+      {% elif org.pathogenic == "primary" %}
+      <td class="status-danger">{{ org.pathogenic | capitalize }}</td>
+      {% elif org.pathogenic == "opportunistic" %}
+      <td class="status-warn">{{ org.pathogenic | capitalize }}</td>
       {% else %}
-      <td class="status-ok">No</td>
+      <td>{{ org.pathogenic | capitalize }}</td>
       {% endif %}
     </tr>
     {% endfor %}

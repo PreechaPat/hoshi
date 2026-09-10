@@ -20,6 +20,7 @@ def _args(input_path: str, output: Path, **overrides) -> argparse.Namespace:
         input=input_path,
         input_format="emu",
         metadata=None,
+        pathogen_sheet="assets/pathogen_sheet.csv",
         top=5,
         output=str(output),
         pdf=False,
@@ -48,8 +49,11 @@ def test_e2e_emu_without_metadata_falls_back_to_na(tmp_path):
     assert "N/A" in html
     # Organisms derived from the classifier output.
     assert "Clostridioides difficile" in html
-    # Auto-derived conclusion (organisms found).
-    assert "ORGANISM DETECTED" in html
+    # Bacterial DNA result label replaces the old "Conclusion:" wording.
+    assert "Bacterial DNA:" in html
+    # Auto-derived result: a non-commensal organism (C. difficile) is present,
+    # so the bacterial-DNA result resolves to PATHOGEN DETECTED.
+    assert "PATHOGEN DETECTED" in html
 
 
 # ─── e2e EMU, with metadata JSON ─────────────────────────────────────
@@ -60,10 +64,20 @@ def test_e2e_emu_with_metadata(tmp_path):
         tmp_path,
         {
             "report_id": "16S-2026-000184",
+            "report_date": "24 Aug 2026 09:15",
             "patient_id": "HN-123456",
+            "patient_name": "Somsri Chaiyaphum",
+            "dob": "14 Mar 1978",
+            "age": "48",
+            "gender": "Female",
             "specimen_id": "SP-26-001842",
             "specimen_type": "Synovial fluid",
             "collection_date": "23 Aug 2026",
+            "received_date": "23 Aug 2026 16:40",
+            "ordering_physician": "Dr. Anong Wattana",
+            "healthcare_provider": "Bangkok Central Hospital",
+            "reason_for_testing": "Suspected septic arthritis",
+            "test_performed": "Full-length 16S rRNA bacterial detection",
             "conclusion": "pathogen_detected",
             "authorized_by": "Dr. Smith",
         },
@@ -77,6 +91,40 @@ def test_e2e_emu_with_metadata(tmp_path):
     assert "HN-123456" in html
     assert "PATHOGEN DETECTED" in html  # conclusion honored from JSON
     assert "Dr. Smith" in html
+    # New clinical fields render from the metadata JSON.
+    assert "Somsri Chaiyaphum" in html
+    assert "14 Mar 1978" in html
+    assert "Female" in html
+    assert "23 Aug 2026 16:40" in html
+    assert "Dr. Anong Wattana" in html
+    assert "Bangkok Central Hospital" in html
+    assert "Suspected septic arthritis" in html
+    assert "Full-length 16S rRNA bacterial detection" in html
+    # report_date sourced from metadata (not the datetime.now() fallback).
+    assert "24 Aug 2026 09:15" in html
+
+
+def test_e2e_report_date_falls_back_when_absent(tmp_path):
+    # No report_date in metadata -> template still renders a Reported line
+    # (datetime.now() fallback), and the new fields fall back to N/A.
+    meta = _write_metadata(
+        tmp_path,
+        {
+            "report_id": "16S-2026-000199",
+            "patient_id": "HN-999",
+            "specimen_id": "SP-26-000199",
+            "specimen_type": "Blood",
+            "collection_date": "01 Sep 2026",
+        },
+    )
+    out = tmp_path / "report.html"
+    exit_code = report_medical.run(_args(_EMU_TSV, out, metadata=str(meta)))
+
+    assert exit_code == 0
+    html = out.read_text(encoding="utf-8")
+    assert "Reported:" in html
+    # Absent optional fields render as N/A.
+    assert "N/A" in html
 
 
 # ─── e2e Savont, confidence -> identity ──────────────────────────────
