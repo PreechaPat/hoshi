@@ -78,6 +78,12 @@
     font-weight:700;
     text-transform:uppercase;
     margin:20px 0 8px;
+    /* Never leave a heading stranded at the bottom of a page — keep it with
+       the table/paragraph that follows it. */
+    break-after:avoid;
+    page-break-after:avoid;
+    break-inside:avoid;
+    page-break-inside:avoid;
   }
   p{
     margin:0 0 10px;
