@@ -31,7 +31,7 @@ from hoshi.lib.ingress import (
     read_savont_abundance_into_summarizedexperiment,
 )
 
-_SUPPORTED_INPUT_FORMATS = ("emu", "savont")
+_SUPPORTED_INPUT_FORMATS = ("savont", "emu")
 _SUPPORTED_OUTPUT_FORMATS = ("kraken2", "table")
 
 
@@ -103,8 +103,8 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
     parser.add_argument(
         "input_file",
         help=(
-            "Input to convert (single sample): an Emu rel-abundance TSV, or a "
-            "Savont output directory when '--input-format savont'."
+            "Input to convert (single sample): a Savont output directory "
+            "(default), or an Emu rel-abundance TSV when '--input-format emu'."
         ),
     )
     parser.add_argument(
@@ -120,8 +120,8 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
     parser.add_argument(
         "--input-format",
         choices=_SUPPORTED_INPUT_FORMATS,
-        default="emu",
-        help="Input format (default: emu).",
+        default="savont",
+        help="Input format (default: savont).",
     )
     parser.add_argument(
         "--output-format",
