@@ -89,6 +89,21 @@ uv run hoshi report-medical --input-format emu \
 uv run hoshi convert test_data/emu_output/emu-mock01.tsv -o dist/mock01_kraken2.txt
 ```
 
+### Convert Savont output to a species count table
+
+Savont's native species output lists relative abundance and taxonomy but drops
+both the NCBI `tax_id` and the estimated read count. This re-emits the species
+table (one row per species) with those two columns restored.
+
+```bash
+uv run hoshi convert --input-format savont --output-format table \
+    test_data/savont_output/test_ind/savont-out-sample01 \
+    -o dist/sample01_species_counts.tsv
+```
+
+Output columns: `relative_abundance`, `estimated_count`, `tax_id`, `species`,
+`genus`, `family`, `order`, `class`, `phylum`, `superkingdom`.
+
 ### Enrich a tax_id table with lineage
 
 ```bash
@@ -102,7 +117,7 @@ uv run hoshi enrich my_table.tsv -o my_table_enriched.tsv
 | `report-single`  | One responsive HTML report for a single sample   | Savont dir (default) or EMU dir       | HTML (+PDF) |
 | `report-multi`   | Combined report, one tab per sample              | Multiple Savont/EMU dirs              | HTML (+PDF) |
 | `report-medical` | Clinical 16S bacterial detection report          | Savont dir or EMU TSV + optional JSON | HTML (+PDF) |
-| `convert`        | Convert a sample between formats                 | EMU TSV                               | Kraken2     |
+| `convert`        | Convert a sample between formats                 | EMU TSV or Savont dir                 | Kraken2 or species count table |
 | `enrich`         | Add taxonomy lineage columns to a `tax_id` table | Table with a `tax_id` column          | TSV         |
 
 Run `uv run hoshi <command> --help` for the full flag list of any command.
@@ -149,7 +164,7 @@ src/hoshi/
 │   ├── emu_reader.py          # EMU reader
 │   ├── savont_reader.py       # Savont reader
 │   ├── ingress*.py            # abundance ingestion helpers
-│   ├── egress.py              # experiment_to_kraken2
+│   ├── egress.py              # experiment_to_kraken2 / experiment_to_count_table
 │   ├── report.py              # Report composite (SE + report-time data)
 │   ├── medical.py             # medical report builder / view model
 │   ├── pathogen.py            # pathogen sheet lookup

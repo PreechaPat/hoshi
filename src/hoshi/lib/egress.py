@@ -3,6 +3,7 @@ Egress module — export SummarizedExperiment to various output formats.
 
 Currently supported:
   - Kraken2 report format
+  - Species count table (flat TSV: abundance, tax_id, taxonomy, estimated counts)
 """
 
 from __future__ import annotations
@@ -124,15 +125,12 @@ def _build_taxonomy_tree(
     counts: pd.Series,
     row_data: pd.DataFrame,
     available_ranks: list[str],
-) -> dict[tuple[str, str, str], float]:
+) -> list[dict]:
     """
-    Build a mapping of (rank, name, tax_id) → direct counts.
+    Collect nonzero-count features as entries with their taxonomy lineage.
 
-    For species-level entries, direct counts are the actual estimated counts.
-    For higher-level taxa, direct counts are 0 (they only have clade counts).
-
-    Returns a dict keyed by (rank, name, tax_id) with direct counts as values.
-    Also returns a separate dict for clade counts.
+    Each entry is a dict with keys ``tax_id``, ``count``, and ``lineage``
+    (a rank → name mapping, skipping blank ranks).
     """
     # Collect species-level entries with their lineage
     entries: list[dict] = []
@@ -397,3 +395,138 @@ def write_kraken2_report(
     """
     report = experiment_to_kraken2(experiment, sample=sample)
     Path(output).write_text(report)
+
+
+# ── Species count table ──────────────────────────────────────────────
+#
+# Savont's native species output (``species_abundance.tsv``) lists relative
+# abundance next to the taxonomy lineage but drops both the NCBI ``tax_id`` and
+# any read count. This egress mirrors that species table while adding the two
+# columns Savont omits: ``tax_id`` and ``estimated counts``. Taxonomy stays in
+# separate rank columns (one row per species) rather than being collapsed into a
+# single lineage string.
+
+# Column order of the emitted species count table. Leads with the two values of
+# interest (relative abundance, estimated count) and the identifier (tax_id),
+# followed by the taxonomy lineage from specific → broad.
+_COUNT_TABLE_COLUMNS: list[str] = [
+    "relative_abundance",
+    "estimated_count",
+    "tax_id",
+    "species",
+    "genus",
+    "family",
+    "order",
+    "class",
+    "phylum",
+    "superkingdom",
+]
+
+
+def experiment_to_count_table(
+    experiment: SummarizedExperiment,
+    sample: str | None = None,
+) -> pd.DataFrame:
+    """Build a flat species table with estimated counts and ``tax_id``.
+
+    Mirrors Savont's ``species_abundance.tsv`` (relative abundance + taxonomy
+    lineage) but adds the two columns Savont drops: the NCBI ``tax_id`` and the
+    per-species ``estimated_count``. Each row is one species (``tax_id``);
+    taxonomy is kept as separate rank columns rather than a collapsed lineage.
+
+    Parameters
+    ----------
+    experiment : SummarizedExperiment
+        Must have a ``counts`` assay; ``abundance`` is used when present and
+        otherwise derived from counts. ``row_data`` supplies taxonomy columns.
+    sample : str, optional
+        Which sample to export. Required if the experiment has > 1 sample.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns: relative_abundance, estimated_count, tax_id, species, genus,
+        family, order, class, phylum, superkingdom. Sorted by
+        relative_abundance (descending) with a positional integer index.
+
+    Raises
+    ------
+    ValueError
+        If the ``counts`` assay is missing, no taxonomy column is present, or
+        the requested sample is absent / ambiguous.
+    """
+    if "counts" not in experiment.assay_names:
+        raise ValueError(
+            "Experiment must have a 'counts' assay for count-table conversion."
+        )
+
+    if sample is None:
+        if experiment.n_samples == 1:
+            sample = experiment.sample_ids[0]
+        else:
+            raise ValueError(
+                f"Experiment has {experiment.n_samples} samples; "
+                f"specify which one with `sample=`."
+            )
+
+    if sample not in experiment.sample_ids:
+        raise ValueError(
+            f"Sample '{sample}' not found. Available: {list(experiment.sample_ids)}"
+        )
+
+    row_data = experiment.row_data
+    tax_cols = [r for r in _RANK_ORDER if r in row_data.columns]
+    if not tax_cols:
+        raise ValueError(
+            "row_data must have at least one taxonomy column "
+            f"({', '.join(_RANK_ORDER)})."
+        )
+
+    counts = experiment.assays["counts"][sample].astype(float)
+
+    if "abundance" in experiment.assay_names:
+        abundance = experiment.assays["abundance"][sample].astype(float)
+    else:
+        total = counts.sum()
+        abundance = counts / total if total > 0 else counts * 0.0
+
+    table = pd.DataFrame(index=counts.index)
+    table["relative_abundance"] = abundance
+    # Present whole-read counts (Savont) as ints; keep fractional estimated
+    # counts (Emu's EM output) as floats rather than silently rounding them.
+    if counts.dropna().mod(1).eq(0).all():
+        table["estimated_count"] = counts.round().astype("Int64")
+    else:
+        table["estimated_count"] = counts
+    table["tax_id"] = counts.index.astype(str)
+    for col in tax_cols:
+        table[col] = row_data[col]
+
+    # Guarantee a stable column set/order even when some ranks are absent.
+    for col in _COUNT_TABLE_COLUMNS:
+        if col not in table.columns:
+            table[col] = pd.NA
+
+    return (
+        table[_COUNT_TABLE_COLUMNS]
+        .sort_values("relative_abundance", ascending=False)
+        .reset_index(drop=True)
+    )
+
+
+def count_table_to_tsv(
+    experiment: SummarizedExperiment,
+    sample: str | None = None,
+) -> str:
+    """Render :func:`experiment_to_count_table` as a tab-delimited string."""
+    table = experiment_to_count_table(experiment, sample=sample)
+    return table.to_csv(sep="\t", index=False)
+
+
+def write_count_table(
+    experiment: SummarizedExperiment,
+    output: str | Path,
+    sample: str | None = None,
+) -> None:
+    """Write the species count table to ``output`` as a TSV file."""
+    Path(output).write_text(count_table_to_tsv(experiment, sample=sample))

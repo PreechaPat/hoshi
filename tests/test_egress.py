@@ -4,6 +4,11 @@ import pandas as pd
 import pytest
 
 from hoshi.lib.egress import experiment_to_kraken2, write_kraken2_report
+from hoshi.lib.egress import (
+    count_table_to_tsv,
+    experiment_to_count_table,
+    write_count_table,
+)
 from hoshi.lib.experiment import SummarizedExperiment
 from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment
 
@@ -313,3 +318,106 @@ def test_write_kraken2_report(simple_experiment, tmp_path):
     # Should match what experiment_to_kraken2 returns
     expected = experiment_to_kraken2(simple_experiment)
     assert content == expected
+
+
+# ─── Species count table (generic egress unit tests) ─────────────────
+#
+# These exercise the egress layer directly on hand-built SummarizedExperiment
+# objects, so they stay classifier-agnostic. The Savont-specific end-to-end
+# path (real Savont directory → count table) is covered in test_ingress.py.
+
+_COUNT_TABLE_COLUMNS = [
+    "relative_abundance",
+    "estimated_count",
+    "tax_id",
+    "species",
+    "genus",
+    "family",
+    "order",
+    "class",
+    "phylum",
+    "superkingdom",
+]
+
+
+def test_count_table_column_order_leads_with_value_and_taxid(simple_experiment):
+    """Table leads with relative_abundance, estimated_count, tax_id."""
+    df = experiment_to_count_table(simple_experiment)
+    assert list(df.columns) == _COUNT_TABLE_COLUMNS
+
+
+def test_count_table_restores_tax_id_and_counts(simple_experiment):
+    """The two columns Savont's native species output drops are present."""
+    df = experiment_to_count_table(simple_experiment).set_index("tax_id")
+
+    assert set(df.index) == {"1351", "1496", "817"}
+    assert df.loc["1351", "estimated_count"] == pytest.approx(100.0)
+    assert df.loc["1496", "estimated_count"] == pytest.approx(200.0)
+    assert df.loc["817", "estimated_count"] == pytest.approx(50.0)
+
+
+def test_count_table_keeps_taxonomy_uncollapsed(simple_experiment):
+    """Taxonomy stays in separate rank columns (one row per species)."""
+    df = experiment_to_count_table(simple_experiment)
+    assert len(df) == 3
+    row = df.set_index("tax_id").loc["1351"]
+    assert row["species"] == "Enterococcus faecalis"
+    assert row["genus"] == "Enterococcus"
+    assert row["superkingdom"] == "Bacteria"
+
+
+def test_count_table_sorted_by_abundance_descending(simple_experiment):
+    df = experiment_to_count_table(simple_experiment)
+    assert df["relative_abundance"].is_monotonic_decreasing
+    assert df.iloc[0]["tax_id"] == "1496"  # highest count (200) sorts first
+
+
+def test_count_table_derives_abundance_when_assay_absent():
+    """With no abundance assay, relative_abundance is derived from counts."""
+    counts = pd.DataFrame({"s1": [30.0, 10.0]}, index=["10", "20"])
+    row_data = pd.DataFrame(
+        {"species": ["Sp A", "Sp B"], "genus": ["A", "B"]},
+        index=["10", "20"],
+    )
+    se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
+
+    df = experiment_to_count_table(se).set_index("tax_id")
+    assert df.loc["10", "relative_abundance"] == pytest.approx(0.75)
+    assert df.loc["20", "relative_abundance"] == pytest.approx(0.25)
+
+
+def test_count_table_no_counts_assay_raises():
+    abundance = pd.DataFrame({"s1": [0.5, 0.5]}, index=["f1", "f2"])
+    se = SummarizedExperiment(assays={"abundance": abundance})
+    with pytest.raises(ValueError, match="counts"):
+        experiment_to_count_table(se)
+
+
+def test_count_table_no_taxonomy_raises():
+    counts = pd.DataFrame({"s1": [10, 20]}, index=["f1", "f2"])
+    row_data = pd.DataFrame({"other_col": ["x", "y"]}, index=["f1", "f2"])
+    se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
+    with pytest.raises(ValueError, match="taxonomy column"):
+        experiment_to_count_table(se)
+
+
+def test_count_table_multi_sample_no_selection_raises():
+    counts = pd.DataFrame({"s1": [10, 20], "s2": [30, 40]}, index=["f1", "f2"])
+    row_data = pd.DataFrame({"species": ["Sp A", "Sp B"]}, index=["f1", "f2"])
+    se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
+    with pytest.raises(ValueError, match="samples"):
+        experiment_to_count_table(se)
+
+
+def test_count_table_to_tsv_is_tab_delimited(simple_experiment):
+    tsv = count_table_to_tsv(simple_experiment)
+    header = tsv.splitlines()[0]
+    assert header.split("\t") == _COUNT_TABLE_COLUMNS
+
+
+def test_write_count_table(simple_experiment, tmp_path):
+    output_file = tmp_path / "species_counts.tsv"
+    write_count_table(simple_experiment, output_file)
+
+    assert output_file.exists()
+    assert output_file.read_text() == count_table_to_tsv(simple_experiment)
