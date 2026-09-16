@@ -1,0 +1,294 @@
+asv_header	depth	alignment_identity	number_mismatches	tax_id	species	genus	family	order	class	phylum	clade	superkingdom	reference
+final_consensus_0_depth_878	878	97.23	39	674703	UNCLASSIFIED	Rugositalea	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	674703:emu_db_mar2026:70646
+final_consensus_1_depth_864	864	99.25	11	3047873	Neobacillus sp. WH10	Neobacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3047873:emu_db_mar2026:26708
+final_consensus_2_depth_698	698	98.91	16	86668	UNCLASSIFIED	Neobacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	86668:emu_db_mar2026:8649
+final_consensus_3_depth_684	684	96.38	49	331696	UNCLASSIFIED	Pseudolabrys	Xanthobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	331696:emu_db_mar2026:14072
+final_consensus_4_depth_613	613	98.43	23	1325564	UNCLASSIFIED	Nitrospira	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	1325564:emu_db_mar2026:75801
+final_consensus_5_depth_612	612	86.03	207	1566351	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Desulfuromonadales	Desulfuromonadia	Thermodesulfobacteriota		Bacteria	1566351:emu_db_mar2026:15739
+final_consensus_6_depth_594	594	96.30	50	331696	UNCLASSIFIED	Pseudolabrys	Xanthobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	331696:emu_db_mar2026:14072
+final_consensus_7_depth_543	543	99.18	11	1176646	Sphingomonas daechungensis	Sphingomonas	Sphingomonadaceae	Sphingomonadales	Alphaproteobacteria	Pseudomonadota		Bacteria	1176646:emu_db_mar2026:80404
+final_consensus_8_depth_524	524	99.93	1	2782665	Bradyrhizobium sp. 200	Bradyrhizobium	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	2782665:emu_db_mar2026:42477
+final_consensus_8_depth_524	524	99.93	1	2782641	Bradyrhizobium sp. 170	Bradyrhizobium	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	2782641:emu_db_mar2026:90884
+final_consensus_9_depth_518	518	91.56	115	191863	UNCLASSIFIED	UNCLASSIFIED	Chthoniobacteraceae	Chthoniobacterales	Spartobacteria	Verrucomicrobiota	PVC group	Bacteria	191863:emu_db_mar2026:52068
+final_consensus_10_depth_504	504	100.00	0	412384	Priestia aryabhattai	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	412384:emu_db_mar2026:852
+final_consensus_10_depth_504	504	100.00	0	412384	Priestia aryabhattai	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	412384:emu_db_mar2026:88929
+final_consensus_10_depth_504	504	100.00	0	3092666	Priestia sp. HNGD-A6	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3092666:emu_db_mar2026:854
+final_consensus_10_depth_504	504	100.00	0	2886505	Priestia sp. J2	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2886505:emu_db_mar2026:853
+final_consensus_11_depth_493	493	99.86	2	1166683	Rhizobium cauense	Rhizobium	Rhizobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	1166683:emu_db_mar2026:89626
+final_consensus_12_depth_466	466	92.17	108	1938618	UNCLASSIFIED	UNCLASSIFIED	Lacipirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1938618:emu_db_mar2026:88556
+final_consensus_13_depth_457	457	88.79	163	376175	UNCLASSIFIED	UNCLASSIFIED	Sphaerotilaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	376175:emu_db_mar2026:42520
+final_consensus_14_depth_451	451	87.07	152	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_15_depth_448	448	96.45	48	331696	UNCLASSIFIED	Pseudolabrys	Xanthobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	331696:emu_db_mar2026:14072
+final_consensus_16_depth_443	443	99.57	6	2807101	Microvirga sp. VF16	Microvirga	Methylobacteriaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	2807101:emu_db_mar2026:4719
+final_consensus_17_depth_425	425	96.53	48	1864941	UNCLASSIFIED	Terrimonas	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	1864941:emu_db_mar2026:94917
+final_consensus_18_depth_412	412	94.59	78	2321403	UNCLASSIFIED	Chryseolinea	Fulvivirgaceae	Cytophagales	Cytophagia	Bacteroidota	FCB group	Bacteria	2321403:emu_db_mar2026:71294
+final_consensus_18_depth_412	412	94.59	78	2321403	UNCLASSIFIED	Chryseolinea	Fulvivirgaceae	Cytophagales	Cytophagia	Bacteroidota	FCB group	Bacteria	2321403:emu_db_mar2026:44136
+final_consensus_19_depth_407	407	92.03	106	2528000	UNCLASSIFIED	UNCLASSIFIED	Lacipirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	2528000:emu_db_mar2026:13456
+final_consensus_20_depth_402	402	93.76	86	1071	UNCLASSIFIED	UNCLASSIFIED	Acetobacteraceae	Acetobacterales	Alphaproteobacteria	Pseudomonadota		Bacteria	1071:emu_db_mar2026:11682
+final_consensus_21_depth_398	398	87.65	180	2974023	UNCLASSIFIED	UNCLASSIFIED	Fontisphaeraceae	Limisphaerales	Verrucomicrobiia	Verrucomicrobiota	PVC group	Bacteria	2974023:emu_db_mar2026:74127
+final_consensus_22_depth_385	385	100.00	0	371036	Gottfriedia acidiceleris	Gottfriedia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	371036:emu_db_mar2026:31412
+final_consensus_23_depth_383	383	99.38	9	376815	Variovorax soli	Variovorax	Comamonadaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	376815:emu_db_mar2026:27331
+final_consensus_23_depth_383	383	99.38	9	376815	Variovorax soli	Variovorax	Comamonadaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	376815:emu_db_mar2026:32439
+final_consensus_24_depth_367	367	93.67	92	2716334	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2716334:emu_db_mar2026:22721
+final_consensus_25_depth_366	366	97.15	39	1751901	UNCLASSIFIED	Methylothermalis	Hyphomicrobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	1751901:emu_db_mar2026:93405
+final_consensus_26_depth_364	364	91.59	121	279810	UNCLASSIFIED	UNCLASSIFIED	Thiobacteraceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	279810:emu_db_mar2026:17186
+final_consensus_27_depth_338	338	99.17	12	758793	Caballeronia insecticola	Caballeronia	Burkholderiaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	758793:emu_db_mar2026:56969
+final_consensus_27_depth_338	338	99.17	12	758793	Caballeronia insecticola	Caballeronia	Burkholderiaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	758793:emu_db_mar2026:30867
+final_consensus_27_depth_338	338	99.17	12	1777138	Caballeronia fortuita	Caballeronia	Burkholderiaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	1777138:emu_db_mar2026:52941
+final_consensus_28_depth_324	324	96.90	42	331696	UNCLASSIFIED	Pseudolabrys	Xanthobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	331696:emu_db_mar2026:14072
+final_consensus_29_depth_323	323	93.80	89	658062	UNCLASSIFIED	UNCLASSIFIED	Candidatus Korobacteraceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	658062:emu_db_mar2026:19137
+final_consensus_30_depth_321	321	95.86	58	2292256	UNCLASSIFIED	Undibacter	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	2292256:emu_db_mar2026:50612
+final_consensus_31_depth_317	317	93.33	91	658062	UNCLASSIFIED	UNCLASSIFIED	Candidatus Korobacteraceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	658062:emu_db_mar2026:19137
+final_consensus_32_depth_308	308	96.42	52	563170	UNCLASSIFIED	Ferruginibacter	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	563170:emu_db_mar2026:96142
+final_consensus_33_depth_307	307	89.52	155	2974023	UNCLASSIFIED	UNCLASSIFIED	Fontisphaeraceae	Limisphaerales	Verrucomicrobiia	Verrucomicrobiota	PVC group	Bacteria	2974023:emu_db_mar2026:74127
+final_consensus_34_depth_287	287	98.23	25	1589181	UNCLASSIFIED	Sphingomonas	Sphingomonadaceae	Sphingomonadales	Alphaproteobacteria	Pseudomonadota		Bacteria	1589181:emu_db_mar2026:53897
+final_consensus_35_depth_284	284	99.15	12	578924	Bradyrhizobium sp. STM 3562	Bradyrhizobium	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	578924:emu_db_mar2026:58107
+final_consensus_36_depth_283	283	99.66	5	79881	Alkalicoccobacillus gibsonii	Alkalicoccobacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	79881:emu_db_mar2026:55102
+final_consensus_37_depth_282	282	97.63	32	331696	UNCLASSIFIED	Pseudolabrys	Xanthobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	331696:emu_db_mar2026:14072
+final_consensus_38_depth_280	280	97.24	40	1682732	UNCLASSIFIED	Nocardioides	Nocardioidaceae	Propionibacteriales	Actinomycetes	Actinomycetota		Bacteria	1682732:emu_db_mar2026:21941
+final_consensus_39_depth_279	279	82.37	256	1002689	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	1002689:emu_db_mar2026:20959
+final_consensus_40_depth_266	266	90.05	133	1930276	UNCLASSIFIED	UNCLASSIFIED	Lacipirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1930276:emu_db_mar2026:58484
+final_consensus_40_depth_266	266	90.05	133	1930276	UNCLASSIFIED	UNCLASSIFIED	Lacipirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1930276:emu_db_mar2026:5731
+final_consensus_41_depth_266	266	96.69	41	1229656	UNCLASSIFIED	Acidibacter			Gammaproteobacteria	Pseudomonadota		Bacteria	1229656:emu_db_mar2026:6856
+final_consensus_42_depth_261	261	94.43	81	2716334	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2716334:emu_db_mar2026:22721
+final_consensus_43_depth_260	260	97.47	37	42253	UNCLASSIFIED	Nitrospira	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	42253:emu_db_mar2026:89340
+final_consensus_44_depth_259	259	87.07	152	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_45_depth_256	256	89.87	147	1379270	UNCLASSIFIED	UNCLASSIFIED	Gemmatimonadaceae	Gemmatimonadales	Gemmatimonadia	Gemmatimonadota	FCB group	Bacteria	1379270:emu_db_mar2026:23587
+final_consensus_45_depth_256	256	89.87	147	1379270	UNCLASSIFIED	UNCLASSIFIED	Gemmatimonadaceae	Gemmatimonadales	Gemmatimonadia	Gemmatimonadota	FCB group	Bacteria	1379270:emu_db_mar2026:61977
+final_consensus_46_depth_254	254	98.86	16	1589181	UNCLASSIFIED	Sphingomonas	Sphingomonadaceae	Sphingomonadales	Alphaproteobacteria	Pseudomonadota		Bacteria	1589181:emu_db_mar2026:53897
+final_consensus_47_depth_247	247	100.00	0	412384	Priestia aryabhattai	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	412384:emu_db_mar2026:322
+final_consensus_47_depth_247	247	100.00	0	3092666	Priestia sp. HNGD-A6	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3092666:emu_db_mar2026:324
+final_consensus_47_depth_247	247	100.00	0	1404	Priestia megaterium	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1404:emu_db_mar2026:323
+final_consensus_47_depth_247	247	100.00	0	1404	Priestia megaterium	Priestia	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1404:emu_db_mar2026:30029
+final_consensus_48_depth_246	246	99.79	3	578924	Bradyrhizobium sp. STM 3562	Bradyrhizobium	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	578924:emu_db_mar2026:58107
+final_consensus_49_depth_244	244	91.55	118	480070	UNCLASSIFIED	UNCLASSIFIED	Micropepsaceae	Micropepsales	Alphaproteobacteria	Pseudomonadota		Bacteria	480070:emu_db_mar2026:64997
+final_consensus_50_depth_244	244	94.92	63	1229656	UNCLASSIFIED	Acidibacter			Gammaproteobacteria	Pseudomonadota		Bacteria	1229656:emu_db_mar2026:6856
+final_consensus_51_depth_242	242	94.39	80	1002870	UNCLASSIFIED	UNCLASSIFIED	Gaiellaceae	Gaiellales	Thermoleophilia	Actinomycetota		Bacteria	1002870:emu_db_mar2026:41500
+final_consensus_52_depth_242	242	95.13	71	1864941	UNCLASSIFIED	Terrimonas	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	1864941:emu_db_mar2026:94917
+final_consensus_53_depth_238	238	90.57	138	3080532	UNCLASSIFIED	UNCLASSIFIED	Nitrosomonadaceae	Nitrosomonadales	Betaproteobacteria	Pseudomonadota		Bacteria	3080532:emu_db_mar2026:44151
+final_consensus_54_depth_229	229	94.83	73	1969806	UNCLASSIFIED	Acidibrevibacterium	Acetobacteraceae	Acetobacterales	Alphaproteobacteria	Pseudomonadota		Bacteria	1969806:emu_db_mar2026:29513
+final_consensus_55_depth_224	224	93.68	92	2662614	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2662614:emu_db_mar2026:58032
+final_consensus_56_depth_223	223	93.55	92	490573	UNCLASSIFIED	UNCLASSIFIED	Solirubrobacteraceae	Solirubrobacterales	Thermoleophilia	Actinomycetota		Bacteria	490573:emu_db_mar2026:10322
+final_consensus_57_depth_217	217	97.31	39	2294116	UNCLASSIFIED	Hanamia	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2294116:emu_db_mar2026:96841
+final_consensus_58_depth_213	213	95.02	69	540746	UNCLASSIFIED	Rudaea	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	540746:emu_db_mar2026:68361
+final_consensus_59_depth_210	210	90.60	135	2602016	UNCLASSIFIED	UNCLASSIFIED	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	2602016:emu_db_mar2026:65174
+final_consensus_60_depth_209	209	96.41	49	1751901	UNCLASSIFIED	Methylothermalis	Hyphomicrobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	1751901:emu_db_mar2026:93405
+final_consensus_61_depth_207	207	100.00	0	3243057	Rhizobium sp. Rhizsp82	Rhizobium	Rhizobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	3243057:emu_db_mar2026:44409
+final_consensus_62_depth_206	206	90.21	142	108003	UNCLASSIFIED	UNCLASSIFIED	Ectothiorhodospiraceae	Chromatiales	Gammaproteobacteria	Pseudomonadota		Bacteria	108003:emu_db_mar2026:69530
+final_consensus_63_depth_202	202	97.26	39	2763107	UNCLASSIFIED	Alloacidobacterium	Acidobacteriaceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	2763107:emu_db_mar2026:89686
+final_consensus_63_depth_202	202	97.26	39	2763107	UNCLASSIFIED	Alloacidobacterium	Acidobacteriaceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	2763107:emu_db_mar2026:20413
+final_consensus_64_depth_198	198	98.44	22	1104773	UNCLASSIFIED	Altererythrobacter	Erythrobacteraceae	Sphingomonadales	Alphaproteobacteria	Pseudomonadota		Bacteria	1104773:emu_db_mar2026:28955
+final_consensus_65_depth_197	197	95.29	68	2321403	UNCLASSIFIED	Chryseolinea	Fulvivirgaceae	Cytophagales	Cytophagia	Bacteroidota	FCB group	Bacteria	2321403:emu_db_mar2026:71294
+final_consensus_65_depth_197	197	95.29	68	2321403	UNCLASSIFIED	Chryseolinea	Fulvivirgaceae	Cytophagales	Cytophagia	Bacteroidota	FCB group	Bacteria	2321403:emu_db_mar2026:44136
+final_consensus_66_depth_191	191	91.06	122	191863	UNCLASSIFIED	UNCLASSIFIED	Chthoniobacteraceae	Chthoniobacterales	Spartobacteria	Verrucomicrobiota	PVC group	Bacteria	191863:emu_db_mar2026:52068
+final_consensus_67_depth_188	188	97.04	43	2259674	UNCLASSIFIED	Azohydromonas	Sphaerotilaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	2259674:emu_db_mar2026:80730
+final_consensus_68_depth_184	184	90.33	122	927083	UNCLASSIFIED	UNCLASSIFIED	Sandaracinaceae	Polyangiales		Myxococcota		Bacteria	927083:emu_db_mar2026:69796
+final_consensus_69_depth_184	184	93.77	85	624405	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	624405:emu_db_mar2026:96273
+final_consensus_70_depth_181	181	99.01	14	1589181	Sphingomonas parvus	Sphingomonas	Sphingomonadaceae	Sphingomonadales	Alphaproteobacteria	Pseudomonadota		Bacteria	1589181:emu_db_mar2026:53897
+final_consensus_71_depth_180	180	100.00	0	2954558	Bacillus sp. FSL R5-0397	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2954558:emu_db_mar2026:4993
+final_consensus_71_depth_180	180	100.00	0	293387	Bacillus altitudinis	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	293387:emu_db_mar2026:4984
+final_consensus_71_depth_180	180	100.00	0	2921485	Bacillus sp. FSL K6-2869	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2921485:emu_db_mar2026:4994
+final_consensus_71_depth_180	180	100.00	0	2921694	Bacillus sp. FSL W7-1085	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2921694:emu_db_mar2026:4995
+final_consensus_71_depth_180	180	100.00	0	2921409	Bacillus sp. FSL K6-0046	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2921409:emu_db_mar2026:4996
+final_consensus_72_depth_178	178	100.00	0	1396	Bacillus cereus	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1396:emu_db_mar2026:39138
+final_consensus_72_depth_178	178	100.00	0	1806216	Bacillus sp. RZ2MS9	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1806216:emu_db_mar2026:703
+final_consensus_72_depth_178	178	100.00	0	2217825	Bacillus sp. AR4-2	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2217825:emu_db_mar2026:698
+final_consensus_72_depth_178	178	100.00	0	2217832	Bacillus sp. JAS24-2	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2217832:emu_db_mar2026:704
+final_consensus_73_depth_178	178	90.53	135	1546155	UNCLASSIFIED	UNCLASSIFIED	Tepidisphaeraceae	Tepidisphaerales	Phycisphaerae	Planctomycetota	PVC group	Bacteria	1546155:emu_db_mar2026:94780
+final_consensus_74_depth_177	177	93.38	93	480070	UNCLASSIFIED	UNCLASSIFIED	Micropepsaceae	Micropepsales	Alphaproteobacteria	Pseudomonadota		Bacteria	480070:emu_db_mar2026:64997
+final_consensus_75_depth_176	176	99.18	12	363848	Dyella ginsengisoli	Dyella	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	363848:emu_db_mar2026:45882
+final_consensus_76_depth_174	174	93.27	97	2528021	UNCLASSIFIED	UNCLASSIFIED	Pirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	2528021:emu_db_mar2026:26697
+final_consensus_76_depth_174	174	93.27	97	2528021	UNCLASSIFIED	UNCLASSIFIED	Pirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	2528021:emu_db_mar2026:12576
+final_consensus_77_depth_172	172	97.08	40	1751901	UNCLASSIFIED	Methylothermalis	Hyphomicrobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	1751901:emu_db_mar2026:93405
+final_consensus_78_depth_171	171	94.05	83	3043284	UNCLASSIFIED	UNCLASSIFIED	Candidatus Saccharimonadaceae	Candidatus Saccharimonadales	Candidatus Saccharimonadia	Candidatus Saccharimonadota	Bacteria candidate phyla	Bacteria	3043284:emu_db_mar2026:81790
+final_consensus_79_depth_170	170	94.36	82	3070677	UNCLASSIFIED	UNCLASSIFIED	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3070677:emu_db_mar2026:5766
+final_consensus_79_depth_170	170	94.36	82	3070677	UNCLASSIFIED	UNCLASSIFIED	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3070677:emu_db_mar2026:26147
+final_consensus_80_depth_167	167	95.20	68	3064282	UNCLASSIFIED	Dongia	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	3064282:emu_db_mar2026:48657
+final_consensus_81_depth_167	167	96.82	43	331696	UNCLASSIFIED	Pseudolabrys	Xanthobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	331696:emu_db_mar2026:14072
+final_consensus_82_depth_167	167	99.79	3	3049108	Danxiaibacter flavus	Danxiaibacter	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	3049108:emu_db_mar2026:31325
+final_consensus_83_depth_162	162	99.18	12	445710	Dyella thiooxydans	Dyella	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	445710:emu_db_mar2026:63311
+final_consensus_84_depth_160	160	97.33	39	42253	UNCLASSIFIED	Nitrospira	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	42253:emu_db_mar2026:89340
+final_consensus_85_depth_160	160	92.30	113	2937800	UNCLASSIFIED	UNCLASSIFIED	Conexibacteraceae	Solirubrobacterales	Thermoleophilia	Actinomycetota		Bacteria	2937800:emu_db_mar2026:29043
+final_consensus_86_depth_159	159	90.65	138	1855912	UNCLASSIFIED	UNCLASSIFIED	Vicinamibacteraceae	Vicinamibacterales	Vicinamibacteria	Acidobacteriota		Bacteria	1855912:emu_db_mar2026:67354
+final_consensus_86_depth_159	159	90.65	138	1855912	UNCLASSIFIED	UNCLASSIFIED	Vicinamibacteraceae	Vicinamibacterales	Vicinamibacteria	Acidobacteriota		Bacteria	1855912:emu_db_mar2026:29656
+final_consensus_87_depth_159	159	88.02	173	1742923	UNCLASSIFIED	UNCLASSIFIED	Thermoguttaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1742923:emu_db_mar2026:74602
+final_consensus_88_depth_158	158	88.26	175	2974023	UNCLASSIFIED	UNCLASSIFIED	Fontisphaeraceae	Limisphaerales	Verrucomicrobiia	Verrucomicrobiota	PVC group	Bacteria	2974023:emu_db_mar2026:74127
+final_consensus_89_depth_157	157	94.11	83	674703	UNCLASSIFIED	UNCLASSIFIED	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	674703:emu_db_mar2026:70646
+final_consensus_90_depth_156	156	87.17	173	2560058	UNCLASSIFIED	UNCLASSIFIED	Caulobacteraceae	Caulobacterales	Alphaproteobacteria	Pseudomonadota		Bacteria	2560058:emu_db_mar2026:94469
+final_consensus_91_depth_156	156	90.81	133	861299	UNCLASSIFIED	UNCLASSIFIED	Gemmatimonadaceae	Gemmatimonadales	Gemmatimonadia	Gemmatimonadota	FCB group	Bacteria	861299:emu_db_mar2026:36502
+final_consensus_92_depth_155	155	96.49	51	1864941	UNCLASSIFIED	Terrimonas	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	1864941:emu_db_mar2026:94917
+final_consensus_93_depth_154	154	93.95	89	1002870	UNCLASSIFIED	UNCLASSIFIED	Gaiellaceae	Gaiellales	Thermoleophilia	Actinomycetota		Bacteria	1002870:emu_db_mar2026:41500
+final_consensus_94_depth_154	154	98.35	24	463040	UNCLASSIFIED	Bordetella	Alcaligenaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	463040:emu_db_mar2026:52458
+final_consensus_95_depth_150	150	100.00	0	1396	Bacillus cereus	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1396:emu_db_mar2026:275
+final_consensus_95_depth_150	150	100.00	0	1428	Bacillus thuringiensis	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1428:emu_db_mar2026:274
+final_consensus_95_depth_150	150	100.00	0	3098592	Bacillus sp. RA(2023)	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3098592:emu_db_mar2026:277
+final_consensus_96_depth_148	148	95.23	67	2292256	UNCLASSIFIED	Undibacter	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	2292256:emu_db_mar2026:50612
+final_consensus_97_depth_148	148	85.83	201	1908690	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1908690:emu_db_mar2026:71102
+final_consensus_97_depth_148	148	85.83	201	1210884	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1210884:emu_db_mar2026:54284
+final_consensus_98_depth_147	147	94.95	70	540746	UNCLASSIFIED	Rudaea	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	540746:emu_db_mar2026:68361
+final_consensus_99_depth_147	147	90.45	128	655015	UNCLASSIFIED	UNCLASSIFIED	Methylocystaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	655015:emu_db_mar2026:10865
+final_consensus_99_depth_147	147	90.45	128	655015	UNCLASSIFIED	UNCLASSIFIED	Methylocystaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	655015:emu_db_mar2026:90750
+final_consensus_100_depth_146	146	97.16	41	400768	UNCLASSIFIED	Microlunatus	Propionibacteriaceae	Propionibacteriales	Actinomycetes	Actinomycetota		Bacteria	400768:emu_db_mar2026:70022
+final_consensus_101_depth_144	144	90.21	142	108003	UNCLASSIFIED	UNCLASSIFIED	Ectothiorhodospiraceae	Chromatiales	Gammaproteobacteria	Pseudomonadota		Bacteria	108003:emu_db_mar2026:69530
+final_consensus_102_depth_144	144	93.41	93	674703	UNCLASSIFIED	UNCLASSIFIED	Nitrobacteraceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	674703:emu_db_mar2026:70646
+final_consensus_103_depth_143	143	92.62	104	2507574	UNCLASSIFIED	UNCLASSIFIED	Aerosakkonemataceae	Aerosakkonematales	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	2507574:emu_db_mar2026:14997
+final_consensus_104_depth_143	143	95.25	67	2267839	UNCLASSIFIED	Taklimakanibacter	Aestuariivirgaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	2267839:emu_db_mar2026:74031
+final_consensus_105_depth_142	142	98.37	23	1620705	UNCLASSIFIED	Alkalinema	Leptolyngbyaceae	Leptolyngbyales	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	1620705:emu_db_mar2026:7944
+final_consensus_106_depth_142	142	99.65	5	3127665	Bacillus yunxiaonensis	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3127665:emu_db_mar2026:90117
+final_consensus_107_depth_141	141	98.90	16	3080532	UNCLASSIFIED	Nitrosospira	Nitrosomonadaceae	Nitrosomonadales	Betaproteobacteria	Pseudomonadota		Bacteria	3080532:emu_db_mar2026:44151
+final_consensus_108_depth_141	141	94.17	85	370407	UNCLASSIFIED	UNCLASSIFIED	Ferritrophicaceae	Ferritrophicales	Betaproteobacteria	Pseudomonadota		Bacteria	370407:emu_db_mar2026:85168
+final_consensus_109_depth_140	140	93.95	89	1002870	UNCLASSIFIED	UNCLASSIFIED	Gaiellaceae	Gaiellales	Thermoleophilia	Actinomycetota		Bacteria	1002870:emu_db_mar2026:41500
+final_consensus_110_depth_136	136	94.51	76	540746	UNCLASSIFIED	Rudaea	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	540746:emu_db_mar2026:68361
+final_consensus_111_depth_136	136	97.33	39	42253	UNCLASSIFIED	Nitrospira	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	42253:emu_db_mar2026:89340
+final_consensus_112_depth_134	134	94.11	86	42253	UNCLASSIFIED	UNCLASSIFIED	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	42253:emu_db_mar2026:89340
+final_consensus_112_depth_134	134	94.11	86	1436998	UNCLASSIFIED	UNCLASSIFIED	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	1436998:emu_db_mar2026:92957
+final_consensus_113_depth_133	133	98.01	28	2764186	UNCLASSIFIED	Sphingomonas	Sphingomonadaceae	Sphingomonadales	Alphaproteobacteria	Pseudomonadota		Bacteria	2764186:emu_db_mar2026:92947
+final_consensus_114_depth_132	132	91.21	120	191863	UNCLASSIFIED	UNCLASSIFIED	Chthoniobacteraceae	Chthoniobacterales	Spartobacteria	Verrucomicrobiota	PVC group	Bacteria	191863:emu_db_mar2026:52068
+final_consensus_115_depth_132	132	90.76	133	667306	UNCLASSIFIED	UNCLASSIFIED	Acidimicrobiaceae	Acidimicrobiales	Acidimicrobiia	Actinomycetota		Bacteria	667306:emu_db_mar2026:68430
+final_consensus_116_depth_131	131	91.71	119	279810	UNCLASSIFIED	UNCLASSIFIED	Thiobacteraceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	279810:emu_db_mar2026:17186
+final_consensus_117_depth_130	130	90.99	127	2602016	UNCLASSIFIED	UNCLASSIFIED	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	2602016:emu_db_mar2026:65174
+final_consensus_118_depth_130	130	94.58	75	2662614	UNCLASSIFIED	Terrimonas	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2662614:emu_db_mar2026:58032
+final_consensus_119_depth_129	129	91.69	116	480070	UNCLASSIFIED	UNCLASSIFIED	Micropepsaceae	Micropepsales	Alphaproteobacteria	Pseudomonadota		Bacteria	480070:emu_db_mar2026:64997
+final_consensus_120_depth_129	129	95.21	70	63745	UNCLASSIFIED	Sideroxydans	Gallionellaceae	Nitrosomonadales	Betaproteobacteria	Pseudomonadota		Bacteria	63745:emu_db_mar2026:55069
+final_consensus_120_depth_129	129	95.21	70	63745	UNCLASSIFIED	Sideroxydans	Gallionellaceae	Nitrosomonadales	Betaproteobacteria	Pseudomonadota		Bacteria	63745:emu_db_mar2026:34707
+final_consensus_120_depth_129	129	95.21	70	63745	UNCLASSIFIED	Sideroxydans	Gallionellaceae	Nitrosomonadales	Betaproteobacteria	Pseudomonadota		Bacteria	63745:emu_db_mar2026:58398
+final_consensus_121_depth_128	128	86.69	197	1823759	UNCLASSIFIED	UNCLASSIFIED	Desulfuromonadaceae	Desulfuromonadales	Desulfuromonadia	Thermodesulfobacteriota		Bacteria	1823759:emu_db_mar2026:61073
+final_consensus_122_depth_128	128	93.26	98	2662614	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2662614:emu_db_mar2026:58032
+final_consensus_123_depth_127	127	86.55	191	1908690	UNCLASSIFIED	UNCLASSIFIED	Gemmataceae	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1908690:emu_db_mar2026:71102
+final_consensus_124_depth_127	127	97.26	40	42253	UNCLASSIFIED	Nitrospira	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	42253:emu_db_mar2026:89340
+final_consensus_124_depth_127	127	97.26	40	1715989	UNCLASSIFIED	Nitrospira	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	1715989:emu_db_mar2026:95635
+final_consensus_125_depth_126	126	100.00	0	3026426	Bacillus sp. A01H	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3026426:emu_db_mar2026:462
+final_consensus_126_depth_125	125	98.09	28	1465489	UNCLASSIFIED	Chujaibacter	Lysobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	1465489:emu_db_mar2026:41219
+final_consensus_127_depth_125	125	93.32	97	2662614	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2662614:emu_db_mar2026:58032
+final_consensus_127_depth_125	125	93.32	97	2024524	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2024524:emu_db_mar2026:71400
+final_consensus_127_depth_125	125	93.32	97	940145	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	940145:emu_db_mar2026:69415
+final_consensus_128_depth_125	125	96.90	45	1864941	UNCLASSIFIED	Terrimonas	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	1864941:emu_db_mar2026:94917
+final_consensus_129_depth_124	124	94.99	62	1229656	UNCLASSIFIED	Acidibacter			Gammaproteobacteria	Pseudomonadota		Bacteria	1229656:emu_db_mar2026:6856
+final_consensus_130_depth_119	119	98.52	21	1002691	UNCLASSIFIED	Occallatibacter	Acidobacteriaceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	1002691:emu_db_mar2026:16943
+final_consensus_131_depth_119	119	98.51	21	1589181	UNCLASSIFIED	Sphingomonas	Sphingomonadaceae	Sphingomonadales	Alphaproteobacteria	Pseudomonadota		Bacteria	1589181:emu_db_mar2026:53897
+final_consensus_132_depth_119	119	83.37	218	1204385	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Caldilineales	Caldilineae	Chloroflexota		Bacteria	1204385:emu_db_mar2026:13904
+final_consensus_133_depth_118	118	87.33	149	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_134_depth_118	118	97.17	41	2294116	UNCLASSIFIED	Hanamia	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2294116:emu_db_mar2026:96841
+final_consensus_135_depth_118	118	83.09	247	1612172	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Vicinamibacterales	Vicinamibacteria	Acidobacteriota		Bacteria	1612172:emu_db_mar2026:68506
+final_consensus_136_depth_117	117	94.21	81	480070	UNCLASSIFIED	UNCLASSIFIED	Micropepsaceae	Micropepsales	Alphaproteobacteria	Pseudomonadota		Bacteria	480070:emu_db_mar2026:64997
+final_consensus_137_depth_115	115	94.99	62	1229656	UNCLASSIFIED	Acidibacter			Gammaproteobacteria	Pseudomonadota		Bacteria	1229656:emu_db_mar2026:6856
+final_consensus_138_depth_113	113	97.66	32	1751901	UNCLASSIFIED	Methylothermalis	Hyphomicrobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	1751901:emu_db_mar2026:93405
+final_consensus_139_depth_111	111	98.18	26	2607284	UNCLASSIFIED	Ginsengibacter	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2607284:emu_db_mar2026:1937
+final_consensus_140_depth_110	110	93.53	92	203699	UNCLASSIFIED	UNCLASSIFIED	Alcaligenaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	203699:emu_db_mar2026:14861
+final_consensus_141_depth_110	110	93.33	98	1002870	UNCLASSIFIED	UNCLASSIFIED	Gaiellaceae	Gaiellales	Thermoleophilia	Actinomycetota		Bacteria	1002870:emu_db_mar2026:41500
+final_consensus_142_depth_108	108	97.40	37	2607284	UNCLASSIFIED	Ginsengibacter	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2607284:emu_db_mar2026:1937
+final_consensus_143_depth_107	107	87.06	152	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_144_depth_107	107	92.61	108	465721	UNCLASSIFIED	UNCLASSIFIED	Steroidobacteraceae	Steroidobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	465721:emu_db_mar2026:67045
+final_consensus_145_depth_106	106	87.16	151	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_146_depth_106	106	83.68	182	1206749	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Sphaerobacterales	Thermomicrobia	Thermomicrobiota		Bacteria	1206749:emu_db_mar2026:20877
+final_consensus_147_depth_104	104	94.73	77	465721	UNCLASSIFIED	Steroidobacter	Steroidobacteraceae	Steroidobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	465721:emu_db_mar2026:67045
+final_consensus_147_depth_104	104	94.65	77	1842136	UNCLASSIFIED	Steroidobacter	Steroidobacteraceae	Steroidobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	1842136:emu_db_mar2026:1922
+final_consensus_148_depth_100	100	94.57	79	2662614	UNCLASSIFIED	Terrimonas	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2662614:emu_db_mar2026:58032
+final_consensus_148_depth_100	100	94.40	79	624405	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	624405:emu_db_mar2026:96273
+final_consensus_149_depth_99	99	95.23	68	796384	UNCLASSIFIED	Flavitalea	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	796384:emu_db_mar2026:86377
+final_consensus_150_depth_99	99	98.16	26	445220	UNCLASSIFIED	Reyranella	Reyranellaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	445220:emu_db_mar2026:30333
+final_consensus_151_depth_98	98	97.61	34	1002691	UNCLASSIFIED	Occallatibacter	Acidobacteriaceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	1002691:emu_db_mar2026:16943
+final_consensus_152_depth_98	98	94.61	76	1124	UNCLASSIFIED	Chlorogloeopsis	Chlorogloeopsidaceae	Nostocales	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	1124:emu_db_mar2026:14555
+final_consensus_152_depth_98	98	94.57	76	1124	UNCLASSIFIED	Chlorogloeopsis	Chlorogloeopsidaceae	Nostocales	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	1124:emu_db_mar2026:71265
+final_consensus_153_depth_97	97	70.46	205	502393	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	502393:emu_db_mar2026:84019
+final_consensus_154_depth_97	97	90.34	141	2805490	UNCLASSIFIED	UNCLASSIFIED	Steroidobacteraceae	Steroidobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	2805490:emu_db_mar2026:54072
+final_consensus_155_depth_96	96	88.34	168	2528009	UNCLASSIFIED	UNCLASSIFIED	Lacipirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	2528009:emu_db_mar2026:84330
+final_consensus_155_depth_96	96	88.34	168	2528009	UNCLASSIFIED	UNCLASSIFIED	Lacipirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	2528009:emu_db_mar2026:71021
+final_consensus_156_depth_95	95	87.23	150	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_157_depth_95	95	96.86	43	1751901	UNCLASSIFIED	Methylothermalis	Hyphomicrobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	1751901:emu_db_mar2026:93405
+final_consensus_158_depth_95	95	92.15	110	1210884	UNCLASSIFIED	UNCLASSIFIED	Gemmataceae	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1210884:emu_db_mar2026:54284
+final_consensus_158_depth_95	95	92.15	110	1210884	UNCLASSIFIED	UNCLASSIFIED	Gemmataceae	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1210884:emu_db_mar2026:30507
+final_consensus_158_depth_95	95	92.15	110	1630693	UNCLASSIFIED	UNCLASSIFIED	Gemmataceae	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1630693:emu_db_mar2026:59667
+final_consensus_158_depth_95	95	92.14	110	2774151	UNCLASSIFIED	UNCLASSIFIED	Gemmataceae	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	2774151:emu_db_mar2026:59748
+final_consensus_159_depth_95	95	100.00	0	1221500	Fictibacillus phosphorivorans	Fictibacillus	Fictibacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1221500:emu_db_mar2026:73770
+final_consensus_159_depth_95	95	100.00	0	1221500	Fictibacillus phosphorivorans	Fictibacillus	Fictibacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	1221500:emu_db_mar2026:80961
+final_consensus_160_depth_95	95	94.20	83	3064282	UNCLASSIFIED	UNCLASSIFIED	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	3064282:emu_db_mar2026:48657
+final_consensus_161_depth_94	94	94.93	73	1434707	UNCLASSIFIED	Taibaiella	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	1434707:emu_db_mar2026:54869
+final_consensus_162_depth_93	93	99.79	3	1002691	Occallatibacter savannae	Occallatibacter	Acidobacteriaceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	1002691:emu_db_mar2026:16943
+final_consensus_163_depth_92	92	96.94	42	1751901	UNCLASSIFIED	Methylothermalis	Hyphomicrobiaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	1751901:emu_db_mar2026:93405
+final_consensus_164_depth_92	92	87.16	151	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_165_depth_91	91	93.75	91	2662614	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2662614:emu_db_mar2026:58032
+final_consensus_165_depth_91	91	93.75	91	2024524	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2024524:emu_db_mar2026:71400
+final_consensus_166_depth_89	89	98.77	18	1465489	UNCLASSIFIED	Chujaibacter	Lysobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	1465489:emu_db_mar2026:41219
+final_consensus_167_depth_89	89	98.03	28	1560005	UNCLASSIFIED	Edaphobacter	Acidobacteriaceae	Terriglobales	Terriglobia	Acidobacteriota		Bacteria	1560005:emu_db_mar2026:40026
+final_consensus_168_depth_89	89	97.04	43	3237377	UNCLASSIFIED	Aquabacterium		Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	3237377:emu_db_mar2026:12742
+final_consensus_169_depth_88	88	100.00	0	2819290	Bacillus arachidis	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	2819290:emu_db_mar2026:49564
+final_consensus_170_depth_87	87	97.54	36	42253	UNCLASSIFIED	Nitrospira	Nitrospiraceae	Nitrospirales	Nitrospiria	Nitrospirota		Bacteria	42253:emu_db_mar2026:89340
+final_consensus_171_depth_85	85	87.79	168	173480	UNCLASSIFIED	UNCLASSIFIED	Gemmatimonadaceae	Gemmatimonadales	Gemmatimonadia	Gemmatimonadota	FCB group	Bacteria	173480:emu_db_mar2026:91739
+final_consensus_171_depth_85	85	87.79	168	173480	UNCLASSIFIED	UNCLASSIFIED	Gemmatimonadaceae	Gemmatimonadales	Gemmatimonadia	Gemmatimonadota	FCB group	Bacteria	173480:emu_db_mar2026:36315
+final_consensus_171_depth_85	85	87.79	168	173480	UNCLASSIFIED	UNCLASSIFIED	Gemmatimonadaceae	Gemmatimonadales	Gemmatimonadia	Gemmatimonadota	FCB group	Bacteria	173480:emu_db_mar2026:55135
+final_consensus_172_depth_84	84	94.88	70	2497877	UNCLASSIFIED	Peristeroidobacter	Steroidobacteraceae	Steroidobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	2497877:emu_db_mar2026:77812
+final_consensus_173_depth_83	83	97.11	42	328517	UNCLASSIFIED	Dokdonella	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	328517:emu_db_mar2026:58495
+final_consensus_174_depth_81	81	87.32	149	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_175_depth_80	80	91.71	113	191863	UNCLASSIFIED	UNCLASSIFIED	Chthoniobacteraceae	Chthoniobacterales	Spartobacteria	Verrucomicrobiota	PVC group	Bacteria	191863:emu_db_mar2026:52068
+final_consensus_176_depth_79	79	86.83	177	2560058	UNCLASSIFIED	UNCLASSIFIED	Caulobacteraceae	Caulobacterales	Alphaproteobacteria	Pseudomonadota		Bacteria	2560058:emu_db_mar2026:94469
+final_consensus_177_depth_78	78	91.51	120	1867774	UNCLASSIFIED	UNCLASSIFIED	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	1867774:emu_db_mar2026:21839
+final_consensus_178_depth_77	77	85.48	210	2875962	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Candidatus Sulfidibacteriales		Bacteroidota	FCB group	Bacteria	2875962:emu_db_mar2026:16585
+final_consensus_179_depth_77	77	96.88	44	2650924	UNCLASSIFIED	Aestuariivirga	Aestuariivirgaceae	Hyphomicrobiales	Alphaproteobacteria	Pseudomonadota		Bacteria	2650924:emu_db_mar2026:32910
+final_consensus_180_depth_76	76	81.96	241	58135	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Clostridia	Bacillota		Bacteria	58135:emu_db_mar2026:29739
+final_consensus_181_depth_73	73	86.83	177	2560058	UNCLASSIFIED	UNCLASSIFIED	Caulobacteraceae	Caulobacterales	Alphaproteobacteria	Pseudomonadota		Bacteria	2560058:emu_db_mar2026:94469
+final_consensus_182_depth_73	73	94.91	63	1229656	UNCLASSIFIED	Acidibacter			Gammaproteobacteria	Pseudomonadota		Bacteria	1229656:emu_db_mar2026:6856
+final_consensus_183_depth_72	72	97.33	38	2607284	UNCLASSIFIED	Ginsengibacter	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2607284:emu_db_mar2026:1937
+final_consensus_184_depth_71	71	70.60	346	2761623	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	2761623:emu_db_mar2026:37407
+final_consensus_185_depth_70	70	81.88	260	2218256	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Terriglobia	Acidobacteriota		Bacteria	2218256:emu_db_mar2026:47525
+final_consensus_186_depth_68	68	94.80	72	540746	UNCLASSIFIED	Rudaea	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	540746:emu_db_mar2026:68361
+final_consensus_187_depth_67	67	85.38	195	3043284	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Candidatus Saccharimonadales	Candidatus Saccharimonadia	Candidatus Saccharimonadota	Bacteria candidate phyla	Bacteria	3043284:emu_db_mar2026:81790
+final_consensus_188_depth_67	67	86.76	196	1823759	UNCLASSIFIED	UNCLASSIFIED	Desulfuromonadaceae	Desulfuromonadales	Desulfuromonadia	Thermodesulfobacteriota		Bacteria	1823759:emu_db_mar2026:61073
+final_consensus_189_depth_66	66	91.65	118	1867774	UNCLASSIFIED	UNCLASSIFIED	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	1867774:emu_db_mar2026:21839
+final_consensus_190_depth_65	65	71.62	334	3077926	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	3077926:emu_db_mar2026:91572
+final_consensus_191_depth_65	65	93.60	93	1341549	UNCLASSIFIED	UNCLASSIFIED	Alcaligenaceae	Burkholderiales	Betaproteobacteria	Pseudomonadota		Bacteria	1341549:emu_db_mar2026:31993
+final_consensus_192_depth_65	65	99.45	8	445710	Dyella thiooxydans	Dyella	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	445710:emu_db_mar2026:63311
+final_consensus_193_depth_64	64	97.23	40	400768	UNCLASSIFIED	Microlunatus	Propionibacteriaceae	Propionibacteriales	Actinomycetes	Actinomycetota		Bacteria	400768:emu_db_mar2026:70022
+final_consensus_194_depth_63	63	96.89	45	2294116	UNCLASSIFIED	Hanamia	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2294116:emu_db_mar2026:96841
+final_consensus_195_depth_63	63	98.09	28	1465489	UNCLASSIFIED	Chujaibacter	Lysobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	1465489:emu_db_mar2026:41219
+final_consensus_196_depth_61	61	87.24	150	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_197_depth_61	61	93.39	93	189966	UNCLASSIFIED	UNCLASSIFIED	Micropepsaceae	Micropepsales	Alphaproteobacteria	Pseudomonadota		Bacteria	189966:emu_db_mar2026:83124
+final_consensus_198_depth_60	60	96.63	49	1864941	UNCLASSIFIED	Terrimonas	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	1864941:emu_db_mar2026:94917
+final_consensus_199_depth_60	60	98.28	25	2875539	UNCLASSIFIED	Arachidicoccus	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2875539:emu_db_mar2026:31443
+final_consensus_200_depth_58	58	94.08	87	1002870	UNCLASSIFIED	UNCLASSIFIED	Gaiellaceae	Gaiellales	Thermoleophilia	Actinomycetota		Bacteria	1002870:emu_db_mar2026:41500
+final_consensus_201_depth_56	56	79.22	286	591197	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Ignavibacteria	Ignavibacteriota	FCB group	Bacteria	591197:emu_db_mar2026:91700
+final_consensus_202_depth_56	56	81.08	279	363277	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Ktedonobacteria	Chloroflexota		Bacteria	363277:emu_db_mar2026:94086
+final_consensus_203_depth_55	55	92.22	110	2602015	UNCLASSIFIED	UNCLASSIFIED	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	2602015:emu_db_mar2026:71232
+final_consensus_203_depth_55	55	92.22	110	2602015	UNCLASSIFIED	UNCLASSIFIED	Dongiaceae	Rhodospirillales	Alphaproteobacteria	Pseudomonadota		Bacteria	2602015:emu_db_mar2026:85876
+final_consensus_204_depth_54	54	92.85	104	2662614	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2662614:emu_db_mar2026:58032
+final_consensus_204_depth_54	54	92.85	104	2024524	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	2024524:emu_db_mar2026:71400
+final_consensus_205_depth_54	54	81.12	279	1612172	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Vicinamibacteria	Acidobacteriota		Bacteria	1612172:emu_db_mar2026:68506
+final_consensus_206_depth_54	54	82.11	239	58135	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Eubacteriales	Clostridia	Bacillota		Bacteria	58135:emu_db_mar2026:29739
+final_consensus_207_depth_54	54	99.66	5	3127665	Bacillus yunxiaonensis	Bacillus	Bacillaceae	Bacillales	Bacilli	Bacillota		Bacteria	3127665:emu_db_mar2026:90117
+final_consensus_208_depth_54	54	97.04	41	2807096	UNCLASSIFIED	Neotabrizicola	Paracoccaceae	Rhodobacterales	Alphaproteobacteria	Pseudomonadota		Bacteria	2807096:emu_db_mar2026:52151
+final_consensus_208_depth_54	54	97.04	41	2807096	UNCLASSIFIED	Neotabrizicola	Paracoccaceae	Rhodobacterales	Alphaproteobacteria	Pseudomonadota		Bacteria	2807096:emu_db_mar2026:59502
+final_consensus_209_depth_51	51	87.49	147	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_210_depth_49	49	84.15	222	1630693	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Gemmatales	Planctomycetia	Planctomycetota	PVC group	Bacteria	1630693:emu_db_mar2026:90074
+final_consensus_211_depth_49	49	94.75	65	1229656	UNCLASSIFIED	Acidibacter			Gammaproteobacteria	Pseudomonadota		Bacteria	1229656:emu_db_mar2026:6856
+final_consensus_212_depth_48	48	90.50	135	777	UNCLASSIFIED	UNCLASSIFIED	Coxiellaceae	Legionellales	Gammaproteobacteria	Pseudomonadota		Bacteria	777:emu_db_mar2026:27013
+final_consensus_213_depth_47	47	99.37	7	2786939	Gracilinea arenicola	Gracilinea	Wilmottiaceae	Coleofasciculales	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	2786939:emu_db_mar2026:91075
+final_consensus_214_depth_45	45	80.15	286	1852309	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED		Calditrichota		Bacteria	1852309:emu_db_mar2026:74004
+final_consensus_215_depth_45	45	88.99	148	2789776	UNCLASSIFIED	UNCLASSIFIED	Iamiaceae	Acidimicrobiales	Acidimicrobiia	Actinomycetota		Bacteria	2789776:emu_db_mar2026:71903
+final_consensus_216_depth_44	44	70.52	347	2761623	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	2761623:emu_db_mar2026:37407
+final_consensus_217_depth_43	43	89.75	138	2789776	UNCLASSIFIED	UNCLASSIFIED	Iamiaceae	Acidimicrobiales	Acidimicrobiia	Actinomycetota		Bacteria	2789776:emu_db_mar2026:71903
+final_consensus_218_depth_42	42	93.15	99	2789776	UNCLASSIFIED	UNCLASSIFIED	Iamiaceae	Acidimicrobiales	Acidimicrobiia	Actinomycetota		Bacteria	2789776:emu_db_mar2026:92870
+final_consensus_219_depth_41	41	82.65	240	2884078	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Chroococcidiopsidales	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	2884078:emu_db_mar2026:31071
+final_consensus_220_depth_38	38	93.01	98	480070	UNCLASSIFIED	UNCLASSIFIED	Micropepsaceae	Micropepsales	Alphaproteobacteria	Pseudomonadota		Bacteria	480070:emu_db_mar2026:64997
+final_consensus_221_depth_37	37	86.99	153	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_222_depth_37	37	97.41	35	3376247	UNCLASSIFIED	Rhizonema	Rhizonemataceae	Nostocales	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	3376247:emu_db_mar2026:95162
+final_consensus_223_depth_36	36	87.15	151	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_224_depth_36	36	93.17	96	189966	UNCLASSIFIED	UNCLASSIFIED	Micropepsaceae	Micropepsales	Alphaproteobacteria	Pseudomonadota		Bacteria	189966:emu_db_mar2026:83124
+final_consensus_225_depth_35	35	98.97	15	1926869	UNCLASSIFIED	Dyella	Rhodanobacteraceae	Lysobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	1926869:emu_db_mar2026:94225
+final_consensus_226_depth_35	35	91.28	119	191863	UNCLASSIFIED	UNCLASSIFIED	Chthoniobacteraceae	Chthoniobacterales	Spartobacteria	Verrucomicrobiota	PVC group	Bacteria	191863:emu_db_mar2026:52068
+final_consensus_227_depth_35	35	89.72	133	191863	UNCLASSIFIED	UNCLASSIFIED	Chthoniobacteraceae	Chthoniobacterales	Spartobacteria	Verrucomicrobiota	PVC group	Bacteria	191863:emu_db_mar2026:52068
+final_consensus_228_depth_33	33	86.73	156	679663	UNCLASSIFIED	UNCLASSIFIED	Corynebacteriaceae	Mycobacteriales	Actinomycetes	Actinomycetota		Bacteria	679663:emu_db_mar2026:75638
+final_consensus_229_depth_32	32	89.90	136	2789776	UNCLASSIFIED	UNCLASSIFIED	Iamiaceae	Acidimicrobiales	Acidimicrobiia	Actinomycetota		Bacteria	2789776:emu_db_mar2026:71903
+final_consensus_230_depth_32	32	92.15	114	1104781	UNCLASSIFIED	UNCLASSIFIED	Chitinophagaceae	Chitinophagales	Chitinophagia	Bacteroidota	FCB group	Bacteria	1104781:emu_db_mar2026:75920
+final_consensus_231_depth_27	27	83.59	232	913108	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Aggregatilineales	Anaerolineae	Chloroflexota		Bacteria	913108:emu_db_mar2026:73047
+final_consensus_232_depth_26	26	91.28	119	191863	UNCLASSIFIED	UNCLASSIFIED	Chthoniobacteraceae	Chthoniobacterales	Spartobacteria	Verrucomicrobiota	PVC group	Bacteria	191863:emu_db_mar2026:52068
+final_consensus_233_depth_25	25	84.60	225	591197	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Ignavibacteriales	Ignavibacteria	Ignavibacteriota	FCB group	Bacteria	591197:emu_db_mar2026:91700
+final_consensus_234_depth_22	22	89.38	143	2789776	UNCLASSIFIED	UNCLASSIFIED	Iamiaceae	Acidimicrobiales	Acidimicrobiia	Actinomycetota		Bacteria	2789776:emu_db_mar2026:71903
+final_consensus_235_depth_22	22	90.18	144	163359	UNCLASSIFIED	UNCLASSIFIED	Acidiferrobacteraceae	Acidiferrobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	163359:emu_db_mar2026:48188
+final_consensus_235_depth_22	22	90.18	144	1281578	UNCLASSIFIED	UNCLASSIFIED	Acidiferrobacteraceae	Acidiferrobacterales	Gammaproteobacteria	Pseudomonadota		Bacteria	1281578:emu_db_mar2026:93181
+final_consensus_236_depth_22	22	73.07	338	1507448	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	1507448:emu_db_mar2026:34784
+final_consensus_237_depth_22	22	73.99	194	752179	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	752179:emu_db_mar2026:95373
+final_consensus_238_depth_18	18	80.76	272	2739056	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	UNCLASSIFIED	Cyanophyceae	Cyanobacteriota	Cyanobacteriota/Melainabacteria group	Bacteria	2739056:emu_db_mar2026:26245
+final_consensus_239_depth_17	17	96.52	51	624186	UNCLASSIFIED	Blattabacterium	Blattabacteriaceae	Flavobacteriales	Flavobacteriia	Bacteroidota	FCB group	Bacteria	624186:emu_db_mar2026:62701
+final_consensus_239_depth_17	17	96.52	51	1653831	UNCLASSIFIED	Blattabacterium	Blattabacteriaceae	Flavobacteriales	Flavobacteriia	Bacteroidota	FCB group	Bacteria	1653831:emu_db_mar2026:90637
+final_consensus_240_depth_15	15	89.80	145	980251	UNCLASSIFIED	UNCLASSIFIED	Pirellulaceae	Pirellulales	Planctomycetia	Planctomycetota	PVC group	Bacteria	980251:emu_db_mar2026:88054
+final_consensus_241_depth_14	14	86.71	192	995053	UNCLASSIFIED	UNCLASSIFIED	Marinilabiliaceae	Marinilabiliales	Bacteroidia	Bacteroidota	FCB group	Bacteria	995053:emu_db_mar2026:74597

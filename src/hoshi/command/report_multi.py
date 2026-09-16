@@ -2,12 +2,15 @@
 
 Each input is a classifier output *directory* (Savont by default, or EMU via
 ``--input-format emu``). Every sample is read through the unified reader
-interface into a :class:`SummarizedExperiment`, wrapped in a :class:`Report`
-(so confidence and other report-time data are layered consistently with the
-single-sample and medical reports), and rendered as one tab in the multi-sample
-template.
+interface into a single-sample :class:`SummarizedExperiment`; the samples are
+then merged into one combined multi-sample experiment via
+:func:`hoshi.lib.experiment.combine_experiments` (which owns the per-sample
+scoping of feature ids and re-keys per-feature confidence). Each tab is a
+per-sample view of that single combined object.
 
-    dirs -> build_reader -> SummarizedExperiment -> Report -> per-sample tab
+    dirs -> build_reader -> per-sample SummarizedExperiment
+         -> combine_experiments -> combined SummarizedExperiment
+         -> per-sample tab (to_dataframe(sample=...))
 """
 
 from __future__ import annotations
@@ -19,13 +22,18 @@ from datetime import datetime
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+import pandas as pd
 
+from hoshi.lib.experiment import (
+    SummarizedExperiment,
+    aggregate_to_species,
+    combine_experiments,
+)
 from hoshi.lib.reader import (
     DEFAULT_INPUT_FORMAT,
     SUPPORTED_INPUT_FORMATS,
     build_reader,
 )
-from hoshi.lib.report import Report
 from hoshi.lib.sankey import get_sankey_data, render_sankey_figure
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -41,20 +49,37 @@ def _dom_id(name: str, index: int) -> str:
     return f"tab-{index}-{slug or 'sample'}"
 
 
-def _build_table(report: Report, name: str, index: int) -> dict:
-    """Build one tab's render context from a single-sample :class:`Report`."""
-    df = report.experiment.to_dataframe()
+def _build_table(
+    experiment: SummarizedExperiment,
+    name: str,
+    index: int,
+    confidence: dict[str, float] | None = None,
+) -> dict:
+    """Build one tab's render context from one sample of a combined experiment.
 
-    # Drop control/meta rows and sort by abundance for display.
+    ``experiment`` is the combined multi-sample :class:`SummarizedExperiment`;
+    this extracts the single ``name`` column and renders its species table and
+    Sankey. ``confidence`` is that sample's per-feature calling confidence,
+    keyed to match the combined feature index (sample-scoped when multi-sample).
+    """
+    df = experiment.to_dataframe(sample=name)
+
+    # Attach per-feature confidence, then aggregate features → species for display.
+    if confidence and "feature_id" in df.columns:
+        df["confidence"] = df["feature_id"].astype(str).map(confidence)
+
     display = df[~df["tax_id"].astype(str).isin(_META_TAX_IDS)].copy()
+    display = aggregate_to_species(display)
     display = display.sort_values("abundance", ascending=False).reset_index(drop=True)
 
-    # Surface per-species confidence (Savont) as a column when present.
-    confidence = report.confidence
+    # Surface per-species confidence (Savont; max over the species' OTUs).
     cols = ["species", "tax_id", "abundance", "estimated counts"]
-    if confidence:
-        display["confidence"] = display["tax_id"].astype(str).map(confidence).round(1)
+    if confidence and "confidence" in display.columns:
+        display["confidence"] = pd.to_numeric(
+            display["confidence"], errors="coerce"
+        ).round(1)
         cols.append("confidence")
+    cols = [c for c in cols if c in display.columns]
     table_html = display[cols].to_html(index=False, border=0, classes="data-table")
 
     # Per-sample Sankey (interactive HTML).
@@ -79,8 +104,13 @@ def run(args: argparse.Namespace) -> int:
         autoescape=select_autoescape(enabled_extensions=("html", "j2"), default_for_string=True),
     )
 
-    tables = []
-    for index, path_str in enumerate(args.inputs):
+    # Read each sample into its own single-sample experiment, then combine them
+    # into one genuine multi-sample experiment. combine_experiments owns the
+    # sample-scoping of feature ids (and re-keys per-feature confidence), so the
+    # tabs below are just per-sample views of that single combined object.
+    per_sample: list[SummarizedExperiment] = []
+    sample_names: list[str] = []
+    for path_str in args.inputs:
         path = Path(path_str)
         if not path.is_dir():
             raise NotADirectoryError(
@@ -89,8 +119,16 @@ def run(args: argparse.Namespace) -> int:
             )
         name = path.name
         reader = build_reader(args.input_format, path, sample_name=name)
-        report = Report.from_experiment(reader.to_summarized_experiment())
-        tables.append(_build_table(report, name, index))
+        per_sample.append(reader.to_summarized_experiment())
+        sample_names.append(name)
+
+    combined = combine_experiments(per_sample)
+    all_confidence = combined.metadata.get("confidence", {})
+
+    tables = [
+        _build_table(combined, name, index, all_confidence.get(name))
+        for index, name in enumerate(sample_names)
+    ]
 
     template = env.get_template(_REPORT_TEMPLATE)
     html = template.render(

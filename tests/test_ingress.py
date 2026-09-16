@@ -7,6 +7,7 @@ from hoshi.lib.ingress import (
     read_savont_abundance,
     read_savont_abundance_into_summarizedexperiment,
 )
+from hoshi.lib.egress import experiment_to_count_table
 
 
 def test_read_emu_abundance_from_path():
@@ -125,12 +126,15 @@ def test_read_savont_abundance_missing_file():
 
 
 def test_savont_into_summarizedexperiment_single_sample():
-    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["sample01"])
+    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_name="sample01")
 
     assert se.metadata["source"] == "savont"
     assert se.n_samples == 1
     assert se.sample_ids[0] == "sample01"
     assert se.n_features > 0
+
+    # Single-sample: feature ids stay raw (Savont's ASV id), never scoped.
+    assert not any(str(fid).startswith("sample01:") for fid in se.feature_ids)
 
     # row_data should have taxonomy columns (not tax_id since it's the index)
     assert "species" in se.row_data.columns
@@ -142,12 +146,47 @@ def test_savont_into_summarizedexperiment_single_sample():
 
 
 def test_savont_into_summarizedexperiment_custom_sample_name():
-    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["my_sample"])
+    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_name="my_sample")
 
     assert se.sample_ids[0] == "my_sample"
     assert se.col_data.loc["my_sample", "sample_name"] == "my_sample"
 
 
-def test_savont_into_summarizedexperiment_name_mismatch_raises():
-    with pytest.raises(ValueError, match="Length mismatch"):
-        read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["a", "b"])
+# ─── Savont → species count table (issue #1) ─────────────────────────────────
+# Savont's native species_abundance.tsv lists abundance + taxonomy but drops the
+# tax_id and the estimated read count. Converting a Savont sample to the count
+# table must restore both, using the same read counts as the abundance table
+# (300 total reads for this sample; Clostridioides difficile == 124).
+
+
+def test_savont_count_table_restores_tax_id_and_estimated_count():
+    se = read_savont_abundance_into_summarizedexperiment(
+        SAVONT_SAMPLE_DIR, sample_name="sample01"
+    )
+    df = experiment_to_count_table(se)
+
+    expected_columns = [
+        "relative_abundance",
+        "estimated_count",
+        "tax_id",
+        "species",
+        "genus",
+        "family",
+        "order",
+        "class",
+        "phylum",
+        "superkingdom",
+    ]
+    assert list(df.columns) == expected_columns
+
+    # tax_id is restored and numeric; total reads match the Savont sample (300).
+    assert all(str(t).isdigit() for t in df["tax_id"])
+    assert df["estimated_count"].sum() == pytest.approx(300)
+    assert df["relative_abundance"].sum() == pytest.approx(1.0)
+
+    # Clostridioides difficile (tax_id 1496): 124 reads, abundance 124/300.
+    row = df[df["tax_id"] == "1496"]
+    assert len(row) == 1
+    assert row["estimated_count"].iat[0] == pytest.approx(124)
+    assert row["relative_abundance"].iat[0] == pytest.approx(124 / 300)
+    assert row["species"].iat[0] == "Clostridioides difficile"

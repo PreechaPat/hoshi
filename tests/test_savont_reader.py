@@ -14,59 +14,56 @@ def test_reader_requires_existing_directory():
         SavontReader("test_data/savont_output/does-not-exist")
 
 
-def test_reader_exposes_fixed_layout_paths():
+# ─── per-feature abundance table ─────────────────────────────────────
+
+
+def test_per_feature_abundance_is_one_row_per_asv():
+    """The per-feature table keeps one row per ASV (no species collapsing)."""
     r = SavontReader(SAVONT_SAMPLE_DIR)
-    assert r.feature_table_path.name == "feature-table.tsv"
-    assert r.asv_mappings_path.name == "asv_mappings.tsv"
-    assert r.final_asvs_path.name == "final_asvs.fasta"
-    assert r.final_clusters_path.name == "final_clusters.tsv"
-    # all under the given directory
-    assert r.feature_table_path.parent == r.directory
+    df = r.per_feature_abundance()
+    # feature_id (asv_header) is unique per row
+    assert df["feature_id"].is_unique
+    # abundance is normalised across features
+    assert df["abundance"].sum() == pytest.approx(1.0)
+    assert df["abundance"].is_monotonic_decreasing
 
 
-# ─── abundance table ─────────────────────────────────────────────────
+# ─── species-level rollup ────────────────────────────────────────────
 
 
-def test_abundance_has_expected_columns_and_no_identity_column():
+def test_species_abundance_does_not_leak_confidence():
+    """Confidence (alignment_identity) must NOT leak into the species table."""
     r = SavontReader(SAVONT_SAMPLE_DIR)
-    df = r.abundance()
-    expected = [
-        "abundance", "tax_id", "species", "genus", "family",
-        "order", "class", "phylum", "superkingdom", "estimated counts",
-    ]
-    assert list(df.columns) == expected
-    # confidence must NOT leak into the core abundance table
+    df = r.species_abundance()
     assert "alignment_identity" not in df.columns
 
 
-def test_abundance_sorted_descending_and_sums_to_one():
+def test_species_abundance_sorted_descending_and_sums_to_one():
     r = SavontReader(SAVONT_SAMPLE_DIR)
-    df = r.abundance()
+    df = r.species_abundance()
     assert df["abundance"].is_monotonic_decreasing
     assert df["abundance"].sum() == pytest.approx(1.0)
 
 
-# ─── species confidence (max per species) ────────────────────────────
+# ─── per-feature confidence ──────────────────────────────────────────
 
 
-def test_species_confidence_keyed_by_tax_id_in_percent_range():
+def test_feature_confidence_keyed_by_asv_in_percent_range():
     r = SavontReader(SAVONT_SAMPLE_DIR)
-    conf = r.species_confidence()
+    conf = r.feature_confidence()
     assert conf  # non-empty for this sample
     assert all(isinstance(k, str) for k in conf)
     assert all(0.0 <= v <= 100.0 for v in conf.values())
 
 
-def test_species_confidence_is_max_per_species():
-    """Confidence must equal the MAX alignment_identity per tax_id."""
+def test_feature_confidence_is_per_asv_identity():
+    """Confidence must equal each ASV's alignment_identity (first hit per ASV)."""
     r = SavontReader(SAVONT_SAMPLE_DIR)
-    conf = r.species_confidence()
+    conf = r.feature_confidence()
 
-    # Recompute expected max directly from the mapping file (first hit per ASV).
     mapping = pd.read_csv(r.asv_mappings_path, sep="\t")
     first = mapping.drop_duplicates(subset=["asv_header"], keep="first").copy()
-    first["tax_id"] = first["tax_id"].astype(int).astype(str)
-    expected = first.groupby("tax_id")["alignment_identity"].max()
+    expected = dict(zip(first["asv_header"].astype(str), first["alignment_identity"]))
 
-    for tax_id, value in conf.items():
-        assert value == pytest.approx(float(expected[tax_id]))
+    for asv, value in conf.items():
+        assert value == pytest.approx(float(expected[asv]))

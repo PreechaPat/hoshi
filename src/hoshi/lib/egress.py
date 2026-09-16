@@ -3,6 +3,7 @@ Egress module — export SummarizedExperiment to various output formats.
 
 Currently supported:
   - Kraken2 report format
+  - Species count table (flat TSV: abundance, tax_id, taxonomy, estimated counts)
 """
 
 from __future__ import annotations
@@ -11,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from hoshi.lib.experiment import SummarizedExperiment
+from hoshi.lib.experiment import SummarizedExperiment, aggregate_to_species
 
 # Mapping from Emu taxonomy column names to Kraken2 rank codes
 _RANK_MAP: dict[str, str] = {
@@ -124,33 +125,39 @@ def _build_taxonomy_tree(
     counts: pd.Series,
     row_data: pd.DataFrame,
     available_ranks: list[str],
-) -> dict[tuple[str, str, str], float]:
+) -> list[dict]:
     """
-    Build a mapping of (rank, name, tax_id) → direct counts.
+    Collect nonzero-count features as entries with their taxonomy lineage.
 
-    For species-level entries, direct counts are the actual estimated counts.
-    For higher-level taxa, direct counts are 0 (they only have clade counts).
-
-    Returns a dict keyed by (rank, name, tax_id) with direct counts as values.
-    Also returns a separate dict for clade counts.
+    Each entry is a dict with keys ``tax_id``, ``count``, and ``lineage``
+    (a rank → name mapping, skipping blank ranks).
     """
-    # Collect species-level entries with their lineage
+    # Collect per-feature entries with their lineage. The feature index is a
+    # per-OTU id, so the NCBI tax_id is read from row_data (nullable) rather than
+    # the index; features without a tax_id fall back to "0".
     entries: list[dict] = []
 
-    for tax_id in counts.index:
-        count = counts[tax_id]
+    for feature_id in counts.index:
+        count = counts[feature_id]
         if count <= 0:
             continue
 
-        row = row_data.loc[tax_id]
+        row = row_data.loc[feature_id]
         lineage = {}
         for rank in available_ranks:
             val = row.get(rank)
             if pd.notna(val) and str(val).strip():
                 lineage[rank] = str(val).strip()
 
+        tax_id_val = row.get("tax_id") if "tax_id" in row_data.columns else None
+        tax_id = (
+            str(tax_id_val).strip()
+            if pd.notna(tax_id_val) and str(tax_id_val).strip()
+            else "0"
+        )
+
         entries.append({
-            "tax_id": str(tax_id),
+            "tax_id": tax_id,
             "count": float(count),
             "lineage": lineage,
         })
@@ -397,3 +404,156 @@ def write_kraken2_report(
     """
     report = experiment_to_kraken2(experiment, sample=sample)
     Path(output).write_text(report)
+
+
+# ── Species count table ──────────────────────────────────────────────
+#
+# Savont's native species output (``species_abundance.tsv``) lists relative
+# abundance next to the taxonomy lineage but drops both the NCBI ``tax_id`` and
+# any read count. This egress mirrors that species table while adding the two
+# columns Savont omits: ``tax_id`` and ``estimated counts``. Taxonomy stays in
+# separate rank columns (one row per species) rather than being collapsed into a
+# single lineage string.
+
+# Column order of the emitted species count table. Leads with the two values of
+# interest (relative abundance, estimated count) and the identifier (tax_id),
+# followed by the taxonomy lineage from specific → broad.
+_COUNT_TABLE_COLUMNS: list[str] = [
+    "relative_abundance",
+    "estimated_count",
+    "tax_id",
+    "species",
+    "genus",
+    "family",
+    "order",
+    "class",
+    "phylum",
+    "superkingdom",
+]
+
+
+def experiment_to_count_table(
+    experiment: SummarizedExperiment,
+    sample: str | None = None,
+) -> pd.DataFrame:
+    """Build a species-level count table from a per-OTU experiment.
+
+    The experiment feature axis is per-OTU/ASV; this aggregates OTUs up to one
+    row per species by ``tax_id`` (see
+    :func:`hoshi.lib.experiment.aggregate_to_species`). OTUs with a missing/blank
+    ``tax_id`` are kept as their own rows (option iii) so counts still total
+    correctly and unassigned sequences are never merged into one bogus taxon.
+
+    Mirrors Savont's ``species_abundance.tsv`` (relative abundance + taxonomy
+    lineage) but adds the two columns Savont drops: the NCBI ``tax_id`` and the
+    ``estimated_count``. Taxonomy is kept as separate rank columns; there is no
+    OTU column.
+
+    Parameters
+    ----------
+    experiment : SummarizedExperiment
+        Per-OTU experiment. Must have a ``counts`` assay; ``abundance`` is used
+        when present and otherwise derived from counts. ``row_data`` supplies
+        ``tax_id`` + taxonomy columns.
+    sample : str, optional
+        Which sample to export. Required if the experiment has > 1 sample.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns: relative_abundance, estimated_count, tax_id, species, genus,
+        family, order, class, phylum, superkingdom. Sorted by
+        relative_abundance (descending) with a positional integer index.
+
+    Raises
+    ------
+    ValueError
+        If the ``counts`` assay is missing, no taxonomy column is present, or
+        the requested sample is absent / ambiguous.
+    """
+    if "counts" not in experiment.assay_names:
+        raise ValueError(
+            "Experiment must have a 'counts' assay for count-table conversion."
+        )
+
+    if sample is None:
+        if experiment.n_samples == 1:
+            sample = experiment.sample_ids[0]
+        else:
+            raise ValueError(
+                f"Experiment has {experiment.n_samples} samples; "
+                f"specify which one with `sample=`."
+            )
+
+    if sample not in experiment.sample_ids:
+        raise ValueError(
+            f"Sample '{sample}' not found. Available: {list(experiment.sample_ids)}"
+        )
+
+    row_data = experiment.row_data
+    tax_cols = [r for r in _RANK_ORDER if r in row_data.columns]
+    if not tax_cols:
+        raise ValueError(
+            "row_data must have at least one taxonomy column "
+            f"({', '.join(_RANK_ORDER)})."
+        )
+    if "tax_id" not in row_data.columns:
+        raise ValueError("row_data must have a 'tax_id' column.")
+
+    counts = experiment.assays["counts"][sample].astype(float)
+    if "abundance" in experiment.assay_names:
+        abundance = experiment.assays["abundance"][sample].astype(float)
+    else:
+        total = counts.sum()
+        abundance = counts / total if total > 0 else counts * 0.0
+
+    # Per-OTU flat table (one row per feature) → aggregate up to species.
+    per_otu = pd.DataFrame(index=counts.index)
+    per_otu["abundance"] = abundance
+    per_otu["estimated counts"] = counts
+    per_otu["tax_id"] = row_data["tax_id"].reindex(counts.index)
+    for col in tax_cols:
+        per_otu[col] = row_data[col].reindex(counts.index)
+
+    species = aggregate_to_species(per_otu)
+
+    table = pd.DataFrame(index=species.index)
+    table["relative_abundance"] = species.get("abundance", pd.Series(dtype=float))
+    counts_series = species.get("estimated counts", pd.Series(dtype=float))
+    # Whole-read counts (Savont) render as ints; keep fractional EM counts (Emu).
+    if counts_series.dropna().mod(1).eq(0).all():
+        table["estimated_count"] = counts_series.round().astype("Int64")
+    else:
+        table["estimated_count"] = counts_series
+    table["tax_id"] = species.get("tax_id", "")
+    for col in tax_cols:
+        table[col] = species.get(col)
+
+    # Guarantee a stable column set/order even when some ranks are absent.
+    for col in _COUNT_TABLE_COLUMNS:
+        if col not in table.columns:
+            table[col] = pd.NA
+
+    return (
+        table[_COUNT_TABLE_COLUMNS]
+        .sort_values("relative_abundance", ascending=False)
+        .reset_index(drop=True)
+    )
+
+
+def count_table_to_tsv(
+    experiment: SummarizedExperiment,
+    sample: str | None = None,
+) -> str:
+    """Render :func:`experiment_to_count_table` as a tab-delimited string."""
+    table = experiment_to_count_table(experiment, sample=sample)
+    return table.to_csv(sep="\t", index=False)
+
+
+def write_count_table(
+    experiment: SummarizedExperiment,
+    output: str | Path,
+    sample: str | None = None,
+) -> None:
+    """Write the species count table to ``output`` as a TSV file."""
+    Path(output).write_text(count_table_to_tsv(experiment, sample=sample))

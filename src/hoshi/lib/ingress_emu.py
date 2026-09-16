@@ -81,34 +81,39 @@ def read_emu_abundance(input_data, *, sep: str | None = "\t", reorder: bool = Fa
 
 
 def read_emu_abundance_into_summarizedexperiment(
-    input_paths: str | Path | list[str | Path],
+    input_path: str | Path,
     *,
-    sample_names: list[str] | None = None,
+    sample_name: str | None = None,
     superkingdom: str | None = "Bacteria",
 ) -> SummarizedExperiment:
     """
-    Load one or more Emu rel-abundance TSV files into a SummarizedExperiment.
+    Load a single Emu rel-abundance TSV file into a SummarizedExperiment.
 
     Input layout (EMU)
     ------------------
     EMU emits one TSV file per sample, and the *filename itself* encodes the
     sample name as a prefix (e.g. ``sample01_rel-abundance.tsv``,
     ``barcode11.fastq_rel-abundance.tsv``). There is no fixed parent-directory
-    structure — files may live anywhere. Because of this, when ``sample_names``
-    is not supplied we derive each sample name from the filename stem (see
+    structure — files may live anywhere. Because of this, when ``sample_name``
+    is not supplied we derive it from the filename stem (see
     ``_derive_sample_name``, which strips the ``_rel-abundance`` / ``.fastq``
     suffixes). This is the key structural difference from Savont, which instead
     uses a fixed per-sample directory layout (see
     ``read_savont_abundance_into_summarizedexperiment``).
 
+    This reads exactly one sample and returns a single-sample experiment.
+    Combining several samples into one experiment (and the sample-scoping that
+    entails) is a separate, explicit step — see
+    :func:`hoshi.lib.experiment.combine_experiments`.
+
     Parameters
     ----------
-    input_paths : str, Path, or list thereof
-        Path(s) to Emu rel-abundance TSV files. Each file represents one sample.
+    input_path : str or Path
+        Path to an Emu rel-abundance TSV file (one sample).
 
-    sample_names : list of str, optional
-        Sample names corresponding to each file. If None, names are derived
-        from the filename (stem without '_rel-abundance' suffix).
+    sample_name : str, optional
+        Sample name for the resulting experiment. If None, it is derived from
+        the filename (stem without '_rel-abundance' suffix).
 
     superkingdom : str or None, default "Bacteria"
         Value to fill in the superkingdom column when Emu leaves it empty.
@@ -119,12 +124,19 @@ def read_emu_abundance_into_summarizedexperiment(
     Returns
     -------
     SummarizedExperiment
-        Container with:
-        - assays["abundance"]: relative abundance matrix (features × samples)
-        - assays["counts"]: estimated counts matrix (features × samples)
-        - row_data: taxonomy annotations per feature (indexed by tax_id)
+        Single-sample container with:
+        - assays["abundance"]: relative abundance matrix (OTUs × 1)
+        - assays["counts"]: estimated counts matrix (OTUs × 1)
+        - row_data: tax_id + taxonomy annotations per OTU (raw feature id index)
         - col_data: sample metadata (indexed by sample name)
         - metadata: {"source": "emu"}
+
+    Notes
+    -----
+    EMU has no ASV/OTU concept — each row is a ``tax_id``. To align EMU with the
+    per-OTU model used for Savont, **one tax_id/species is treated as one OTU**
+    (no sequence identity). The raw feature id therefore *is* the ``tax_id``;
+    ``tax_id`` is also carried as a nullable row_data column.
     """
     EMU_TAXONOMY_COLUMNS = (
         "superkingdom",
@@ -136,60 +148,34 @@ def read_emu_abundance_into_summarizedexperiment(
         "species",
     )
 
-    # Normalise to list
-    if isinstance(input_paths, (str, Path)):
-        input_paths = [input_paths]
-    input_paths = [Path(p) for p in input_paths]
+    path = Path(input_path)
+    name = sample_name if sample_name is not None else _derive_sample_name(path)
 
-    if sample_names is None:
-        sample_names = [_derive_sample_name(p) for p in input_paths]
+    df = read_emu_abundance(str(path), reorder=True)
 
-    if len(sample_names) != len(input_paths):
-        raise ValueError(
-            f"Length mismatch: {len(input_paths)} files but "
-            f"{len(sample_names)} sample names."
-        )
+    # Filter out unmapped/unclassified control rows.
+    df = df[pd.to_numeric(df["tax_id"], errors="coerce").notna()].copy()
+    df["tax_id"] = df["tax_id"].astype(int).astype(str)
 
-    # Collect per-sample data
-    abundance_series: dict[str, pd.Series] = {}
-    counts_series: dict[str, pd.Series] = {}
-    taxonomy_frames: list[pd.DataFrame] = []
+    # Raw feature id = tax_id (one tax_id == one feature for EMU).
+    df.index = pd.Index(df["tax_id"].astype(str), name="feature_id")
 
-    for path, name in zip(input_paths, sample_names):
-        df = read_emu_abundance(str(path), reorder=True)
+    abundance_matrix = pd.DataFrame({name: df["abundance"]}).fillna(0.0)
+    counts_matrix = pd.DataFrame(
+        {name: df["estimated counts"].astype(float)}
+    ).fillna(0.0)
 
-        # Filter out unmapped/unclassified control rows
-        df = df[pd.to_numeric(df["tax_id"], errors="coerce").notna()].copy()
-        df["tax_id"] = df["tax_id"].astype(int).astype(str)
-        df = df.set_index("tax_id")
+    row_cols = ["tax_id", *[c for c in EMU_TAXONOMY_COLUMNS if c in df.columns]]
+    row_data = df[row_cols].reindex(abundance_matrix.index)
 
-        abundance_series[name] = df["abundance"]
-        counts_series[name] = df["estimated counts"].astype(float)
-
-        # Collect taxonomy (will merge/deduplicate later)
-        tax_cols = [c for c in EMU_TAXONOMY_COLUMNS if c in df.columns]
-        taxonomy_frames.append(df[tax_cols])
-
-    # Build assay matrices (features × samples), filling missing features with 0
-    abundance_matrix = pd.DataFrame(abundance_series).fillna(0.0)
-    counts_matrix = pd.DataFrame(counts_series).fillna(0.0)
-
-    # Build row_data from merged taxonomy (take first non-NA per tax_id)
-    row_data = pd.concat(taxonomy_frames).groupby(level=0).first()
-    row_data = row_data.reindex(abundance_matrix.index)
-
-    # Fill empty superkingdom values with the override
+    # Fill empty superkingdom values with the override (EMU 16S usually omits it).
     if superkingdom and "superkingdom" in row_data.columns:
         row_data["superkingdom"] = row_data["superkingdom"].fillna(superkingdom)
         row_data["superkingdom"] = row_data["superkingdom"].replace("", superkingdom)
 
-    # Build col_data
     col_data = pd.DataFrame(
-        {
-            "sample_name": sample_names,
-            "source_file": [str(p) for p in input_paths],
-        },
-        index=sample_names,
+        {"sample_name": [name], "source_file": [str(path)]},
+        index=[name],
     )
 
     return SummarizedExperiment(

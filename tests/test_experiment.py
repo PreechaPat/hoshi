@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from hoshi.lib.experiment import SummarizedExperiment
+from hoshi.lib.experiment import SummarizedExperiment, combine_experiments
 from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment, _derive_sample_name
 
 
@@ -125,7 +125,7 @@ def test_derive_sample_name(filename, expected):
 def test_emu_into_summarizedexperiment_single_sample():
     se = read_emu_abundance_into_summarizedexperiment(
         "test_data/emu_output/emu-mock01.tsv",
-        sample_names=["mock01"],
+        sample_name="mock01",
     )
 
     assert se.n_samples == 1
@@ -134,6 +134,9 @@ def test_emu_into_summarizedexperiment_single_sample():
     assert "counts" in se.assay_names
     assert list(se.sample_ids) == ["mock01"]
     assert se.metadata == {"source": "emu"}
+
+    # Single-sample: feature ids stay raw (the tax_id), never sample-scoped.
+    assert not any(str(fid).startswith("mock01:") for fid in se.feature_ids)
 
     # Check that row_data has taxonomy
     assert "genus" in se.row_data.columns
@@ -147,16 +150,25 @@ def test_emu_into_summarizedexperiment_single_sample():
     assert total == pytest.approx(1.0, abs=0.01)
 
 
-def test_emu_into_summarizedexperiment_multi_sample():
-    se = read_emu_abundance_into_summarizedexperiment([
-        "test_data/emu_output/test_ind/sample01/sample01_rel-abundance.tsv",
-        "test_data/emu_output/test_ind/sample02/sample02_rel-abundance.tsv",
-        "test_data/emu_output/test_ind/sample03/sample03_rel-abundance.tsv",
-    ])
+def test_combine_experiments_multi_sample():
+    # Ingress is strictly single-sample now; combining is an explicit step via
+    # combine_experiments, which owns the sample-scoping of feature ids.
+    samples = [
+        read_emu_abundance_into_summarizedexperiment(path)
+        for path in (
+            "test_data/emu_output/test_ind/sample01/sample01_rel-abundance.tsv",
+            "test_data/emu_output/test_ind/sample02/sample02_rel-abundance.tsv",
+            "test_data/emu_output/test_ind/sample03/sample03_rel-abundance.tsv",
+        )
+    ]
+    se = combine_experiments(samples)
 
     assert se.n_samples == 3
     assert list(se.sample_ids) == ["sample01", "sample02", "sample03"]
     assert se.n_features >= 11  # union of all features across samples
+
+    # Multi-sample: feature ids are scoped per sample (<sample>:<feature_id>).
+    assert any(str(fid).startswith("sample01:") for fid in se.feature_ids)
 
     # Features missing from a sample should be filled with 0
     abundance = se.assays["abundance"]
@@ -168,11 +180,3 @@ def test_emu_into_summarizedexperiment_auto_derives_sample_names():
         "test_data/emu_output/silva_count/barcode11.fastq_rel-abundance.tsv"
     )
     assert list(se.sample_ids) == ["barcode11"]
-
-
-def test_emu_into_summarizedexperiment_mismatched_names_raises():
-    with pytest.raises(ValueError, match="Length mismatch"):
-        read_emu_abundance_into_summarizedexperiment(
-            ["test_data/emu_output/emu-mock01.tsv"],
-            sample_names=["a", "b"],
-        )
