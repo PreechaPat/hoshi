@@ -21,14 +21,24 @@ from hoshi.lib.report import Report
 
 
 def _make_experiment() -> SummarizedExperiment:
-    """A 3-feature (+1 meta row) single-sample experiment."""
-    abundance = pd.DataFrame(
-        {"s1": [0.6, 0.3, 0.1, 0.05]},
-        index=["1496", "562", "1351", "unmapped"],
-    )
+    """A 3-OTU (+1 meta row) single-sample per-OTU experiment.
+
+    Feature index is per-OTU; tax_id (incl. the ``unmapped`` meta sentinel)
+    lives in row_data.
+    """
+    otu_ids = ["s1:ASV0", "s1:ASV1", "s1:ASV2", "s1:ASV3"]
+    abundance = pd.DataFrame({"s1": [0.6, 0.3, 0.1, 0.05]}, index=otu_ids)
     row_data = pd.DataFrame(
-        {"species": ["Clostridioides difficile", "Escherichia coli", "Enterococcus faecalis", ""]},
-        index=["1496", "562", "1351", "unmapped"],
+        {
+            "tax_id": ["1496", "562", "1351", "unmapped"],
+            "species": [
+                "Clostridioides difficile",
+                "Escherichia coli",
+                "Enterococcus faecalis",
+                "",
+            ],
+        },
+        index=otu_ids,
     )
     return SummarizedExperiment(
         assays={"abundance": abundance},
@@ -56,15 +66,15 @@ def test_build_medical_report_stores_everything_in_metadata():
         clinical=_CLINICAL,
         pathogens={"1496": True, "562": False},
         qc_items=[{"name": "Read quality", "status": "pass"}],
-        confidence={"1496": 99.8},
+        confidence={"s1:ASV0": 99.8},
     )
     assert isinstance(report, Report)
     # Clinical envelope lives in metadata (Option A).
     assert report.metadata["report_id"] == "16S-2026-000184"
     assert report.metadata["pathogens"] == {"1496": True, "562": False}
     assert report.metadata["qc_items"] == [{"name": "Read quality", "status": "pass"}]
-    # Confidence uses the typed field.
-    assert report.confidence == {"1496": 99.8}
+    # Confidence uses the typed field (keyed by per-OTU feature id).
+    assert report.confidence == {"s1:ASV0": 99.8}
     # Experiment is held unmodified.
     assert report.experiment.n_features == 4
 
@@ -87,7 +97,7 @@ def test_flatten_combines_pathogens_and_confidence_at_render_time():
         _make_experiment(),
         clinical=_CLINICAL,
         pathogens={"1496": True, "562": False},
-        confidence={"1496": 99.8},
+        confidence={"s1:ASV0": 99.8},
     )
     data = report_to_medical_data(report)
     by_name = {o["name"]: o for o in data["organisms"]}
@@ -169,7 +179,7 @@ def test_render_from_report_produces_html_with_report_values():
         _make_experiment(),
         clinical=_CLINICAL,
         pathogens={"1496": True},
-        confidence={"1496": 99.8},
+        confidence={"s1:ASV0": 99.8},
         qc_items=[{"name": "Read quality", "status": "pass"}],
     )
     html = generate_medical_report_from_report(report, report_date="31 Aug 2026")

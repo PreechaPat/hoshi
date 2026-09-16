@@ -154,7 +154,7 @@ def _load_experiment(input_format: str, input_path: Path) -> SummarizedExperimen
         if not input_path.is_dir():
             raise ValueError(f"Savont input must be a directory: {input_path}")
         return read_savont_abundance_into_summarizedexperiment(
-            input_path, sample_names=[input_path.name]
+            input_path, sample_name=input_path.name
         )
 
     raise ValueError(

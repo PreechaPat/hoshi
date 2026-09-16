@@ -20,7 +20,7 @@ from typing import Any
 
 import pandas as pd
 
-from hoshi.lib.experiment import SummarizedExperiment
+from hoshi.lib.experiment import SummarizedExperiment, aggregate_to_species
 from hoshi.lib.report import Report
 
 # tax_id values EMU uses for control/meta rows that must never be organisms.
@@ -106,18 +106,24 @@ def build_medical_report(
 
 
 def _organisms_from_report(report: Report, *, top: int | None = None) -> list[dict]:
-    """Derive the organism table from the experiment, combining pathogens.
+    """Derive the species-level organism table, combining pathogens.
 
-    Organisms are sorted by abundance descending. ``identity`` comes from
-    ``Report.confidence``; ``pathogenic`` holds the pathogen *classification*
-    string from ``metadata["pathogens"]`` (e.g. ``"primary"``,
-    ``"commensal (gut, stool)"``, or ``None`` when the tax_id is unknown) —
-    both combined here at render time, keyed by ``tax_id``.
+    The experiment is per-OTU, so OTUs are aggregated up to species (by
+    ``tax_id``) for display. Per-OTU calling confidence is mapped on first, then
+    aggregated to the species with ``max()``. Organisms are sorted by abundance
+    descending. ``pathogenic`` holds the pathogen classification string from
+    ``metadata["pathogens"]``, keyed by ``tax_id``.
     """
     df = report.experiment.to_dataframe()
 
+    # Attach per-feature confidence, then aggregate features → species (max).
+    if report.confidence and "feature_id" in df.columns:
+        df["confidence"] = df["feature_id"].astype(str).map(report.confidence)
+
     if "tax_id" in df.columns:
         df = df[~df["tax_id"].astype(str).isin(_META_TAX_IDS)].copy()
+
+    df = aggregate_to_species(df)
 
     df = df[pd.to_numeric(df["abundance"], errors="coerce").notna()].copy()
     df = df.sort_values("abundance", ascending=False)
@@ -125,7 +131,6 @@ def _organisms_from_report(report: Report, *, top: int | None = None) -> list[di
         df = df.head(top)
 
     pathogens = report.metadata.get("pathogens", {})
-    confidence = report.confidence
 
     organisms: list[dict] = []
     for _, row in df.iterrows():
@@ -134,19 +139,19 @@ def _organisms_from_report(report: Report, *, top: int | None = None) -> list[di
         # Fall back to genus when the classifier did not resolve a species. This
         # covers both an empty/NaN species and the literal "UNCLASSIFIED" sentinel
         # some classifiers (e.g. Savont) write when the closest reference hit did
-        # not clear the species-level threshold. The tax_id/identity on such a row
-        # still describe the closest match and are carried through unchanged.
+        # not clear the species-level threshold.
         name = row.get("species", "")
         if not name or pd.isna(name) or str(name).strip().upper() == "UNCLASSIFIED":
             genus = row.get("genus", "Unknown")
             name = "Unknown" if pd.isna(genus) or not str(genus).strip() else genus
 
-        identity = confidence.get(tax_id)
+        identity = row.get("confidence")
+        has_identity = identity is not None and pd.notna(identity)
         organisms.append(
             {
                 "name": str(name).strip(),
                 "abundance": round(float(row["abundance"]) * 100, 2),
-                "identity": round(identity, 1) if identity is not None else None,
+                "identity": round(float(identity), 1) if has_identity else None,
                 "pathogenic": pathogens.get(tax_id),
             }
         )

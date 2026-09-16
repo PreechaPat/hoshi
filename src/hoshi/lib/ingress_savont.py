@@ -79,21 +79,21 @@ def read_savont_abundance(
     if not mapping_path.is_file():
         raise ValueError(f"ASV mapping not found: {mapping_path}")
 
-    return SavontReader(feature_path.parent).abundance()
+    return SavontReader(feature_path.parent).species_abundance()
 
 
 def read_savont_abundance_into_summarizedexperiment(
-    input_dirs: str | Path | list[str | Path],
+    input_dir: str | Path,
     *,
-    sample_names: list[str],
+    sample_name: str,
 ) -> SummarizedExperiment:
     """
-    Load one or more Savont output directories into a SummarizedExperiment.
+    Load a single Savont output directory into a SummarizedExperiment.
 
     Input layout (Savont)
     ---------------------
     Savont output is 100% the same fixed directory structure for every sample so
-    the sample name must be supplied explicitly via ``sample_names``.
+    the sample name must be supplied explicitly via ``sample_name``.
 
     Each Savont sample directory contains, after the initial (denoise/cluster)
     run:
@@ -110,86 +110,31 @@ def read_savont_abundance_into_summarizedexperiment(
     classify-stage files) are intentionally noted here because we will need them
     later for more detailed reports.
 
+    This reads exactly one sample and returns a single-sample experiment whose
+    feature index carries Savont's **raw** feature ids. Combining several
+    samples into one experiment (and the sample-scoping that entails) is a
+    separate, explicit step — see
+    :func:`hoshi.lib.experiment.combine_experiments`.
+
     Parameters
     ----------
-    input_dirs : str, Path, or list thereof
-        Path(s) to Savont output directories. Each directory represents one
-        sample and must contain ``feature-table.tsv`` and ``asv_mappings.tsv``.
+    input_dir : str or Path
+        Path to a Savont output directory containing ``feature-table.tsv`` and
+        ``asv_mappings.tsv``.
 
-    sample_names : list of str
-        Sample names corresponding to each directory.
+    sample_name : str
+        Sample name for the resulting single-sample experiment.
 
     Returns
     -------
     SummarizedExperiment
-        Container with:
-        - assays["abundance"]: relative abundance matrix (features × samples)
-        - assays["counts"]: estimated counts matrix (features × samples)
-        - row_data: taxonomy annotations per feature (indexed by tax_id)
+        Single-sample container with:
+        - assays["abundance"]: relative abundance matrix (features × 1)
+        - assays["counts"]: estimated counts matrix (features × 1)
+        - row_data: taxonomy annotations per feature (raw feature id index)
         - col_data: sample metadata (indexed by sample name)
-        - metadata: {"source": "savont"}
+        - metadata: {"source": "savont", "confidence": {...}}
     """
-    SAVONT_TAXONOMY_COLUMNS = (
-        "species",
-        "genus",
-        "family",
-        "order",
-        "class",
-        "phylum",
-        "superkingdom",
-    )
-
-    # Normalise to list
-    if isinstance(input_dirs, (str, Path)):
-        input_dirs = [input_dirs]
-    input_dirs = [Path(d) for d in input_dirs]
-
-    if len(sample_names) != len(input_dirs):
-        raise ValueError(
-            f"Length mismatch: {len(input_dirs)} directories but "
-            f"{len(sample_names)} sample names."
-        )
-
-    # Collect per-sample data
-    abundance_series: dict[str, pd.Series] = {}
-    counts_series: dict[str, pd.Series] = {}
-    taxonomy_frames: list[pd.DataFrame] = []
-    # Per-sample species-calling confidence (keyed by sample -> {tax_id: pct}),
-    # stored as non-core key-value side data in metadata. The Report composite
-    # consumes this; the abundance table itself stays confidence-free.
-    species_confidence: dict[str, dict[str, float]] = {}
-
-    for dir_path, name in zip(input_dirs, sample_names):
-        reader = SavontReader(dir_path)
-        df = reader.abundance().set_index("tax_id")
-
-        abundance_series[name] = df["abundance"]
-        counts_series[name] = df["estimated counts"].astype(float)
-        species_confidence[name] = reader.species_confidence()
-
-        tax_cols = [c for c in SAVONT_TAXONOMY_COLUMNS if c in df.columns]
-        taxonomy_frames.append(df[tax_cols])
-
-    # Build assay matrices (features × samples), filling missing features with 0
-    abundance_matrix = pd.DataFrame(abundance_series).fillna(0.0)
-    counts_matrix = pd.DataFrame(counts_series).fillna(0.0)
-
-    # Build row_data from merged taxonomy (take first non-NA per tax_id)
-    row_data = pd.concat(taxonomy_frames).groupby(level=0).first()
-    row_data = row_data.reindex(abundance_matrix.index)
-
-    # Build col_data
-    col_data = pd.DataFrame(
-        {
-            "sample_name": sample_names,
-            "source_file": [str(d) for d in input_dirs],
-        },
-        index=sample_names,
-    )
-
-    return SummarizedExperiment(
-        assays={"abundance": abundance_matrix, "counts": counts_matrix},
-        row_data=row_data,
-        col_data=col_data,
-        metadata={"source": "savont", "species_confidence": species_confidence},
-    )
+    return SavontReader(
+        Path(input_dir), sample_name=sample_name
+    ).to_summarized_experiment()

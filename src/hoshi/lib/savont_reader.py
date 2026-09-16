@@ -34,7 +34,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from hoshi.lib.experiment import SummarizedExperiment
+from hoshi.lib.experiment import (
+    SummarizedExperiment,
+    aggregate_to_species,
+)
 
 # Fixed filenames within a Savont sample directory.
 _FEATURE_TABLE = "feature-table.tsv"
@@ -204,70 +207,94 @@ class SavontReader:
             raise ValueError("No ASVs could be resolved from the mapping file.")
 
         resolved = pd.DataFrame(rows)
-        resolved["tax_id"] = resolved["tax_id"].astype(int).astype(str)
+        # tax_id is a nullable annotation now, not a join key: parse tolerantly
+        # so ASVs with a missing/blank/non-numeric tax_id survive as <NA>.
+        tax_num = pd.to_numeric(resolved["tax_id"], errors="coerce").astype("Int64")
+        resolved["tax_id"] = tax_num.astype(str).where(tax_num.notna(), pd.NA)
         return resolved
 
-    # ─── Derived: species-level abundance table ──────────────────────
+    # ─── Derived: per-OTU (per-ASV) abundance table ──────────────────
 
-    def abundance(self) -> pd.DataFrame:
-        """Species-level abundance table (one row per ``tax_id``).
+    def per_feature_abundance(self) -> pd.DataFrame:
+        """Per-feature (per-OTU/ASV) abundance table (one row per ``asv_header``).
 
-        Columns: abundance, tax_id, species, genus, family, order, class,
-        phylum, superkingdom, estimated counts. Sorted by abundance desc, with a
-        positional integer index (``tax_id`` is a regular column).
+        This is the feature-level table: each ASV keeps its own read depth,
+        relative abundance (depth / total depth), taxonomy assignment, tax_id
+        (nullable), and ``alignment_identity``. No aggregation to species is done
+        here — that is an explicit downstream step (see
+        :func:`hoshi.lib.experiment.aggregate_to_species`).
+
+        Columns: feature_id, abundance, estimated counts, tax_id, species,
+        genus, family, order, class, phylum, superkingdom, alignment_identity.
+        Sorted by abundance descending. ``feature_id`` here is Savont's own
+        ``asv_header`` (the reader scopes it per sample when building an
+        experiment).
         """
-        resolved = self._resolved_asvs
-
-        agg = (
-            resolved.groupby("tax_id", as_index=False).agg(
-                {
-                    "depth": "sum",
-                    "species": "first",
-                    "genus": "first",
-                    "family": "first",
-                    "order": "first",
-                    "class": "first",
-                    "phylum": "first",
-                    "superkingdom": "first",
-                }
-            )
+        resolved = self._resolved_asvs.copy()
+        total_depth = resolved["depth"].sum()
+        resolved["abundance"] = (
+            resolved["depth"] / total_depth if total_depth > 0 else 0.0
+        )
+        resolved = resolved.rename(
+            columns={"depth": "estimated counts", "asv_header": "feature_id"}
         )
 
-        total_depth = agg["depth"].sum()
-        agg["abundance"] = agg["depth"] / total_depth if total_depth > 0 else 0.0
-        agg = agg.rename(columns={"depth": "estimated counts"})
-
-        for col in _ABUNDANCE_OUTPUT_COLUMNS:
-            if col not in agg.columns:
-                agg[col] = pd.NA
+        columns = [
+            "feature_id",
+            "abundance",
+            "estimated counts",
+            *self._SE_TAXONOMY_COLUMNS,
+            "tax_id",
+            "alignment_identity",
+        ]
+        for col in columns:
+            if col not in resolved.columns:
+                resolved[col] = pd.NA
 
         return (
-            agg[list(_ABUNDANCE_OUTPUT_COLUMNS)]
+            resolved[columns]
             .sort_values("abundance", ascending=False)
             .reset_index(drop=True)
         )
 
-    # ─── Derived: species-calling confidence ─────────────────────────
+    # ─── Derived: species-level abundance table (rollup) ─────────────
 
-    def species_confidence(self) -> dict[str, float]:
-        """Per-species calling confidence, keyed by ``tax_id`` (percent 0–100).
+    def species_abundance(self) -> pd.DataFrame:
+        """Species-level abundance table (one row per ``tax_id``).
 
-        For each species, this is the **max** ``alignment_identity`` across the
-        ASVs that resolve to it — the identity of the best-matching ASV. Species
-        with no identity data (all-NaN) are omitted.
+        A convenience rollup of :meth:`per_feature_abundance` that aggregates
+        features to species by ``tax_id`` (features with no tax_id stay as their
+        own rows, so counts still total correctly). Kept for callers that want a
+        species view without going through a full experiment.
+
+        Columns: abundance, tax_id, species, genus, family, order, class,
+        phylum, superkingdom, estimated counts. Sorted by abundance descending.
+        """
+        per_feature = self.per_feature_abundance()
+        rolled = aggregate_to_species(per_feature)
+
+        for col in _ABUNDANCE_OUTPUT_COLUMNS:
+            if col not in rolled.columns:
+                rolled[col] = pd.NA
+        return rolled[list(_ABUNDANCE_OUTPUT_COLUMNS)].reset_index(drop=True)
+
+    # ─── Derived: per-feature calling confidence ─────────────────────
+
+    def feature_confidence(self) -> dict[str, float]:
+        """Per-feature calling confidence, keyed by ``asv_header`` (percent 0–100).
+
+        This is each ASV's ``alignment_identity`` — a genuine per-feature value.
+        Features with no identity data are omitted.
         """
         resolved = self._resolved_asvs
         if "alignment_identity" not in resolved.columns:
             return {}
-
         identity = pd.to_numeric(resolved["alignment_identity"], errors="coerce")
-        per_species = (
-            resolved.assign(_identity=identity)
-            .groupby("tax_id")["_identity"]
-            .max()
-            .dropna()
-        )
-        return {str(tax_id): float(value) for tax_id, value in per_species.items()}
+        return {
+            str(asv): float(val)
+            for asv, val in zip(resolved["asv_header"], identity)
+            if pd.notna(val)
+        }
 
     # ─── Unified reader interface ────────────────────────────────────
 
@@ -282,33 +309,45 @@ class SavontReader:
     )
 
     def to_summarized_experiment(self) -> SummarizedExperiment:
-        """Build a single-sample :class:`SummarizedExperiment` for this directory.
+        """Build a single-sample per-OTU :class:`SummarizedExperiment`.
 
-        The sample is labelled with :attr:`sample_name`. Per-species calling
-        confidence (see :meth:`species_confidence`) is carried in
-        ``metadata["species_confidence"][sample_name]``; the abundance table
-        itself stays confidence-free.
+        Features are OTUs/ASVs — one row per ``asv_header`` — keyed by Savont's
+        **raw** feature id (unscoped). Taxonomy and ``tax_id`` are nullable
+        ``row_data`` annotations; species aggregation is an explicit downstream
+        step. Per-OTU calling confidence (:meth:`feature_confidence`, keyed by
+        the raw feature id) is carried in ``metadata["confidence"][sample_name]``.
+
+        Feature ids are scoped per sample only when several samples are merged
+        (see :func:`hoshi.lib.experiment.combine_experiments`), so a single
+        sample keeps its classifier-native ids here.
 
         Returns
         -------
         SummarizedExperiment
             Container with:
-            - assays["abundance"]: relative abundance matrix (features × 1)
-            - assays["counts"]: estimated counts matrix (features × 1)
-            - row_data: taxonomy annotations per feature (indexed by tax_id)
+            - assays["abundance"]: relative abundance matrix (OTUs × 1)
+            - assays["counts"]: estimated counts matrix (OTUs × 1)
+            - row_data: tax_id + taxonomy annotations per OTU (indexed by the
+              raw OTU id)
             - col_data: sample metadata (indexed by sample name)
-            - metadata: {"source": "savont", "species_confidence": {...}}
+            - metadata: {"source": "savont", "confidence": {...}}
         """
         name = self.sample_name
-        df = self.abundance().set_index("tax_id")
+        df = self.per_feature_abundance().copy()
+
+        # Raw (unscoped) feature id — Savont's own ASV id.
+        df.index = pd.Index(df["feature_id"].astype(str), name="feature_id")
 
         abundance_matrix = pd.DataFrame({name: df["abundance"]}).fillna(0.0)
         counts_matrix = pd.DataFrame(
             {name: df["estimated counts"].astype(float)}
         ).fillna(0.0)
 
-        tax_cols = [c for c in self._SE_TAXONOMY_COLUMNS if c in df.columns]
-        row_data = df[tax_cols].reindex(abundance_matrix.index)
+        row_cols = [c for c in ("tax_id", *self._SE_TAXONOMY_COLUMNS) if c in df.columns]
+        row_data = df[row_cols].reindex(abundance_matrix.index)
+
+        # Per-feature confidence, keyed by the raw feature id.
+        confidence = dict(self.feature_confidence())
 
         col_data = pd.DataFrame(
             {
@@ -324,6 +363,6 @@ class SavontReader:
             col_data=col_data,
             metadata={
                 "source": "savont",
-                "species_confidence": {name: self.species_confidence()},
+                "confidence": {name: confidence},
             },
         )

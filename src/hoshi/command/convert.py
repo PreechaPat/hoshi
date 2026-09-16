@@ -52,7 +52,7 @@ def run(args: argparse.Namespace) -> int:
     elif input_format == "savont":
         sample_name = args.name or input_path.name
         experiment = read_savont_abundance_into_summarizedexperiment(
-            input_path, sample_names=[sample_name]
+            input_path, sample_name=sample_name
         )
     else:
         print(

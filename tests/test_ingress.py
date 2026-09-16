@@ -126,12 +126,15 @@ def test_read_savont_abundance_missing_file():
 
 
 def test_savont_into_summarizedexperiment_single_sample():
-    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["sample01"])
+    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_name="sample01")
 
     assert se.metadata["source"] == "savont"
     assert se.n_samples == 1
     assert se.sample_ids[0] == "sample01"
     assert se.n_features > 0
+
+    # Single-sample: feature ids stay raw (Savont's ASV id), never scoped.
+    assert not any(str(fid).startswith("sample01:") for fid in se.feature_ids)
 
     # row_data should have taxonomy columns (not tax_id since it's the index)
     assert "species" in se.row_data.columns
@@ -143,15 +146,10 @@ def test_savont_into_summarizedexperiment_single_sample():
 
 
 def test_savont_into_summarizedexperiment_custom_sample_name():
-    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["my_sample"])
+    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_name="my_sample")
 
     assert se.sample_ids[0] == "my_sample"
     assert se.col_data.loc["my_sample", "sample_name"] == "my_sample"
-
-
-def test_savont_into_summarizedexperiment_name_mismatch_raises():
-    with pytest.raises(ValueError, match="Length mismatch"):
-        read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_names=["a", "b"])
 
 
 # ─── Savont → species count table (issue #1) ─────────────────────────────────
@@ -163,7 +161,7 @@ def test_savont_into_summarizedexperiment_name_mismatch_raises():
 
 def test_savont_count_table_restores_tax_id_and_estimated_count():
     se = read_savont_abundance_into_summarizedexperiment(
-        SAVONT_SAMPLE_DIR, sample_names=["sample01"]
+        SAVONT_SAMPLE_DIR, sample_name="sample01"
     )
     df = experiment_to_count_table(se)
 

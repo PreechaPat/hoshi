@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from hoshi.lib.experiment import SummarizedExperiment
+from hoshi.lib.experiment import SummarizedExperiment, aggregate_to_species
 
 # Mapping from Emu taxonomy column names to Kraken2 rank codes
 _RANK_MAP: dict[str, str] = {
@@ -132,23 +132,32 @@ def _build_taxonomy_tree(
     Each entry is a dict with keys ``tax_id``, ``count``, and ``lineage``
     (a rank → name mapping, skipping blank ranks).
     """
-    # Collect species-level entries with their lineage
+    # Collect per-feature entries with their lineage. The feature index is a
+    # per-OTU id, so the NCBI tax_id is read from row_data (nullable) rather than
+    # the index; features without a tax_id fall back to "0".
     entries: list[dict] = []
 
-    for tax_id in counts.index:
-        count = counts[tax_id]
+    for feature_id in counts.index:
+        count = counts[feature_id]
         if count <= 0:
             continue
 
-        row = row_data.loc[tax_id]
+        row = row_data.loc[feature_id]
         lineage = {}
         for rank in available_ranks:
             val = row.get(rank)
             if pd.notna(val) and str(val).strip():
                 lineage[rank] = str(val).strip()
 
+        tax_id_val = row.get("tax_id") if "tax_id" in row_data.columns else None
+        tax_id = (
+            str(tax_id_val).strip()
+            if pd.notna(tax_id_val) and str(tax_id_val).strip()
+            else "0"
+        )
+
         entries.append({
-            "tax_id": str(tax_id),
+            "tax_id": tax_id,
             "count": float(count),
             "lineage": lineage,
         })
@@ -427,18 +436,25 @@ def experiment_to_count_table(
     experiment: SummarizedExperiment,
     sample: str | None = None,
 ) -> pd.DataFrame:
-    """Build a flat species table with estimated counts and ``tax_id``.
+    """Build a species-level count table from a per-OTU experiment.
+
+    The experiment feature axis is per-OTU/ASV; this aggregates OTUs up to one
+    row per species by ``tax_id`` (see
+    :func:`hoshi.lib.experiment.aggregate_to_species`). OTUs with a missing/blank
+    ``tax_id`` are kept as their own rows (option iii) so counts still total
+    correctly and unassigned sequences are never merged into one bogus taxon.
 
     Mirrors Savont's ``species_abundance.tsv`` (relative abundance + taxonomy
     lineage) but adds the two columns Savont drops: the NCBI ``tax_id`` and the
-    per-species ``estimated_count``. Each row is one species (``tax_id``);
-    taxonomy is kept as separate rank columns rather than a collapsed lineage.
+    ``estimated_count``. Taxonomy is kept as separate rank columns; there is no
+    OTU column.
 
     Parameters
     ----------
     experiment : SummarizedExperiment
-        Must have a ``counts`` assay; ``abundance`` is used when present and
-        otherwise derived from counts. ``row_data`` supplies taxonomy columns.
+        Per-OTU experiment. Must have a ``counts`` assay; ``abundance`` is used
+        when present and otherwise derived from counts. ``row_data`` supplies
+        ``tax_id`` + taxonomy columns.
     sample : str, optional
         Which sample to export. Required if the experiment has > 1 sample.
 
@@ -481,26 +497,37 @@ def experiment_to_count_table(
             "row_data must have at least one taxonomy column "
             f"({', '.join(_RANK_ORDER)})."
         )
+    if "tax_id" not in row_data.columns:
+        raise ValueError("row_data must have a 'tax_id' column.")
 
     counts = experiment.assays["counts"][sample].astype(float)
-
     if "abundance" in experiment.assay_names:
         abundance = experiment.assays["abundance"][sample].astype(float)
     else:
         total = counts.sum()
         abundance = counts / total if total > 0 else counts * 0.0
 
-    table = pd.DataFrame(index=counts.index)
-    table["relative_abundance"] = abundance
-    # Present whole-read counts (Savont) as ints; keep fractional estimated
-    # counts (Emu's EM output) as floats rather than silently rounding them.
-    if counts.dropna().mod(1).eq(0).all():
-        table["estimated_count"] = counts.round().astype("Int64")
-    else:
-        table["estimated_count"] = counts
-    table["tax_id"] = counts.index.astype(str)
+    # Per-OTU flat table (one row per feature) → aggregate up to species.
+    per_otu = pd.DataFrame(index=counts.index)
+    per_otu["abundance"] = abundance
+    per_otu["estimated counts"] = counts
+    per_otu["tax_id"] = row_data["tax_id"].reindex(counts.index)
     for col in tax_cols:
-        table[col] = row_data[col]
+        per_otu[col] = row_data[col].reindex(counts.index)
+
+    species = aggregate_to_species(per_otu)
+
+    table = pd.DataFrame(index=species.index)
+    table["relative_abundance"] = species.get("abundance", pd.Series(dtype=float))
+    counts_series = species.get("estimated counts", pd.Series(dtype=float))
+    # Whole-read counts (Savont) render as ints; keep fractional EM counts (Emu).
+    if counts_series.dropna().mod(1).eq(0).all():
+        table["estimated_count"] = counts_series.round().astype("Int64")
+    else:
+        table["estimated_count"] = counts_series
+    table["tax_id"] = species.get("tax_id", "")
+    for col in tax_cols:
+        table[col] = species.get(col)
 
     # Guarantee a stable column set/order even when some ranks are absent.
     for col in _COUNT_TABLE_COLUMNS:

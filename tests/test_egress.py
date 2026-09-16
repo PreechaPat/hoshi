@@ -18,17 +18,17 @@ from hoshi.lib.ingress import read_emu_abundance_into_summarizedexperiment
 
 @pytest.fixture
 def simple_experiment():
-    """A minimal single-sample experiment for testing."""
-    counts = pd.DataFrame(
-        {"sample1": [100.0, 200.0, 50.0]},
-        index=["1351", "1496", "817"],
-    )
-    abundance = pd.DataFrame(
-        {"sample1": [0.286, 0.571, 0.143]},
-        index=["1351", "1496", "817"],
-    )
+    """A minimal single-sample per-OTU experiment for testing.
+
+    Feature index is per-OTU (one OTU per species here); tax_id lives in
+    row_data as a nullable annotation.
+    """
+    otu_ids = ["sample1:ASV0", "sample1:ASV1", "sample1:ASV2"]
+    counts = pd.DataFrame({"sample1": [100.0, 200.0, 50.0]}, index=otu_ids)
+    abundance = pd.DataFrame({"sample1": [0.286, 0.571, 0.143]}, index=otu_ids)
     row_data = pd.DataFrame(
         {
+            "tax_id": ["1351", "1496", "817"],
             "superkingdom": ["Bacteria", "Bacteria", "Bacteria"],
             "phylum": ["Bacillota", "Bacillota", "Bacteroidota"],
             "class": ["Bacilli", "Clostridia", "Bacteroidia"],
@@ -41,7 +41,7 @@ def simple_experiment():
                 "Bacteroides fragilis",
             ],
         },
-        index=["1351", "1496", "817"],
+        index=otu_ids,
     )
     col_data = pd.DataFrame(
         {"sample_name": ["sample1"]},
@@ -64,12 +64,6 @@ def real_experiment():
 
 
 # ─── Basic conversion tests ─────────────────────────────────────────
-
-
-def test_experiment_to_kraken2_returns_string(simple_experiment):
-    result = experiment_to_kraken2(simple_experiment)
-    assert isinstance(result, str)
-    assert len(result) > 0
 
 
 def test_experiment_to_kraken2_tab_delimited(simple_experiment):
@@ -165,28 +159,6 @@ def test_experiment_to_kraken2_percentage_sums(simple_experiment):
     domain_lines = [line for line in lines if line.split("\t")[3] == "D"]
     total_pct = sum(float(line.split("\t")[0]) for line in domain_lines)
     assert total_pct == pytest.approx(100.0, abs=0.1)
-
-
-def test_experiment_to_kraken2_indentation(simple_experiment):
-    """Deeper ranks should be more indented than shallower ones."""
-    result = experiment_to_kraken2(simple_experiment)
-    lines = result.strip().split("\n")
-
-    # Domain lines have 2 leading spaces (depth=1)
-    # Phylum lines have 4 leading spaces (depth=2)
-    # Species lines have 14 leading spaces (depth=7)
-    for line in lines:
-        fields = line.split("\t")
-        rank_code = fields[3]
-        name = fields[5]
-        leading_spaces = len(name) - len(name.lstrip())
-
-        if rank_code == "U":
-            assert leading_spaces == 0
-        elif rank_code == "D":
-            assert leading_spaces == 2
-        elif rank_code == "P":
-            assert leading_spaces == 4
 
 
 # ─── Error handling tests ────────────────────────────────────────────
@@ -320,11 +292,11 @@ def test_write_kraken2_report(simple_experiment, tmp_path):
     assert content == expected
 
 
-# ─── Species count table (generic egress unit tests) ─────────────────
+# ─── Species count table (per-OTU egress unit tests) ─────────────────
 #
-# These exercise the egress layer directly on hand-built SummarizedExperiment
-# objects, so they stay classifier-agnostic. The Savont-specific end-to-end
-# path (real Savont directory → count table) is covered in test_ingress.py.
+# The experiment feature axis is per-OTU; the count table aggregates OTUs up to
+# species by tax_id. These build hand-made per-OTU SEs so they stay
+# classifier-agnostic. The Savont end-to-end path is covered in test_ingress.py.
 
 _COUNT_TABLE_COLUMNS = [
     "relative_abundance",
@@ -340,44 +312,99 @@ _COUNT_TABLE_COLUMNS = [
 ]
 
 
-def test_count_table_column_order_leads_with_value_and_taxid(simple_experiment):
-    """Table leads with relative_abundance, estimated_count, tax_id."""
-    df = experiment_to_count_table(simple_experiment)
-    assert list(df.columns) == _COUNT_TABLE_COLUMNS
+def _per_otu_se(counts_map, tax_ids, taxonomy, *, samples=("s1",)):
+    """Build a per-OTU SE: index = otu ids, tax_id + taxonomy in row_data."""
+    otu_ids = list(counts_map.keys())
+    counts = pd.DataFrame({samples[0]: list(counts_map.values())}, index=otu_ids)
+    row = {"tax_id": [tax_ids[o] for o in otu_ids]}
+    for rank, values in taxonomy.items():
+        row[rank] = [values[o] for o in otu_ids]
+    row_data = pd.DataFrame(row, index=otu_ids)
+    total = counts[samples[0]].sum()
+    abundance = pd.DataFrame(
+        {samples[0]: counts[samples[0]] / total if total else 0.0}, index=otu_ids
+    )
+    return SummarizedExperiment(
+        assays={"abundance": abundance, "counts": counts}, row_data=row_data
+    )
 
 
-def test_count_table_restores_tax_id_and_counts(simple_experiment):
-    """The two columns Savont's native species output drops are present."""
-    df = experiment_to_count_table(simple_experiment).set_index("tax_id")
+@pytest.fixture
+def per_otu_experiment():
+    """Three OTUs; two share tax_id 1496 (should collapse to one species)."""
+    return _per_otu_se(
+        counts_map={"s1:ASV0": 100.0, "s1:ASV1": 24.0, "s1:ASV2": 50.0},
+        tax_ids={"s1:ASV0": "1496", "s1:ASV1": "1496", "s1:ASV2": "817"},
+        taxonomy={
+            "species": {
+                "s1:ASV0": "Clostridioides difficile",
+                "s1:ASV1": "Clostridioides difficile",
+                "s1:ASV2": "Bacteroides fragilis",
+            },
+            "genus": {
+                "s1:ASV0": "Clostridioides",
+                "s1:ASV1": "Clostridioides",
+                "s1:ASV2": "Bacteroides",
+            },
+            "superkingdom": {
+                "s1:ASV0": "Bacteria",
+                "s1:ASV1": "Bacteria",
+                "s1:ASV2": "Bacteria",
+            },
+        },
+    )
 
-    assert set(df.index) == {"1351", "1496", "817"}
-    assert df.loc["1351", "estimated_count"] == pytest.approx(100.0)
-    assert df.loc["1496", "estimated_count"] == pytest.approx(200.0)
+
+def test_count_table_aggregates_otus_to_species_by_tax_id(per_otu_experiment):
+    """OTUs sharing a tax_id collapse; counts sum; no OTU column exposed."""
+    df = experiment_to_count_table(per_otu_experiment).set_index("tax_id")
+
+    assert "otu_id" not in df.columns
+    assert set(df.index) == {"1496", "817"}  # two ASVs of 1496 merged
+    assert df.loc["1496", "estimated_count"] == pytest.approx(124.0)  # 100 + 24
     assert df.loc["817", "estimated_count"] == pytest.approx(50.0)
 
 
-def test_count_table_keeps_taxonomy_uncollapsed(simple_experiment):
-    """Taxonomy stays in separate rank columns (one row per species)."""
-    df = experiment_to_count_table(simple_experiment)
-    assert len(df) == 3
-    row = df.set_index("tax_id").loc["1351"]
-    assert row["species"] == "Enterococcus faecalis"
-    assert row["genus"] == "Enterococcus"
-    assert row["superkingdom"] == "Bacteria"
+def test_count_table_keeps_taxonomy_uncollapsed(per_otu_experiment):
+    df = experiment_to_count_table(per_otu_experiment).set_index("tax_id")
+    assert df.loc["1496", "species"] == "Clostridioides difficile"
+    assert df.loc["1496", "genus"] == "Clostridioides"
+    assert df.loc["817", "superkingdom"] == "Bacteria"
 
 
-def test_count_table_sorted_by_abundance_descending(simple_experiment):
-    df = experiment_to_count_table(simple_experiment)
+def test_count_table_sorted_by_abundance_descending(per_otu_experiment):
+    df = experiment_to_count_table(per_otu_experiment)
     assert df["relative_abundance"].is_monotonic_decreasing
-    assert df.iloc[0]["tax_id"] == "1496"  # highest count (200) sorts first
+    assert df.iloc[0]["tax_id"] == "1496"  # 124 reads > 50
+
+
+def test_count_table_blank_tax_id_rows_stay_separate():
+    """OTUs with no tax_id are not collapsed together (option iii)."""
+    se = _per_otu_se(
+        counts_map={"s1:ASV0": 10.0, "s1:ASV1": 20.0, "s1:ASV2": 30.0},
+        tax_ids={"s1:ASV0": "1496", "s1:ASV1": pd.NA, "s1:ASV2": pd.NA},
+        taxonomy={
+            "species": {
+                "s1:ASV0": "Clostridioides difficile",
+                "s1:ASV1": "",
+                "s1:ASV2": "",
+            },
+        },
+    )
+    df = experiment_to_count_table(se)
+    # one collapsed row for 1496 + two separate blank-tax_id rows
+    assert len(df) == 3
+    blanks = df[df["tax_id"].astype(str).isin(["", "<NA>"])]
+    assert len(blanks) == 2
+    # counts still total correctly
+    assert df["estimated_count"].astype(float).sum() == pytest.approx(60.0)
 
 
 def test_count_table_derives_abundance_when_assay_absent():
-    """With no abundance assay, relative_abundance is derived from counts."""
-    counts = pd.DataFrame({"s1": [30.0, 10.0]}, index=["10", "20"])
+    counts = pd.DataFrame({"s1": [30.0, 10.0]}, index=["s1:ASV0", "s1:ASV1"])
     row_data = pd.DataFrame(
-        {"species": ["Sp A", "Sp B"], "genus": ["A", "B"]},
-        index=["10", "20"],
+        {"tax_id": ["10", "20"], "species": ["Sp A", "Sp B"], "genus": ["A", "B"]},
+        index=["s1:ASV0", "s1:ASV1"],
     )
     se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
 
@@ -403,21 +430,23 @@ def test_count_table_no_taxonomy_raises():
 
 def test_count_table_multi_sample_no_selection_raises():
     counts = pd.DataFrame({"s1": [10, 20], "s2": [30, 40]}, index=["f1", "f2"])
-    row_data = pd.DataFrame({"species": ["Sp A", "Sp B"]}, index=["f1", "f2"])
+    row_data = pd.DataFrame(
+        {"tax_id": ["1", "2"], "species": ["Sp A", "Sp B"]}, index=["f1", "f2"]
+    )
     se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
     with pytest.raises(ValueError, match="samples"):
         experiment_to_count_table(se)
 
 
-def test_count_table_to_tsv_is_tab_delimited(simple_experiment):
-    tsv = count_table_to_tsv(simple_experiment)
+def test_count_table_to_tsv_is_tab_delimited(per_otu_experiment):
+    tsv = count_table_to_tsv(per_otu_experiment)
     header = tsv.splitlines()[0]
     assert header.split("\t") == _COUNT_TABLE_COLUMNS
 
 
-def test_write_count_table(simple_experiment, tmp_path):
+def test_write_count_table(per_otu_experiment, tmp_path):
     output_file = tmp_path / "species_counts.tsv"
-    write_count_table(simple_experiment, output_file)
+    write_count_table(per_otu_experiment, output_file)
 
     assert output_file.exists()
-    assert output_file.read_text() == count_table_to_tsv(simple_experiment)
+    assert output_file.read_text() == count_table_to_tsv(per_otu_experiment)

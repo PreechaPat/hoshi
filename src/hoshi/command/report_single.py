@@ -13,8 +13,10 @@ from datetime import datetime
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+import pandas as pd
 
 from hoshi.lib.diversity import compute_diversity
+from hoshi.lib.experiment import aggregate_to_species
 from hoshi.lib.reader import (
     DEFAULT_INPUT_FORMAT,
     SUPPORTED_INPUT_FORMATS,
@@ -38,23 +40,30 @@ def _prepare_report_data(
     """
     se = report.experiment
     df = se.to_dataframe()
-    stats = compute_diversity(df)
 
-    # Filter out meta rows for display
+    # Attach per-feature confidence before any species aggregation.
+    confidence = report.confidence
+    if confidence and "feature_id" in df.columns:
+        df["confidence"] = df["feature_id"].astype(str).map(confidence)
+
+    # Diversity is reported at species level (see diversity.compute_diversity).
+    stats = compute_diversity(df, level="species")
+
+    # Filter out meta rows, then aggregate OTUs → species for display.
     meta_ids = {"unmapped", "mapped_filtered", "mapped_unclassified"}
     df_display = df[~df["tax_id"].astype(str).isin(meta_ids)].copy()
+    df_display = aggregate_to_species(df_display)
     df_display = df_display.sort_values("abundance", ascending=False).reset_index(drop=True)
 
-    # Surface per-species confidence (Savont) as an extra column when present.
-    confidence = report.confidence
-    if confidence:
-        df_display["confidence"] = (
-            df_display["tax_id"].astype(str).map(confidence).round(1)
-        )
+    # Surface per-species confidence (Savont; max over the species' OTUs).
+    if confidence and "confidence" in df_display.columns:
+        df_display["confidence"] = pd.to_numeric(
+            df_display["confidence"], errors="coerce"
+        ).round(1)
         display_cols = ["species", "tax_id", "abundance", "estimated counts", "confidence"]
     else:
         display_cols = ["species", "tax_id", "abundance", "estimated counts"]
-    df_subset = df_display[display_cols]
+    df_subset = df_display[[c for c in display_cols if c in df_display.columns]]
 
     top5_html = df_subset.head(5).to_html(index=False, border=0, classes="data-table")
     top10_html = df_subset.head(10).to_html(index=False, border=0, classes="data-table")

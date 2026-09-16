@@ -150,7 +150,7 @@ class EmuReader:
         )
 
         return read_emu_abundance_into_summarizedexperiment(
-            self.abundance_path, sample_names=[self.sample_name]
+            self.abundance_path, sample_name=self.sample_name
         )
 
 

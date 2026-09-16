@@ -19,6 +19,261 @@ from typing import Any
 
 import pandas as pd
 
+# Canonical taxonomy ranks, specific → broad. Taxonomy (and tax_id) are nullable
+# per-OTU annotations, not the feature identity: an OTU/ASV is one sequence that
+# *may* be assigned a lineage (possibly only down to genus, or not at all).
+TAXONOMY_RANKS: tuple[str, ...] = (
+    "species",
+    "genus",
+    "family",
+    "order",
+    "class",
+    "phylum",
+    "superkingdom",
+)
+
+# Column that carries the per-feature id when a flat table is produced from an
+# experiment (see :meth:`SummarizedExperiment.to_dataframe`). Features are
+# OTUs/ASVs — one sequence each — identified by the classifier's own id, scoped
+# per sample to stay globally unique across a multi-sample experiment.
+FEATURE_ID_COLUMN = "feature_id"
+
+
+def make_feature_ids(n: int, *, prefix: str = "F", start: int = 1) -> list[str]:
+    """Return ``n`` running feature identifiers (``F00001``, ``F00002`` …).
+
+    Only used as a fallback when a classifier provides no id of its own. Ids are
+    zero-padded to at least five digits and widen automatically beyond 99999, so
+    string ordering matches numeric ordering. ``prefix`` lets callers scope ids
+    per sample.
+    """
+    if n < 0:
+        raise ValueError("n must be non-negative")
+    width = max(5, len(str(start + n - 1))) if n else 5
+    return [f"{prefix}{i:0{width}d}" for i in range(start, start + n)]
+
+
+def aggregate_to_species(
+    df: pd.DataFrame,
+    *,
+    value_columns: tuple[str, ...] = ("abundance", "estimated counts"),
+    confidence_column: str = "confidence",
+    keep_blank_tax_id_separate: bool = True,
+) -> pd.DataFrame:
+    """Aggregate a per-OTU flat table up to one row per species (``tax_id``).
+
+    OTUs that share a ``tax_id`` are summed across ``value_columns`` and keep
+    the first taxonomy lineage seen. When ``keep_blank_tax_id_separate`` is True
+    (option iii), OTUs with a missing/blank ``tax_id`` are **not** collapsed
+    together — each stays as its own row with an empty ``tax_id`` — so read
+    counts still total correctly and unassigned sequences are never merged into
+    one bogus taxon.
+
+    Reports render at species/genus level, so when a ``confidence_column`` is
+    present it is aggregated with ``max()`` (the best-matching OTU wins for the
+    species).
+
+    TODO: max() is a placeholder for confidence aggregation; revisit later.
+
+    The input is expected to have a ``tax_id`` column plus any of the
+    :data:`TAXONOMY_RANKS`. Non-value, non-taxonomy columns are dropped.
+    """
+    if "tax_id" not in df.columns:
+        raise ValueError("aggregate_to_species requires a 'tax_id' column.")
+
+    work = df.copy()
+    tax_id = work["tax_id"].astype("string")
+    blank = tax_id.isna() | (tax_id.str.strip() == "")
+
+    present_values = [c for c in value_columns if c in work.columns]
+    for col in present_values:
+        work[col] = pd.to_numeric(work[col], errors="coerce").fillna(0.0)
+
+    has_conf = confidence_column in work.columns
+    tax_cols = [c for c in TAXONOMY_RANKS if c in work.columns]
+
+    agg_map: dict[str, str] = {c: "sum" for c in present_values}
+    agg_map.update({c: "first" for c in tax_cols})
+    if has_conf:
+        agg_map[confidence_column] = "max"
+
+    out_cols = ["tax_id", *present_values, *tax_cols]
+    if has_conf:
+        out_cols.append(confidence_column)
+
+    # Rows with a real tax_id collapse by tax_id.
+    assigned = work[~blank].copy()
+    assigned["tax_id"] = tax_id[~blank]
+    collapsed = (
+        assigned.groupby("tax_id", as_index=False, dropna=False).agg(agg_map)
+        if not assigned.empty
+        else assigned.reindex(columns=out_cols)
+    )
+
+    # Unassigned rows are kept individually (option iii) with a blank tax_id.
+    unassigned = work[blank].copy()
+    if not unassigned.empty:
+        unassigned["tax_id"] = ""
+        unassigned = unassigned[out_cols]
+
+    out = pd.concat(
+        [f for f in (collapsed, unassigned) if not f.empty],
+        ignore_index=True,
+    ) if (not collapsed.empty or not unassigned.empty) else collapsed
+
+    sort_col = present_values[0] if present_values else None
+    if sort_col:
+        out = out.sort_values(sort_col, ascending=False)
+    return out.reset_index(drop=True)
+
+
+def _scope_feature_id(sample: str, feature_id: Any) -> str:
+    """Prefix a raw feature id with its sample name to keep it globally unique.
+
+    Feature ids from a classifier (e.g. Savont's ``final_consensus_0`` or EMU's
+    ``tax_id``) are only unique *within* one sample. When several samples are
+    combined into one experiment the same raw id can appear in more than one
+    sample, so we scope it as ``<sample>:<feature_id>`` at merge time. Producers
+    keep the raw id; scoping is applied only here (see :func:`combine_experiments`).
+    """
+    return f"{sample}:{feature_id}"
+
+
+def combine_experiments(
+    experiments: list[SummarizedExperiment],
+) -> SummarizedExperiment:
+    """Combine per-sample experiments into one experiment.
+
+    Each input is expected to be a single-sample :class:`SummarizedExperiment`
+    whose feature index carries the classifier's **raw** feature ids (unscoped).
+
+    Feature ids are only unique *within* a sample, so once the combined result
+    holds more than one sample the same raw id could collide across samples.
+    This is the one place that resolves that: when the result spans multiple
+    samples, feature ids are scoped per sample (``<sample>:<feature_id>``); a
+    single-sample result keeps its raw ids untouched. Producers therefore never
+    scope, and a lone sample never carries a pointless sample prefix.
+
+    The result is the block-sparse union used across the codebase:
+
+    - ``assays`` — every named assay is aligned into a (features × samples)
+      matrix; a feature absent from a sample is filled with ``0``. All inputs
+      must expose the same assay names.
+    - ``row_data`` — per-feature annotations, unioned across samples (first
+      value wins for a given id; ids are unique per sample, and scoped when
+      multi-sample, so there is no real conflict).
+    - ``col_data`` — sample metadata rows concatenated in input order.
+    - ``metadata`` — ``source`` is carried through when all inputs agree;
+      ``confidence`` is merged into ``{sample: {feature_id: pct}}`` with keys
+      matching the (raw or scoped) feature index.
+    """
+    if not experiments:
+        return SummarizedExperiment()
+
+    assay_names = list(experiments[0].assay_names)
+    for exp in experiments:
+        if list(exp.assay_names) != assay_names:
+            raise ValueError(
+                "combine_experiments requires all inputs to share the same "
+                f"assay names; got {list(exp.assay_names)} vs {assay_names}."
+            )
+
+    # Scope ids only when the combined result actually spans multiple samples;
+    # a single sample keeps its classifier-native ids.
+    total_samples = sum(exp.n_samples for exp in experiments)
+    scope = total_samples > 1
+
+    def key(sample: str, feature_id: Any) -> str:
+        return _scope_feature_id(sample, feature_id) if scope else str(feature_id)
+
+    per_assay_series: dict[str, dict[str, pd.Series]] = {n: {} for n in assay_names}
+    row_data_frames: list[pd.DataFrame] = []
+    col_data_frames: list[pd.DataFrame] = []
+    confidence: dict[str, dict[str, float]] = {}
+    sources: set[str] = set()
+
+    for exp in experiments:
+        for sample in exp.sample_ids:
+            sample = str(sample)
+            index = exp.feature_ids
+            keyed_index = pd.Index(
+                [key(sample, fid) for fid in index],
+                name=FEATURE_ID_COLUMN,
+            )
+
+            for name in assay_names:
+                col = exp.assays[name][sample]
+                per_assay_series[name][sample] = pd.Series(
+                    col.to_numpy(), index=keyed_index
+                )
+
+            if not exp.row_data.empty:
+                rd = exp.row_data.copy()
+                rd.index = keyed_index
+                row_data_frames.append(rd)
+
+            # Carry per-feature confidence, keyed to match the feature index
+            # (raw feature id, or sample-scoped when multi-sample). Tolerate an
+            # already-scoped key so re-combining is idempotent.
+            per_sample_conf = exp.metadata.get("confidence", {})
+            raw_conf = per_sample_conf.get(sample, {})
+            if raw_conf:
+                confidence[sample] = {
+                    key(sample, _strip_sample_prefix(sample, fid)): pct
+                    for fid, pct in raw_conf.items()
+                }
+
+        if not exp.col_data.empty:
+            col_data_frames.append(exp.col_data)
+        src = exp.metadata.get("source")
+        if src is not None:
+            sources.add(src)
+
+    assays: dict[str, pd.DataFrame] = {}
+    reference_index: pd.Index | None = None
+    for name in assay_names:
+        matrix = pd.DataFrame(per_assay_series[name]).fillna(0.0)
+        matrix.index.name = FEATURE_ID_COLUMN
+        assays[name] = matrix
+        if reference_index is None:
+            reference_index = matrix.index
+
+    if row_data_frames:
+        row_data = pd.concat(row_data_frames)
+        row_data = row_data[~row_data.index.duplicated(keep="first")]
+        row_data = row_data.reindex(reference_index)
+        row_data.index.name = FEATURE_ID_COLUMN
+    else:
+        row_data = pd.DataFrame()
+
+    col_data = (
+        pd.concat(col_data_frames) if col_data_frames else pd.DataFrame()
+    )
+
+    metadata: dict[str, Any] = {}
+    if len(sources) == 1:
+        metadata["source"] = next(iter(sources))
+    if confidence:
+        metadata["confidence"] = confidence
+
+    return SummarizedExperiment(
+        assays=assays,
+        row_data=row_data,
+        col_data=col_data,
+        metadata=metadata,
+    )
+
+
+def _strip_sample_prefix(sample: str, feature_id: Any) -> str:
+    """Return ``feature_id`` without a leading ``<sample>:`` prefix, if present.
+
+    Producers emit raw (unscoped) confidence keys, but tolerate an already
+    ``<sample>:``-scoped key so re-combining an experiment is idempotent.
+    """
+    fid = str(feature_id)
+    prefix = f"{sample}:"
+    return fid[len(prefix):] if fid.startswith(prefix) else fid
+
 
 @dataclass
 class SummarizedExperiment:
@@ -162,9 +417,12 @@ class SummarizedExperiment:
         Reconstruct a flat DataFrame combining assays and row_data.
 
         For a single-sample SE or when `sample` is specified, produces a
-        DataFrame with columns: tax_id, abundance, estimated counts, plus
-        all row_data columns (taxonomy). This matches the format expected
-        by downstream functions like compute_diversity() and get_sankey_data().
+        DataFrame with columns: feature_id, abundance, estimated counts, plus
+        all row_data columns (``tax_id`` and taxonomy). The feature index is the
+        per-feature (OTU/ASV) id; ``tax_id`` is a regular (nullable) column
+        carried in row_data. This matches the format expected by downstream
+        functions like compute_diversity() and get_sankey_data(), which key on
+        the ``tax_id`` column rather than the index.
 
         Parameters
         ----------
@@ -175,7 +433,8 @@ class SummarizedExperiment:
         Returns
         -------
         pd.DataFrame
-            Flat DataFrame with tax_id as a column (not index).
+            Flat DataFrame with ``feature_id`` as a column (the former index)
+            and ``tax_id`` as a regular column when present in row_data.
         """
         if sample is None:
             if self.n_samples == 1:
@@ -195,12 +454,19 @@ class SummarizedExperiment:
         if "counts" in self.assays:
             data["estimated counts"] = self.assays["counts"][sample]
 
-        # Add row_data (taxonomy)
+        # Add row_data (tax_id + taxonomy)
         if not self.row_data.empty:
             data = data.join(self.row_data)
 
-        # Move index (tax_id) to column
-        data = data.reset_index().rename(columns={"index": "tax_id"})
+        # Surface the feature index (OTU/ASV id) as a regular ``feature_id``
+        # column. The feature index is always named ``feature_id`` (single-sample
+        # producers emit raw ids; combine_experiments scopes them but keeps the
+        # name), so reset_index() yields that column directly. Fall back to
+        # renaming a bare ``index`` column defensively.
+        had_named_index = data.index.name is not None
+        data = data.reset_index()
+        if not had_named_index and "index" in data.columns:
+            data = data.rename(columns={"index": "feature_id"})
 
         return data
 

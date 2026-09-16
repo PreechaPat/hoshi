@@ -8,6 +8,9 @@ from dataclasses import dataclass
 import pandas as pd
 
 
+from hoshi.lib.experiment import aggregate_to_species
+
+
 @dataclass(frozen=True)
 class DiversityStats:
     """Summary statistics for a single microbiome sample."""
@@ -21,28 +24,40 @@ class DiversityStats:
     evenness: float  # Pielou's evenness: H / ln(S)
 
 
-def compute_diversity(df: pd.DataFrame) -> DiversityStats:
+def compute_diversity(df: pd.DataFrame, *, level: str = "species") -> DiversityStats:
     """
-    Compute diversity statistics from an EMU abundance DataFrame.
+    Compute diversity statistics from a per-OTU abundance DataFrame.
 
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame with at least 'abundance' and 'estimated counts' columns,
-        and a 'tax_id' column. Rows with tax_id in ('unmapped', 'mapped_filtered',
-        'mapped_unclassified') are treated as non-species entries.
+        DataFrame with at least 'abundance' and 'estimated counts' columns and a
+        'tax_id' column. Rows with tax_id in ('unmapped', 'mapped_filtered',
+        'mapped_unclassified') are treated as non-species (unclassified) entries.
+    level : {"species", "asv"}, default "species"
+        Aggregation level for richness/diversity. ``"species"`` first rolls
+        per-OTU rows up to one row per ``tax_id`` (via ``aggregate_to_species``),
+        so richness counts species. ``"asv"`` uses the rows as-is, so richness
+        counts OTUs/ASVs. Read totals are identical either way.
 
     Returns
     -------
     DiversityStats
-        Computed diversity metrics.
+        Computed diversity metrics at the requested ``level``.
     """
+    if level not in ("species", "asv"):
+        raise ValueError(f"level must be 'species' or 'asv', got {level!r}")
+
     # Separate classified species from metadata rows
     meta_ids = {"unmapped", "mapped_filtered", "mapped_unclassified"}
     is_species = ~df["tax_id"].astype(str).isin(meta_ids)
 
     species_df = df[is_species].copy()
     meta_df = df[~is_species].copy()
+
+    # Aggregate OTUs → species for the diversity calculation when requested.
+    if level == "species" and not species_df.empty:
+        species_df = aggregate_to_species(species_df)
 
     # Read counts
     species_counts = pd.to_numeric(species_df["estimated counts"], errors="coerce").fillna(0)
