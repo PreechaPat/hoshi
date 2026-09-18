@@ -3,9 +3,9 @@
 The per-source ingress logic lives in dedicated modules so each can document its
 own folder / species quirks without one file growing unwieldy:
 
-- :mod:`hoshi.lib.ingress_emu`    — EMU rel-abundance TSVs (sample name is the
+- :mod:`hoshi.lib.ingress.emu`    — EMU rel-abundance TSVs (sample name is the
   filename prefix; no fixed directory layout).
-- :mod:`hoshi.lib.ingress_savont` — Savont output directories (100% identical
+- :mod:`hoshi.lib.ingress.savont` — Savont output directories (100% identical
   fixed directory structure; sample name supplied explicitly).
 
 The EMU/Savont readers are re-exported from here so existing
@@ -76,14 +76,14 @@ def read_input_table(input_data, required_columns=None, sep=None, keep_only_requ
 
 
 # ── Backward-compatible re-exports ───────────────────────────────────────────
-# Imported at the bottom to avoid a circular import: ``ingress_emu`` imports
+# Imported at the bottom to avoid a circular import: ``ingress.emu`` imports
 # ``read_input_table`` from this module, which must be defined first.
-from hoshi.lib.ingress_emu import (  # noqa: E402
+from hoshi.lib.ingress.emu import (  # noqa: E402
     read_emu_abundance,
     read_emu_abundance_into_summarizedexperiment,
     _derive_sample_name,
 )
-from hoshi.lib.ingress_savont import (  # noqa: E402
+from hoshi.lib.ingress.savont import (  # noqa: E402
     read_savont_abundance,
     read_savont_abundance_into_summarizedexperiment,
 )

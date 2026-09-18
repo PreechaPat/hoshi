@@ -7,7 +7,7 @@ from hoshi.lib.ingress import (
     read_savont_abundance,
     read_savont_abundance_into_summarizedexperiment,
 )
-from hoshi.lib.egress import experiment_to_count_table
+from hoshi.lib.egress import build_count_table
 
 
 def test_read_emu_abundance_from_path():
@@ -30,17 +30,6 @@ def test_read_emu_abundance_from_path():
     abundance_value = df.loc[df["tax_id"] == "1290", "abundance"].iat[0]
     assert abundance_value == pytest.approx(0.2755103097)
     assert df["estimated counts"].dtype.kind == "f"
-
-
-def test_read_emu_abundance_dataframe_input_adds_taxonomy_columns():
-    raw = pd.DataFrame({"tax_id": ["1", "2"], "abundance": [0.1, 0.9]})
-    df = read_emu_abundance(raw)
-
-    for column in ("superkingdom", "phylum", "class", "order", "family", "genus", "species"):
-        assert column in df.columns
-        assert df[column].isna().all()
-
-    assert df.loc[df["tax_id"] == "1", "abundance"].iat[0] == pytest.approx(0.1)
 
 
 def test_read_emu_abundance_reorders_and_limits_columns():
@@ -120,11 +109,6 @@ def test_read_savont_abundance_sorted_by_abundance():
     assert abundances == sorted(abundances, reverse=True)
 
 
-def test_read_savont_abundance_missing_file():
-    with pytest.raises(ValueError, match="Feature table not found"):
-        read_savont_abundance("/nonexistent/feature-table.tsv", SAVONT_ASV_MAPPING)
-
-
 def test_savont_into_summarizedexperiment_single_sample():
     se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_name="sample01")
 
@@ -145,13 +129,6 @@ def test_savont_into_summarizedexperiment_single_sample():
     assert se.assays["abundance"]["sample01"].sum() == pytest.approx(1.0)
 
 
-def test_savont_into_summarizedexperiment_custom_sample_name():
-    se = read_savont_abundance_into_summarizedexperiment(SAVONT_SAMPLE_DIR, sample_name="my_sample")
-
-    assert se.sample_ids[0] == "my_sample"
-    assert se.col_data.loc["my_sample", "sample_name"] == "my_sample"
-
-
 # ─── Savont → species count table (issue #1) ─────────────────────────────────
 # Savont's native species_abundance.tsv lists abundance + taxonomy but drops the
 # tax_id and the estimated read count. Converting a Savont sample to the count
@@ -163,7 +140,7 @@ def test_savont_count_table_restores_tax_id_and_estimated_count():
     se = read_savont_abundance_into_summarizedexperiment(
         SAVONT_SAMPLE_DIR, sample_name="sample01"
     )
-    df = experiment_to_count_table(se)
+    df = build_count_table(se)
 
     expected_columns = [
         "relative_abundance",

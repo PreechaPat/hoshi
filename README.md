@@ -163,7 +163,7 @@ src/hoshi/
 │   ├── reader.py              # AbundanceReader protocol + build_reader
 │   ├── emu_reader.py          # EMU reader
 │   ├── savont_reader.py       # Savont reader
-│   ├── ingress*.py            # abundance ingestion helpers
+│   ├── ingress/               # abundance ingestion helpers (emu.py, savont.py)
 │   ├── egress.py              # experiment_to_kraken2 / experiment_to_count_table
 │   ├── report.py              # Report composite (SE + report-time data)
 │   ├── medical.py             # medical report builder / view model

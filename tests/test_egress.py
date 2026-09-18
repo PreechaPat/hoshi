@@ -5,8 +5,8 @@ import pytest
 
 from hoshi.lib.egress import experiment_to_kraken2, write_kraken2_report
 from hoshi.lib.egress import (
-    count_table_to_tsv,
     experiment_to_count_table,
+    build_count_table,
     write_count_table,
 )
 from hoshi.lib.experiment import SummarizedExperiment
@@ -357,7 +357,7 @@ def per_otu_experiment():
 
 def test_count_table_aggregates_otus_to_species_by_tax_id(per_otu_experiment):
     """OTUs sharing a tax_id collapse; counts sum; no OTU column exposed."""
-    df = experiment_to_count_table(per_otu_experiment).set_index("tax_id")
+    df = build_count_table(per_otu_experiment).set_index("tax_id")
 
     assert "otu_id" not in df.columns
     assert set(df.index) == {"1496", "817"}  # two ASVs of 1496 merged
@@ -366,14 +366,14 @@ def test_count_table_aggregates_otus_to_species_by_tax_id(per_otu_experiment):
 
 
 def test_count_table_keeps_taxonomy_uncollapsed(per_otu_experiment):
-    df = experiment_to_count_table(per_otu_experiment).set_index("tax_id")
+    df = build_count_table(per_otu_experiment).set_index("tax_id")
     assert df.loc["1496", "species"] == "Clostridioides difficile"
     assert df.loc["1496", "genus"] == "Clostridioides"
     assert df.loc["817", "superkingdom"] == "Bacteria"
 
 
 def test_count_table_sorted_by_abundance_descending(per_otu_experiment):
-    df = experiment_to_count_table(per_otu_experiment)
+    df = build_count_table(per_otu_experiment)
     assert df["relative_abundance"].is_monotonic_decreasing
     assert df.iloc[0]["tax_id"] == "1496"  # 124 reads > 50
 
@@ -391,7 +391,7 @@ def test_count_table_blank_tax_id_rows_stay_separate():
             },
         },
     )
-    df = experiment_to_count_table(se)
+    df = build_count_table(se)
     # one collapsed row for 1496 + two separate blank-tax_id rows
     assert len(df) == 3
     blanks = df[df["tax_id"].astype(str).isin(["", "<NA>"])]
@@ -408,7 +408,7 @@ def test_count_table_derives_abundance_when_assay_absent():
     )
     se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
 
-    df = experiment_to_count_table(se).set_index("tax_id")
+    df = build_count_table(se).set_index("tax_id")
     assert df.loc["10", "relative_abundance"] == pytest.approx(0.75)
     assert df.loc["20", "relative_abundance"] == pytest.approx(0.25)
 
@@ -417,7 +417,7 @@ def test_count_table_no_counts_assay_raises():
     abundance = pd.DataFrame({"s1": [0.5, 0.5]}, index=["f1", "f2"])
     se = SummarizedExperiment(assays={"abundance": abundance})
     with pytest.raises(ValueError, match="counts"):
-        experiment_to_count_table(se)
+        build_count_table(se)
 
 
 def test_count_table_no_taxonomy_raises():
@@ -425,7 +425,7 @@ def test_count_table_no_taxonomy_raises():
     row_data = pd.DataFrame({"other_col": ["x", "y"]}, index=["f1", "f2"])
     se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
     with pytest.raises(ValueError, match="taxonomy column"):
-        experiment_to_count_table(se)
+        build_count_table(se)
 
 
 def test_count_table_multi_sample_no_selection_raises():
@@ -435,11 +435,11 @@ def test_count_table_multi_sample_no_selection_raises():
     )
     se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
     with pytest.raises(ValueError, match="samples"):
-        experiment_to_count_table(se)
+        build_count_table(se)
 
 
-def test_count_table_to_tsv_is_tab_delimited(per_otu_experiment):
-    tsv = count_table_to_tsv(per_otu_experiment)
+def test_experiment_to_count_table_is_tab_delimited(per_otu_experiment):
+    tsv = experiment_to_count_table(per_otu_experiment)
     header = tsv.splitlines()[0]
     assert header.split("\t") == _COUNT_TABLE_COLUMNS
 
@@ -449,4 +449,4 @@ def test_write_count_table(per_otu_experiment, tmp_path):
     write_count_table(per_otu_experiment, output_file)
 
     assert output_file.exists()
-    assert output_file.read_text() == count_table_to_tsv(per_otu_experiment)
+    assert output_file.read_text() == experiment_to_count_table(per_otu_experiment)

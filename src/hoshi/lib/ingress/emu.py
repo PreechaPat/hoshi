@@ -14,7 +14,7 @@ and are addressed individually. Consequently, when the caller does not pass
 (see :func:`_derive_sample_name`, which strips the ``_rel-abundance`` /
 ``.fastq`` suffixes).
 
-This is the key structural difference from Savont (see ``ingress_savont``),
+This is the key structural difference from Savont (see ``ingress.savont``),
 which uses a fixed per-sample *directory* layout where the filenames carry no
 sample identity, so Savont requires ``sample_names`` to be supplied. Keeping the
 two sources in separate modules lets each document its own quirk without the

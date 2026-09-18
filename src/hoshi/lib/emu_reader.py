@@ -1,6 +1,6 @@
 """EmuReader — an interface to a single EMU output directory.
 
-The Savont/EMU structural difference (see :mod:`hoshi.lib.ingress_emu`): EMU
+The Savont/EMU structural difference (see :mod:`hoshi.lib.ingress.emu`): EMU
 emits **one TSV file per sample** and encodes the sample name in the filename,
 whereas Savont uses a fixed per-sample *directory*. To keep a consistent reader
 interface, ``EmuReader`` also wraps a **directory** — an EMU output folder that
@@ -143,8 +143,8 @@ class EmuReader:
             - metadata: {"source": "emu"}
         """
         # Imported lazily to keep heavy pandas-backed ingress off the interface.
-        # Import via the ``ingress`` hub (not ``ingress_emu`` directly) so the
-        # ingress<->ingress_emu re-export cycle is resolved in the right order.
+        # Import via the ``ingress`` hub (not ``ingress.emu`` directly) so the
+        # ingress<->ingress.emu re-export cycle is resolved in the right order.
         from hoshi.lib.ingress import (  # noqa: PLC0415
             read_emu_abundance_into_summarizedexperiment,
         )
