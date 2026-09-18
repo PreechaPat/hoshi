@@ -66,16 +66,18 @@ def read_emu_abundance(input_data, *, sep: str | None = "\t", reorder: bool = Fa
 
     if reorder:
         if "estimated counts" in df.columns:
-            df = df.rename(columns={"estimated counts": "estimated counts"})
-            df["estimated counts"] = pd.to_numeric(df["estimated counts"], errors="coerce").astype(int)
-        if "estimated counts" not in df.columns:
+            df["estimated counts"] = pd.to_numeric(
+                df["estimated counts"], errors="coerce"
+            ).astype(int)
+        else:
             df["estimated counts"] = pd.NA
 
         for column in EMU_OUTPUT_COLUMNS:
             if column not in df.columns:
                 df[column] = pd.NA
 
-        df = df.loc[:, list(EMU_OUTPUT_COLUMNS)]
+        # Drop every non-output column and fix their order in one step.
+        df = read_input_table(df, required_columns=list(EMU_OUTPUT_COLUMNS), keep_only_required=True)
 
     return df
 

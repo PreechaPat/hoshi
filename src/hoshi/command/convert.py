@@ -25,7 +25,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from hoshi.lib.egress import count_table_to_tsv, experiment_to_kraken2
+from hoshi.lib.egress import experiment_to_count_table, experiment_to_kraken2
 from hoshi.lib.ingress import (
     read_emu_abundance_into_summarizedexperiment,
     read_savont_abundance_into_summarizedexperiment,
@@ -66,7 +66,7 @@ def run(args: argparse.Namespace) -> int:
     if output_format == "kraken2":
         rendered = experiment_to_kraken2(experiment)
     elif output_format == "table":
-        rendered = count_table_to_tsv(experiment)
+        rendered = experiment_to_count_table(experiment)
     else:
         print(
             f"Error: unsupported output format '{output_format}'. "

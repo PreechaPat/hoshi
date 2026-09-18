@@ -432,7 +432,7 @@ _COUNT_TABLE_COLUMNS: list[str] = [
 ]
 
 
-def experiment_to_count_table(
+def build_count_table(
     experiment: SummarizedExperiment,
     sample: str | None = None,
 ) -> pd.DataFrame:
@@ -541,12 +541,12 @@ def experiment_to_count_table(
     )
 
 
-def count_table_to_tsv(
+def experiment_to_count_table(
     experiment: SummarizedExperiment,
     sample: str | None = None,
 ) -> str:
-    """Render :func:`experiment_to_count_table` as a tab-delimited string."""
-    table = experiment_to_count_table(experiment, sample=sample)
+    """Render :func:`build_count_table` as a tab-delimited string."""
+    table = build_count_table(experiment, sample=sample)
     return table.to_csv(sep="\t", index=False)
 
 
@@ -556,4 +556,4 @@ def write_count_table(
     sample: str | None = None,
 ) -> None:
     """Write the species count table to ``output`` as a TSV file."""
-    Path(output).write_text(count_table_to_tsv(experiment, sample=sample))
+    Path(output).write_text(experiment_to_count_table(experiment, sample=sample))

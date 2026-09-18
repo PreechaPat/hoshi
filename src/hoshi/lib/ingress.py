@@ -21,7 +21,7 @@ import os
 import pandas as pd
 
 
-def read_input_table(input_data, required_columns=None, sep=None):
+def read_input_table(input_data, required_columns=None, sep=None, keep_only_required=False):
     """
     Read a TSV/CSV file or a pandas DataFrame and validate required columns.
 
@@ -36,6 +36,12 @@ def read_input_table(input_data, required_columns=None, sep=None):
 
     sep : str, optional
         Delimiter for file reading (e.g., '\t' for TSV). If None, will auto-detect.
+
+    keep_only_required : bool, default False
+        When True (and ``required_columns`` is given), drop every column that is
+        not in ``required_columns``, returning the required columns in the order
+        they are listed. Lets callers hand off column pruning to the loader
+        instead of slicing the frame themselves.
 
     Returns
     -------
@@ -63,6 +69,8 @@ def read_input_table(input_data, required_columns=None, sep=None):
         missing = [col for col in required_columns if col not in df.columns]
         if missing:
             raise ValueError(f"Missing required columns: {missing}")
+        if keep_only_required:
+            df = df.loc[:, list(required_columns)]
 
     return df
 

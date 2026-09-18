@@ -132,29 +132,29 @@ class SavontReader:
     @cached_property
     def feature_table(self) -> pd.DataFrame:
         """Raw ``feature-table.tsv`` indexed by ``#OTU ID`` (ASV id)."""
+        from hoshi.lib.ingress import read_input_table  # noqa: PLC0415
+
         path = self.feature_table_path
         if not path.is_file():
             raise ValueError(f"Feature table not found: {path}")
-        df = pd.read_csv(path, sep="\t")
-        if "#OTU ID" not in df.columns:
-            raise ValueError(
-                f"feature-table.tsv missing '#OTU ID' column. "
-                f"Found: {list(df.columns)}"
-            )
+        # Sample count columns are dynamic (one per sample), so we validate the
+        # index column only and keep everything else.
+        df = read_input_table(str(path), required_columns=["#OTU ID"], sep="\t")
         return df.set_index("#OTU ID")
 
     @cached_property
     def asv_mappings(self) -> pd.DataFrame:
         """Raw ``asv_mappings.tsv`` (per-ASV taxonomy assignments)."""
+        from hoshi.lib.ingress import read_input_table  # noqa: PLC0415
+
         path = self.asv_mappings_path
         if not path.is_file():
             raise ValueError(f"ASV mapping not found: {path}")
-        df = pd.read_csv(path, sep="\t")
-        required = ["asv_header", "tax_id", "species"]
-        missing = [c for c in required if c not in df.columns]
-        if missing:
-            raise ValueError(f"asv_mappings.tsv missing columns: {missing}")
-        return df
+        return read_input_table(
+            str(path),
+            required_columns=["asv_header", "tax_id", "species"],
+            sep="\t",
+        )
 
     # ─── Derived: per-ASV depth ──────────────────────────────────────
 
