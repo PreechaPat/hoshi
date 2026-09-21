@@ -16,7 +16,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import pandas as pd
 
 from hoshi.lib.diversity import compute_diversity
-from hoshi.lib.experiment import aggregate_to_species
+from hoshi.lib.experiment import species_view
 from hoshi.lib.reader import (
     DEFAULT_INPUT_FORMAT,
     SUPPORTED_INPUT_FORMATS,
@@ -39,21 +39,16 @@ def _prepare_report_data(
     ``Report`` is surfaced as a headline percentage and per-species column.
     """
     se = report.experiment
-    df = se.to_dataframe()
-
-    # Attach per-feature confidence before any species aggregation.
+    # Per-OTU frame with confidence attached — kept whole for diversity + Sankey,
+    # which consume OTU-level rows (they key on tax_id, not the species rollup).
     confidence = report.confidence
-    if confidence and "feature_id" in df.columns:
-        df["confidence"] = df["feature_id"].astype(str).map(confidence)
+    df = se.to_dataframe(confidence=confidence or None)
 
     # Diversity is reported at species level (see diversity.compute_diversity).
     stats = compute_diversity(df, level="species")
 
-    # Filter out meta rows, then aggregate OTUs → species for display.
-    meta_ids = {"unmapped", "mapped_filtered", "mapped_unclassified"}
-    df_display = df[~df["tax_id"].astype(str).isin(meta_ids)].copy()
-    df_display = aggregate_to_species(df_display)
-    df_display = df_display.sort_values("abundance", ascending=False).reset_index(drop=True)
+    # Species view for the display table (drops meta rows, rolls OTUs → species).
+    df_display = species_view(df)
 
     # Surface per-species confidence (Savont; max over the species' OTUs).
     if confidence and "confidence" in df_display.columns:

@@ -38,6 +38,12 @@ TAXONOMY_RANKS: tuple[str, ...] = (
 # per sample to stay globally unique across a multi-sample experiment.
 FEATURE_ID_COLUMN = "feature_id"
 
+# tax_id values classifiers use for control/meta rows that are not organisms
+# (EMU emits these). Dropped before any species-level view is rendered.
+META_TAX_IDS: frozenset[str] = frozenset(
+    {"unmapped", "mapped_filtered", "mapped_unclassified"}
+)
+
 
 def make_feature_ids(n: int, *, prefix: str = "F", start: int = 1) -> list[str]:
     """Return ``n`` running feature identifiers (``F00001``, ``F00002`` …).
@@ -125,6 +131,39 @@ def aggregate_to_species(
     if sort_col:
         out = out.sort_values(sort_col, ascending=False)
     return out.reset_index(drop=True)
+
+
+def species_view(
+    df: pd.DataFrame,
+    *,
+    top: int | None = None,
+    drop_meta: bool = True,
+) -> pd.DataFrame:
+    """Collapse a per-OTU flat table into the species view reports render.
+
+    This is the shared "OTU rows → species rows" rollup used by every report and
+    the count-table export. It is the single place that:
+
+    1. drops classifier control/meta rows (:data:`META_TAX_IDS`) so they never
+       surface as organisms,
+    2. aggregates OTUs up to one row per ``tax_id`` (:func:`aggregate_to_species`;
+       blank tax_ids stay individual so counts still total correctly), and
+    3. returns rows sorted by abundance descending, optionally trimmed to ``top``.
+
+    ``df`` is a per-OTU flat frame as produced by
+    :meth:`SummarizedExperiment.to_dataframe` (``tax_id`` + taxonomy + value
+    columns, optionally a ``confidence`` column which is aggregated with
+    ``max()``). Callers keep the un-aggregated ``df`` for OTU-level products
+    (diversity, Sankey); this only owns the species collapse.
+    """
+    work = df
+    if drop_meta and "tax_id" in work.columns:
+        work = work[~work["tax_id"].astype(str).isin(META_TAX_IDS)].copy()
+
+    rolled = aggregate_to_species(work)
+    if top is not None:
+        rolled = rolled.head(top).reset_index(drop=True)
+    return rolled
 
 
 def _scope_feature_id(sample: str, feature_id: Any) -> str:
@@ -412,7 +451,12 @@ class SummarizedExperiment:
 
     # ─── Reconstruction ─────────────────────────────────────────────
 
-    def to_dataframe(self, sample: str | None = None) -> pd.DataFrame:
+    def to_dataframe(
+        self,
+        sample: str | None = None,
+        *,
+        confidence: dict[str, float] | None = None,
+    ) -> pd.DataFrame:
         """
         Reconstruct a flat DataFrame combining assays and row_data.
 
@@ -424,11 +468,18 @@ class SummarizedExperiment:
         functions like compute_diversity() and get_sankey_data(), which key on
         the ``tax_id`` column rather than the index.
 
+        This is an un-pivot, not an aggregation: one OTU row in, one row out.
+        Species collapsing is a separate, explicit step (:func:`species_view`).
+
         Parameters
         ----------
         sample : str, optional
             Which sample column to extract. Required if n_samples > 1.
             If the SE has exactly 1 sample, it is used automatically.
+        confidence : dict[str, float], optional
+            Per-feature calling confidence keyed by ``feature_id``. When given,
+            it is attached as a ``confidence`` column (features with no entry
+            get ``NaN``), so callers no longer re-join it by hand.
 
         Returns
         -------
@@ -467,6 +518,11 @@ class SummarizedExperiment:
         data = data.reset_index()
         if not had_named_index and "index" in data.columns:
             data = data.rename(columns={"index": "feature_id"})
+
+        # Attach per-feature confidence (keyed by feature_id) when supplied, so
+        # callers don't re-join it by hand before aggregating to species.
+        if confidence and "feature_id" in data.columns:
+            data["confidence"] = data["feature_id"].astype(str).map(confidence)
 
         return data
 

@@ -1,8 +1,10 @@
 """SavontReader — an interface to a single Savont output directory.
 
 Holds a reference to one Savont folder, knows its fixed file layout, reads each
-file once (cached), and exposes derived products (species-level abundance table,
-per-species calling confidence) so higher layers don't touch files directly.
+file once (cached), and exposes derived products (per-feature abundance table,
+per-feature calling confidence) so higher layers don't touch files directly.
+Species-level rollups are an explicit downstream step
+(:func:`hoshi.lib.experiment.species_view`), not a reader concern.
 
 Savont folder layout (fixed for every sample)
 ---------------------------------------------
@@ -36,7 +38,6 @@ import pandas as pd
 
 from hoshi.lib.experiment import (
     SummarizedExperiment,
-    aggregate_to_species,
 )
 
 # Fixed filenames within a Savont sample directory.
@@ -56,19 +57,6 @@ _TAXONOMY_COLUMNS = (
     "class",
     "phylum",
     "superkingdom",
-)
-
-_ABUNDANCE_OUTPUT_COLUMNS = (
-    "abundance",
-    "tax_id",
-    "species",
-    "genus",
-    "family",
-    "order",
-    "class",
-    "phylum",
-    "superkingdom",
-    "estimated counts",
 )
 
 
@@ -239,6 +227,9 @@ class SavontReader:
             columns={"depth": "estimated counts", "asv_header": "feature_id"}
         )
 
+        # Every column below is guaranteed present: _resolved_asvs always builds
+        # depth (→ estimated counts), asv_header (→ feature_id), tax_id, the
+        # taxonomy ranks, and alignment_identity; abundance is added just above.
         columns = [
             "feature_id",
             "abundance",
@@ -247,36 +238,12 @@ class SavontReader:
             "tax_id",
             "alignment_identity",
         ]
-        for col in columns:
-            if col not in resolved.columns:
-                resolved[col] = pd.NA
 
         return (
             resolved[columns]
             .sort_values("abundance", ascending=False)
             .reset_index(drop=True)
         )
-
-    # ─── Derived: species-level abundance table (rollup) ─────────────
-
-    def species_abundance(self) -> pd.DataFrame:
-        """Species-level abundance table (one row per ``tax_id``).
-
-        A convenience rollup of :meth:`per_feature_abundance` that aggregates
-        features to species by ``tax_id`` (features with no tax_id stay as their
-        own rows, so counts still total correctly). Kept for callers that want a
-        species view without going through a full experiment.
-
-        Columns: abundance, tax_id, species, genus, family, order, class,
-        phylum, superkingdom, estimated counts. Sorted by abundance descending.
-        """
-        per_feature = self.per_feature_abundance()
-        rolled = aggregate_to_species(per_feature)
-
-        for col in _ABUNDANCE_OUTPUT_COLUMNS:
-            if col not in rolled.columns:
-                rolled[col] = pd.NA
-        return rolled[list(_ABUNDANCE_OUTPUT_COLUMNS)].reset_index(drop=True)
 
     # ─── Derived: per-feature calling confidence ─────────────────────
 

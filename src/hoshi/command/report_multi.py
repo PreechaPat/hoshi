@@ -26,8 +26,8 @@ import pandas as pd
 
 from hoshi.lib.experiment import (
     SummarizedExperiment,
-    aggregate_to_species,
     combine_experiments,
+    species_view,
 )
 from hoshi.lib.reader import (
     DEFAULT_INPUT_FORMAT,
@@ -38,9 +38,6 @@ from hoshi.lib.sankey import get_sankey_data, render_sankey_figure
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 _REPORT_TEMPLATE = "microbiome/multisample.html.j2"
-
-# tax_id values used for control/meta rows that must not appear as organisms.
-_META_TAX_IDS = {"unmapped", "mapped_filtered", "mapped_unclassified"}
 
 
 def _dom_id(name: str, index: int) -> str:
@@ -62,15 +59,11 @@ def _build_table(
     Sankey. ``confidence`` is that sample's per-feature calling confidence,
     keyed to match the combined feature index (sample-scoped when multi-sample).
     """
-    df = experiment.to_dataframe(sample=name)
+    # Per-OTU frame with confidence attached — kept whole for the Sankey.
+    df = experiment.to_dataframe(sample=name, confidence=confidence or None)
 
-    # Attach per-feature confidence, then aggregate features → species for display.
-    if confidence and "feature_id" in df.columns:
-        df["confidence"] = df["feature_id"].astype(str).map(confidence)
-
-    display = df[~df["tax_id"].astype(str).isin(_META_TAX_IDS)].copy()
-    display = aggregate_to_species(display)
-    display = display.sort_values("abundance", ascending=False).reset_index(drop=True)
+    # Species view for the display table (drops meta rows, rolls OTUs → species).
+    display = species_view(df)
 
     # Surface per-species confidence (Savont; max over the species' OTUs).
     cols = ["species", "tax_id", "abundance", "estimated counts"]

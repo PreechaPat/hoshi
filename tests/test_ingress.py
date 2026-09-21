@@ -1,10 +1,8 @@
 
-import pandas as pd
 import pytest
 
 from hoshi.lib.ingress import (
     read_emu_abundance,
-    read_savont_abundance,
     read_savont_abundance_into_summarizedexperiment,
 )
 from hoshi.lib.egress import build_count_table
@@ -55,15 +53,22 @@ def test_read_emu_abundance_reorders_and_limits_columns():
 # ─── Savont reader tests ─────────────────────────────────────────────────────
 
 SAVONT_SAMPLE_DIR = "test_data/savont_output/test_ind/savont-out-sample01"
-SAVONT_FEATURE_TABLE = SAVONT_SAMPLE_DIR + "/feature-table.tsv"
-SAVONT_ASV_MAPPING = SAVONT_SAMPLE_DIR + "/asv_mappings.tsv"
 
 
-def test_read_savont_abundance_returns_expected_columns():
-    df = read_savont_abundance(SAVONT_FEATURE_TABLE, SAVONT_ASV_MAPPING)
+def _savont_count_table():
+    """Savont sample rolled up to a species count table via the canonical path."""
+    se = read_savont_abundance_into_summarizedexperiment(
+        SAVONT_SAMPLE_DIR, sample_name="sample01"
+    )
+    return build_count_table(se)
+
+
+def test_savont_count_table_returns_expected_columns():
+    df = _savont_count_table()
 
     expected_columns = [
-        "abundance",
+        "relative_abundance",
+        "estimated_count",
         "tax_id",
         "species",
         "genus",
@@ -72,40 +77,39 @@ def test_read_savont_abundance_returns_expected_columns():
         "class",
         "phylum",
         "superkingdom",
-        "estimated counts",
     ]
     assert list(df.columns) == expected_columns
 
 
-def test_read_savont_abundance_tax_id_is_regular_column():
-    df = read_savont_abundance(SAVONT_FEATURE_TABLE, SAVONT_ASV_MAPPING)
+def test_savont_count_table_tax_id_is_regular_column():
+    df = _savont_count_table()
 
     # tax_id should be a regular column, not the index
     assert "tax_id" in df.columns
     assert df.index.name != "tax_id"
 
 
-def test_read_savont_abundance_values():
-    df = read_savont_abundance(SAVONT_FEATURE_TABLE, SAVONT_ASV_MAPPING)
+def test_savont_count_table_values():
+    df = _savont_count_table()
 
     # Total reads = 71 + 53 + 47 + 44 + 34 + 33 + 18 = 300
-    assert df["estimated counts"].sum() == 300
+    assert df["estimated_count"].sum() == 300
 
-    # Abundances should sum to 1.0
-    assert df["abundance"].sum() == pytest.approx(1.0)
+    # Relative abundances should sum to 1.0
+    assert df["relative_abundance"].sum() == pytest.approx(1.0)
 
     # Clostridioides difficile (tax_id 1496) has ASVs 0 (71) + 1 (53) = 124 reads
     row = df[df["tax_id"] == "1496"]
     assert len(row) == 1
-    assert row["estimated counts"].iat[0] == 124
-    assert row["abundance"].iat[0] == pytest.approx(124 / 300)
+    assert row["estimated_count"].iat[0] == 124
+    assert row["relative_abundance"].iat[0] == pytest.approx(124 / 300)
     assert row["species"].iat[0] == "Clostridioides difficile"
 
 
-def test_read_savont_abundance_sorted_by_abundance():
-    df = read_savont_abundance(SAVONT_FEATURE_TABLE, SAVONT_ASV_MAPPING)
+def test_savont_count_table_sorted_by_abundance():
+    df = _savont_count_table()
 
-    abundances = df["abundance"].tolist()
+    abundances = df["relative_abundance"].tolist()
     assert abundances == sorted(abundances, reverse=True)
 
 

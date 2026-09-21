@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from hoshi.lib.experiment import SummarizedExperiment, aggregate_to_species
+from hoshi.lib.experiment import SummarizedExperiment, species_view
 
 # Mapping from Emu taxonomy column names to Kraken2 rank codes
 _RANK_MAP: dict[str, str] = {
@@ -500,22 +500,16 @@ def build_count_table(
     if "tax_id" not in row_data.columns:
         raise ValueError("row_data must have a 'tax_id' column.")
 
-    counts = experiment.assays["counts"][sample].astype(float)
-    if "abundance" in experiment.assay_names:
-        abundance = experiment.assays["abundance"][sample].astype(float)
-    else:
+    # Per-OTU flat frame (reuses the canonical un-pivot), then roll up to species
+    # via the shared view so meta/control rows are dropped consistently with the
+    # reports (EMU emits unmapped/mapped_* rows that are not taxa).
+    per_otu = experiment.to_dataframe(sample=sample)
+    if "abundance" not in per_otu.columns:
+        counts = per_otu["estimated counts"].astype(float)
         total = counts.sum()
-        abundance = counts / total if total > 0 else counts * 0.0
+        per_otu["abundance"] = counts / total if total > 0 else counts * 0.0
 
-    # Per-OTU flat table (one row per feature) → aggregate up to species.
-    per_otu = pd.DataFrame(index=counts.index)
-    per_otu["abundance"] = abundance
-    per_otu["estimated counts"] = counts
-    per_otu["tax_id"] = row_data["tax_id"].reindex(counts.index)
-    for col in tax_cols:
-        per_otu[col] = row_data[col].reindex(counts.index)
-
-    species = aggregate_to_species(per_otu)
+    species = species_view(per_otu)
 
     table = pd.DataFrame(index=species.index)
     table["relative_abundance"] = species.get("abundance", pd.Series(dtype=float))
