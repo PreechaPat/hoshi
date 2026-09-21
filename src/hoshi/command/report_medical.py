@@ -308,7 +308,7 @@ def run(args: argparse.Namespace) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    # Confidence is auto-extracted from the experiment inside build_medical_report
+    # Sequence identity is auto-extracted from the experiment inside build_medical_report
     # (Savont populates it; EMU does not), so we don't pull it out here.
     report = build_medical_report(
         experiment,

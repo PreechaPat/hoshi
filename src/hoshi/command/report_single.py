@@ -35,14 +35,14 @@ def _prepare_report_data(
 ) -> tuple[dict, object]:
     """Prepare shared report data from a :class:`Report`.
 
-    Returns (report_data dict, DiversityStats). Confidence carried on the
+    Returns (report_data dict, DiversityStats). Sequence identity carried on the
     ``Report`` is surfaced as a headline percentage and per-species column.
     """
     se = report.experiment
-    # Per-OTU frame with confidence attached — kept whole for diversity + Sankey,
+    # Per-OTU frame with sequence identity attached — kept whole for diversity + Sankey,
     # which consume OTU-level rows (they key on tax_id, not the species rollup).
-    confidence = report.confidence
-    df = se.to_dataframe(confidence=confidence or None)
+    sequence_identity = report.sequence_identity
+    df = se.to_dataframe(sequence_identity=sequence_identity or None)
 
     # Diversity is reported at species level (see diversity.compute_diversity).
     stats = compute_diversity(df, level="species")
@@ -50,12 +50,12 @@ def _prepare_report_data(
     # Species view for the display table (drops meta rows, rolls OTUs → species).
     df_display = species_view(df)
 
-    # Surface per-species confidence (Savont; max over the species' OTUs).
-    if confidence and "confidence" in df_display.columns:
-        df_display["confidence"] = pd.to_numeric(
-            df_display["confidence"], errors="coerce"
+    # Surface per-species sequence identity (Savont; max over the species' OTUs).
+    if sequence_identity and "sequence_identity" in df_display.columns:
+        df_display["sequence_identity"] = pd.to_numeric(
+            df_display["sequence_identity"], errors="coerce"
         ).round(1)
-        display_cols = ["species", "tax_id", "abundance", "estimated counts", "confidence"]
+        display_cols = ["species", "tax_id", "abundance", "estimated counts", "sequence_identity"]
     else:
         display_cols = ["species", "tax_id", "abundance", "estimated counts"]
     df_subset = df_display[[c for c in display_cols if c in df_display.columns]]
@@ -85,14 +85,14 @@ def _prepare_report_data(
         source_file = se.col_data.iloc[0]["source_file"]
         sample_dir = str(Path(source_file).parent.resolve())
 
-    confidence_pct = report.confidence_pct
+    sequence_identity_pct = report.sequence_identity_pct
 
     report_data = {
         "name": sample_name,
         "source_path": source_file,
         "sample_dir": sample_dir,
         "source": se.metadata.get("source", ""),
-        "confidence_pct": round(confidence_pct, 1) if confidence_pct is not None else None,
+        "sequence_identity_pct": round(sequence_identity_pct, 1) if sequence_identity_pct is not None else None,
         "top5_html": top5_html,
         "top10_html": top10_html,
         "sankey_html": sankey_html,
@@ -203,7 +203,7 @@ def run(args: argparse.Namespace) -> int:
 
     # Pipeline: reader (savont default / emu) → SummarizedExperiment → Report
     # → reports. The reader owns its own folder layout and file discovery; the
-    # Report composite layers report-time data (confidence) on the experiment.
+    # Report composite layers report-time data (sequence identity) on the experiment.
     name = args.name or sample_dir.name
     reader = build_reader(args.input_format, sample_dir, sample_name=name)
     se = reader.to_summarized_experiment()

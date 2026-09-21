@@ -69,6 +69,7 @@ def test_savont_count_table_returns_expected_columns():
     expected_columns = [
         "relative_abundance",
         "estimated_count",
+        "sequence_identity",
         "tax_id",
         "species",
         "genus",
@@ -149,6 +150,7 @@ def test_savont_count_table_restores_tax_id_and_estimated_count():
     expected_columns = [
         "relative_abundance",
         "estimated_count",
+        "sequence_identity",
         "tax_id",
         "species",
         "genus",
@@ -164,6 +166,11 @@ def test_savont_count_table_restores_tax_id_and_estimated_count():
     assert all(str(t).isdigit() for t in df["tax_id"])
     assert df["estimated_count"].sum() == pytest.approx(300)
     assert df["relative_abundance"].sum() == pytest.approx(1.0)
+
+    # Savont reports per-OTU alignment identity, so sequence_identity is populated
+    # (as a 0–100 percentage) for every species row.
+    assert df["sequence_identity"].notna().all()
+    assert ((df["sequence_identity"] >= 0) & (df["sequence_identity"] <= 100)).all()
 
     # Clostridioides difficile (tax_id 1496): 124 reads, abundance 124/300.
     row = df[df["tax_id"] == "1496"]

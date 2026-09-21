@@ -62,7 +62,7 @@ def build_medical_report(
     clinical: dict[str, Any] | None = None,
     pathogens: dict[str, bool] | None = None,
     qc_items: list[dict[str, str]] | None = None,
-    confidence: dict[str, float] | None = None,
+    sequence_identity: dict[str, float] | None = None,
 ) -> Report:
     """Build the ``Report`` intermediate for a medical report.
 
@@ -82,10 +82,10 @@ def build_medical_report(
     qc_items : list[dict], optional
         QC rows (each ``{"name": ..., "status": "pass"|"fail"}``). Stored under
         ``metadata["qc_items"]``.
-    confidence : dict[str, float], optional
-        Per-``tax_id`` species-calling confidence (percent). When omitted it is
+    sequence_identity : dict[str, float], optional
+        Per-``tax_id`` estimated sequence identity (percent). When omitted it is
         auto-extracted from the experiment (Savont populates
-        ``metadata["species_confidence"]``; EMU does not). Surfaces as organism
+        ``metadata["sequence_identity"]``; EMU does not). Surfaces as organism
         ``identity``.
     """
     metadata: dict[str, Any] = dict(clinical or {})
@@ -94,11 +94,11 @@ def build_medical_report(
     if qc_items is not None:
         metadata["qc_items"] = list(qc_items)
 
-    # Report.from_experiment auto-extracts confidence from the experiment; an
-    # explicit ``confidence`` argument (when given) overrides it.
+    # Report.from_experiment auto-extracts sequence identity from the experiment;
+    # an explicit ``sequence_identity`` argument (when given) overrides it.
     report = Report.from_experiment(experiment, metadata=metadata)
-    if confidence:
-        report = report.with_confidence(confidence)
+    if sequence_identity:
+        report = report.with_sequence_identity(sequence_identity)
     return report
 
 
@@ -108,11 +108,11 @@ def _organisms_from_report(report: Report, *, top: int | None = None) -> list[di
     The experiment is per-OTU, so OTUs are rolled up to species via the shared
     :func:`hoshi.lib.experiment.species_view` (drops classifier meta rows,
     aggregates by ``tax_id``, sorts by abundance, trims to ``top``). Per-OTU
-    calling confidence is attached by ``to_dataframe`` and aggregated to the
-    species with ``max()``. ``pathogenic`` holds the pathogen classification
+    estimated sequence identity is attached by ``to_dataframe`` and aggregated to
+    the species with ``max()``. ``pathogenic`` holds the pathogen classification
     string from ``metadata["pathogens"]``, keyed by ``tax_id``.
     """
-    df = report.experiment.to_dataframe(confidence=report.confidence or None)
+    df = report.experiment.to_dataframe(sequence_identity=report.sequence_identity or None)
     df = species_view(df, top=top)
 
     df = df[pd.to_numeric(df["abundance"], errors="coerce").notna()].copy()
@@ -132,7 +132,7 @@ def _organisms_from_report(report: Report, *, top: int | None = None) -> list[di
             genus = row.get("genus", "Unknown")
             name = "Unknown" if pd.isna(genus) or not str(genus).strip() else genus
 
-        identity = row.get("confidence")
+        identity = row.get("sequence_identity")
         has_identity = identity is not None and pd.notna(identity)
         organisms.append(
             {

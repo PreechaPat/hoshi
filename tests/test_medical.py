@@ -70,12 +70,12 @@ def test_flatten_derives_organisms_sorted_and_drops_meta_rows():
     assert data["organisms"][0]["abundance"] == pytest.approx(60.0)
 
 
-def test_flatten_combines_pathogens_and_confidence_at_render_time():
+def test_flatten_combines_pathogens_and_sequence_identity_at_render_time():
     report = build_medical_report(
         _make_experiment(),
         clinical=_CLINICAL,
         pathogens={"1496": True, "562": False},
-        confidence={"s1:ASV0": 99.8},
+        sequence_identity={"s1:ASV0": 99.8},
     )
     data = report_to_medical_data(report)
     by_name = {o["name"]: o for o in data["organisms"]}
@@ -83,7 +83,7 @@ def test_flatten_combines_pathogens_and_confidence_at_render_time():
     assert by_name["Clostridioides difficile"]["pathogenic"] is True
     assert by_name["Clostridioides difficile"]["identity"] == pytest.approx(99.8)
     assert by_name["Escherichia coli"]["pathogenic"] is False
-    # No confidence for this tax_id -> identity stays None.
+    # No sequence identity for this tax_id -> identity stays None.
     assert by_name["Escherichia coli"]["identity"] is None
     # No pathogen entry for this tax_id -> pathogenic stays None.
     assert by_name["Enterococcus faecalis"]["pathogenic"] is None
@@ -157,7 +157,7 @@ def test_render_from_report_produces_html_with_report_values():
         _make_experiment(),
         clinical=_CLINICAL,
         pathogens={"1496": True},
-        confidence={"s1:ASV0": 99.8},
+        sequence_identity={"s1:ASV0": 99.8},
         qc_items=[{"name": "Read quality", "status": "pass"}],
     )
     html = generate_medical_report_from_report(report, report_date="31 Aug 2026")

@@ -2,7 +2,8 @@
 
 Holds a reference to one Savont folder, knows its fixed file layout, reads each
 file once (cached), and exposes derived products (per-feature abundance table,
-per-feature calling confidence) so higher layers don't touch files directly.
+per-feature estimated sequence identity) so higher layers don't touch files
+directly.
 Species-level rollups are an explicit downstream step
 (:func:`hoshi.lib.experiment.species_view`), not a reader concern.
 
@@ -24,8 +25,8 @@ Quirks handled here
 -------------------
 - Multiple reference hits per ASV: take the **first hit** per ``asv_header``.
 - Multiple ASVs collapsing onto one species: depths are **summed** per
-  ``tax_id``; confidence takes the **max** ``alignment_identity`` (best-matching
-  ASV wins per species).
+  ``tax_id``; sequence identity takes the **max** ``alignment_identity``
+  (best-matching ASV wins per species).
 """
 
 from __future__ import annotations
@@ -245,10 +246,10 @@ class SavontReader:
             .reset_index(drop=True)
         )
 
-    # ─── Derived: per-feature calling confidence ─────────────────────
+    # ─── Derived: per-feature estimated sequence identity ────────────
 
-    def feature_confidence(self) -> dict[str, float]:
-        """Per-feature calling confidence, keyed by ``asv_header`` (percent 0–100).
+    def feature_sequence_identity(self) -> dict[str, float]:
+        """Per-feature sequence identity, keyed by ``asv_header`` (percent 0–100).
 
         This is each ASV's ``alignment_identity`` — a genuine per-feature value.
         Features with no identity data are omitted.
@@ -281,8 +282,9 @@ class SavontReader:
         Features are OTUs/ASVs — one row per ``asv_header`` — keyed by Savont's
         **raw** feature id (unscoped). Taxonomy and ``tax_id`` are nullable
         ``row_data`` annotations; species aggregation is an explicit downstream
-        step. Per-OTU calling confidence (:meth:`feature_confidence`, keyed by
-        the raw feature id) is carried in ``metadata["confidence"][sample_name]``.
+        step. Per-OTU estimated sequence identity (:meth:`feature_sequence_identity`,
+        keyed by the raw feature id) is carried in
+        ``metadata["sequence_identity"][sample_name]``.
 
         Feature ids are scoped per sample only when several samples are merged
         (see :func:`hoshi.lib.experiment.combine_experiments`), so a single
@@ -297,7 +299,7 @@ class SavontReader:
             - row_data: tax_id + taxonomy annotations per OTU (indexed by the
               raw OTU id)
             - col_data: sample metadata (indexed by sample name)
-            - metadata: {"source": "savont", "confidence": {...}}
+            - metadata: {"source": "savont", "sequence_identity": {...}}
         """
         name = self.sample_name
         df = self.per_feature_abundance().copy()
@@ -313,8 +315,8 @@ class SavontReader:
         row_cols = [c for c in ("tax_id", *self._SE_TAXONOMY_COLUMNS) if c in df.columns]
         row_data = df[row_cols].reindex(abundance_matrix.index)
 
-        # Per-feature confidence, keyed by the raw feature id.
-        confidence = dict(self.feature_confidence())
+        # Per-feature sequence identity, keyed by the raw feature id.
+        sequence_identity = dict(self.feature_sequence_identity())
 
         col_data = pd.DataFrame(
             {
@@ -330,6 +332,6 @@ class SavontReader:
             col_data=col_data,
             metadata={
                 "source": "savont",
-                "confidence": {name: confidence},
+                "sequence_identity": {name: sequence_identity},
             },
         )

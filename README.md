@@ -101,8 +101,11 @@ uv run hoshi convert --input-format savont --output-format table \
     -o dist/sample01_species_counts.tsv
 ```
 
-Output columns: `relative_abundance`, `estimated_count`, `tax_id`, `species`,
-`genus`, `family`, `order`, `class`, `phylum`, `superkingdom`.
+Output columns: `relative_abundance`, `estimated_count`, `sequence_identity`,
+`tax_id`, `species`, `genus`, `family`, `order`, `class`, `phylum`,
+`superkingdom`. `sequence_identity` is the per-species estimated sequence
+identity (a 0–100 percentage); it is populated for classifiers that report it
+(Savont) and left `N/A` for those that do not (EMU).
 
 ### Enrich a tax_id table with lineage
 
@@ -155,7 +158,7 @@ Run `uv run hoshi <command> --help` for the full flag list of any command.
   Concrete readers: `EmuReader`, `SavontReader`. Adding a classifier means adding
   a reader; reports are untouched.
 - **`lib/report.py`** — `Report` composite: a `SummarizedExperiment` plus
-  report-time data (e.g. per-species confidence, clinical metadata).
+  report-time data (e.g. per-species sequence identity, clinical metadata).
 - **`command/`** — thin CLI glue + Jinja2 report generation.
 
 ```

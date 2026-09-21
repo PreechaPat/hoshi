@@ -63,7 +63,7 @@ def aggregate_to_species(
     df: pd.DataFrame,
     *,
     value_columns: tuple[str, ...] = ("abundance", "estimated counts"),
-    confidence_column: str = "confidence",
+    sequence_identity_column: str = "sequence_identity",
     keep_blank_tax_id_separate: bool = True,
 ) -> pd.DataFrame:
     """Aggregate a per-OTU flat table up to one row per species (``tax_id``).
@@ -75,11 +75,11 @@ def aggregate_to_species(
     counts still total correctly and unassigned sequences are never merged into
     one bogus taxon.
 
-    Reports render at species/genus level, so when a ``confidence_column`` is
-    present it is aggregated with ``max()`` (the best-matching OTU wins for the
+    Reports render at species/genus level, so when a ``sequence_identity_column``
+    is present it is aggregated with ``max()`` (the best-matching OTU wins for the
     species).
 
-    TODO: max() is a placeholder for confidence aggregation; revisit later.
+    TODO: max() is a placeholder for sequence-identity aggregation; revisit later.
 
     The input is expected to have a ``tax_id`` column plus any of the
     :data:`TAXONOMY_RANKS`. Non-value, non-taxonomy columns are dropped.
@@ -95,17 +95,17 @@ def aggregate_to_species(
     for col in present_values:
         work[col] = pd.to_numeric(work[col], errors="coerce").fillna(0.0)
 
-    has_conf = confidence_column in work.columns
+    has_identity = sequence_identity_column in work.columns
     tax_cols = [c for c in TAXONOMY_RANKS if c in work.columns]
 
     agg_map: dict[str, str] = {c: "sum" for c in present_values}
     agg_map.update({c: "first" for c in tax_cols})
-    if has_conf:
-        agg_map[confidence_column] = "max"
+    if has_identity:
+        agg_map[sequence_identity_column] = "max"
 
     out_cols = ["tax_id", *present_values, *tax_cols]
-    if has_conf:
-        out_cols.append(confidence_column)
+    if has_identity:
+        out_cols.append(sequence_identity_column)
 
     # Rows with a real tax_id collapse by tax_id.
     assigned = work[~blank].copy()
@@ -152,7 +152,7 @@ def species_view(
 
     ``df`` is a per-OTU flat frame as produced by
     :meth:`SummarizedExperiment.to_dataframe` (``tax_id`` + taxonomy + value
-    columns, optionally a ``confidence`` column which is aggregated with
+    columns, optionally a ``sequence_identity`` column which is aggregated with
     ``max()``). Callers keep the un-aggregated ``df`` for OTU-level products
     (diversity, Sankey); this only owns the species collapse.
     """
@@ -203,7 +203,7 @@ def combine_experiments(
       multi-sample, so there is no real conflict).
     - ``col_data`` — sample metadata rows concatenated in input order.
     - ``metadata`` — ``source`` is carried through when all inputs agree;
-      ``confidence`` is merged into ``{sample: {feature_id: pct}}`` with keys
+      ``sequence_identity`` is merged into ``{sample: {feature_id: pct}}`` with keys
       matching the (raw or scoped) feature index.
     """
     if not experiments:
@@ -228,7 +228,7 @@ def combine_experiments(
     per_assay_series: dict[str, dict[str, pd.Series]] = {n: {} for n in assay_names}
     row_data_frames: list[pd.DataFrame] = []
     col_data_frames: list[pd.DataFrame] = []
-    confidence: dict[str, dict[str, float]] = {}
+    sequence_identity: dict[str, dict[str, float]] = {}
     sources: set[str] = set()
 
     for exp in experiments:
@@ -251,15 +251,15 @@ def combine_experiments(
                 rd.index = keyed_index
                 row_data_frames.append(rd)
 
-            # Carry per-feature confidence, keyed to match the feature index
+            # Carry per-feature sequence identity, keyed to match the feature index
             # (raw feature id, or sample-scoped when multi-sample). Tolerate an
             # already-scoped key so re-combining is idempotent.
-            per_sample_conf = exp.metadata.get("confidence", {})
-            raw_conf = per_sample_conf.get(sample, {})
-            if raw_conf:
-                confidence[sample] = {
+            per_sample_identity = exp.metadata.get("sequence_identity", {})
+            raw_identity = per_sample_identity.get(sample, {})
+            if raw_identity:
+                sequence_identity[sample] = {
                     key(sample, _strip_sample_prefix(sample, fid)): pct
-                    for fid, pct in raw_conf.items()
+                    for fid, pct in raw_identity.items()
                 }
 
         if not exp.col_data.empty:
@@ -292,8 +292,8 @@ def combine_experiments(
     metadata: dict[str, Any] = {}
     if len(sources) == 1:
         metadata["source"] = next(iter(sources))
-    if confidence:
-        metadata["confidence"] = confidence
+    if sequence_identity:
+        metadata["sequence_identity"] = sequence_identity
 
     return SummarizedExperiment(
         assays=assays,
@@ -306,7 +306,7 @@ def combine_experiments(
 def _strip_sample_prefix(sample: str, feature_id: Any) -> str:
     """Return ``feature_id`` without a leading ``<sample>:`` prefix, if present.
 
-    Producers emit raw (unscoped) confidence keys, but tolerate an already
+    Producers emit raw (unscoped) sequence-identity keys, but tolerate an already
     ``<sample>:``-scoped key so re-combining an experiment is idempotent.
     """
     fid = str(feature_id)
@@ -455,7 +455,7 @@ class SummarizedExperiment:
         self,
         sample: str | None = None,
         *,
-        confidence: dict[str, float] | None = None,
+        sequence_identity: dict[str, float] | None = None,
     ) -> pd.DataFrame:
         """
         Reconstruct a flat DataFrame combining assays and row_data.
@@ -476,10 +476,10 @@ class SummarizedExperiment:
         sample : str, optional
             Which sample column to extract. Required if n_samples > 1.
             If the SE has exactly 1 sample, it is used automatically.
-        confidence : dict[str, float], optional
-            Per-feature calling confidence keyed by ``feature_id``. When given,
-            it is attached as a ``confidence`` column (features with no entry
-            get ``NaN``), so callers no longer re-join it by hand.
+        sequence_identity : dict[str, float], optional
+            Per-feature estimated sequence identity keyed by ``feature_id``. When
+            given, it is attached as a ``sequence_identity`` column (features with
+            no entry get ``NaN``), so callers no longer re-join it by hand.
 
         Returns
         -------
@@ -519,10 +519,10 @@ class SummarizedExperiment:
         if not had_named_index and "index" in data.columns:
             data = data.rename(columns={"index": "feature_id"})
 
-        # Attach per-feature confidence (keyed by feature_id) when supplied, so
+        # Attach per-feature sequence identity (keyed by feature_id) when supplied,
         # callers don't re-join it by hand before aggregating to species.
-        if confidence and "feature_id" in data.columns:
-            data["confidence"] = data["feature_id"].astype(str).map(confidence)
+        if sequence_identity and "feature_id" in data.columns:
+            data["sequence_identity"] = data["feature_id"].astype(str).map(sequence_identity)
 
         return data
 

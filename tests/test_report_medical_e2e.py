@@ -176,10 +176,10 @@ def test_e2e_report_date_falls_back_when_absent(tmp_path):
     assert "N/A" in html
 
 
-# ─── e2e Savont, confidence -> identity ──────────────────────────────
+# ─── e2e Savont, sequence identity -> identity ───────────────────────
 
 
-def test_e2e_savont_populates_identity_from_confidence(tmp_path):
+def test_e2e_savont_populates_identity_from_sequence_identity(tmp_path):
     out = tmp_path / "report.html"
     exit_code = report_medical.run(
         _args(_SAVONT_DIR, out, input_format="savont")
@@ -188,7 +188,7 @@ def test_e2e_savont_populates_identity_from_confidence(tmp_path):
     assert exit_code == 0
     html = out.read_text(encoding="utf-8")
     assert "Clostridioides difficile" in html
-    # Savont provides per-species confidence -> identity column not all "N/A".
+    # Savont provides per-species sequence identity -> identity column not all "N/A".
     # (Exact value depends on fixture; assert at least one percent-looking cell.)
     assert "%" in html or "99" in html or "100" in html
 

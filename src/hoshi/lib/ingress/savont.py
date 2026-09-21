@@ -84,7 +84,7 @@ def read_savont_abundance_into_summarizedexperiment(
         - assays["counts"]: estimated counts matrix (features × 1)
         - row_data: taxonomy annotations per feature (raw feature id index)
         - col_data: sample metadata (indexed by sample name)
-        - metadata: {"source": "savont", "confidence": {...}}
+        - metadata: {"source": "savont", "sequence_identity": {...}}
     """
     return SavontReader(
         Path(input_dir), sample_name=sample_name

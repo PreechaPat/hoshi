@@ -28,21 +28,21 @@ def test_per_feature_abundance_is_one_row_per_asv():
     assert df["abundance"].is_monotonic_decreasing
 
 
-# ─── per-feature confidence ──────────────────────────────────────────
+# ─── per-feature sequence identity ───────────────────────────────────
 
 
-def test_feature_confidence_keyed_by_asv_in_percent_range():
+def test_feature_sequence_identity_keyed_by_asv_in_percent_range():
     r = SavontReader(SAVONT_SAMPLE_DIR)
-    conf = r.feature_confidence()
+    conf = r.feature_sequence_identity()
     assert conf  # non-empty for this sample
     assert all(isinstance(k, str) for k in conf)
     assert all(0.0 <= v <= 100.0 for v in conf.values())
 
 
-def test_feature_confidence_is_per_asv_identity():
-    """Confidence must equal each ASV's alignment_identity (first hit per ASV)."""
+def test_feature_sequence_identity_is_per_asv_identity():
+    """Sequence identity must equal each ASV's alignment_identity (first hit per ASV)."""
     r = SavontReader(SAVONT_SAMPLE_DIR)
-    conf = r.feature_confidence()
+    conf = r.feature_sequence_identity()
 
     mapping = pd.read_csv(r.asv_mappings_path, sep="\t")
     first = mapping.drop_duplicates(subset=["asv_header"], keep="first").copy()
