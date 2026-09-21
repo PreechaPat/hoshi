@@ -5,7 +5,7 @@ Each input is a classifier output *directory* (Savont by default, or EMU via
 interface into a single-sample :class:`SummarizedExperiment`; the samples are
 then merged into one combined multi-sample experiment via
 :func:`hoshi.lib.experiment.combine_experiments` (which owns the per-sample
-scoping of feature ids and re-keys per-feature confidence). Each tab is a
+scoping of feature ids and re-keys per-feature sequence identity). Each tab is a
 per-sample view of that single combined object.
 
     dirs -> build_reader -> per-sample SummarizedExperiment
@@ -26,8 +26,8 @@ import pandas as pd
 
 from hoshi.lib.experiment import (
     SummarizedExperiment,
-    aggregate_to_species,
     combine_experiments,
+    species_view,
 )
 from hoshi.lib.reader import (
     DEFAULT_INPUT_FORMAT,
@@ -38,9 +38,6 @@ from hoshi.lib.sankey import get_sankey_data, render_sankey_figure
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 _REPORT_TEMPLATE = "microbiome/multisample.html.j2"
-
-# tax_id values used for control/meta rows that must not appear as organisms.
-_META_TAX_IDS = {"unmapped", "mapped_filtered", "mapped_unclassified"}
 
 
 def _dom_id(name: str, index: int) -> str:
@@ -53,32 +50,29 @@ def _build_table(
     experiment: SummarizedExperiment,
     name: str,
     index: int,
-    confidence: dict[str, float] | None = None,
+    sequence_identity: dict[str, float] | None = None,
 ) -> dict:
     """Build one tab's render context from one sample of a combined experiment.
 
     ``experiment`` is the combined multi-sample :class:`SummarizedExperiment`;
     this extracts the single ``name`` column and renders its species table and
-    Sankey. ``confidence`` is that sample's per-feature calling confidence,
-    keyed to match the combined feature index (sample-scoped when multi-sample).
+    Sankey. ``sequence_identity`` is that sample's per-feature estimated sequence
+    identity, keyed to match the combined feature index (sample-scoped when
+    multi-sample).
     """
-    df = experiment.to_dataframe(sample=name)
+    # Per-OTU frame with sequence identity attached — kept whole for the Sankey.
+    df = experiment.to_dataframe(sample=name, sequence_identity=sequence_identity or None)
 
-    # Attach per-feature confidence, then aggregate features → species for display.
-    if confidence and "feature_id" in df.columns:
-        df["confidence"] = df["feature_id"].astype(str).map(confidence)
+    # Species view for the display table (drops meta rows, rolls OTUs → species).
+    display = species_view(df)
 
-    display = df[~df["tax_id"].astype(str).isin(_META_TAX_IDS)].copy()
-    display = aggregate_to_species(display)
-    display = display.sort_values("abundance", ascending=False).reset_index(drop=True)
-
-    # Surface per-species confidence (Savont; max over the species' OTUs).
+    # Surface per-species sequence identity (Savont; max over the species' OTUs).
     cols = ["species", "tax_id", "abundance", "estimated counts"]
-    if confidence and "confidence" in display.columns:
-        display["confidence"] = pd.to_numeric(
-            display["confidence"], errors="coerce"
+    if sequence_identity and "sequence_identity" in display.columns:
+        display["sequence_identity"] = pd.to_numeric(
+            display["sequence_identity"], errors="coerce"
         ).round(1)
-        cols.append("confidence")
+        cols.append("sequence_identity")
     cols = [c for c in cols if c in display.columns]
     table_html = display[cols].to_html(index=False, border=0, classes="data-table")
 
@@ -106,7 +100,7 @@ def run(args: argparse.Namespace) -> int:
 
     # Read each sample into its own single-sample experiment, then combine them
     # into one genuine multi-sample experiment. combine_experiments owns the
-    # sample-scoping of feature ids (and re-keys per-feature confidence), so the
+    # sample-scoping of feature ids (and re-keys per-feature sequence identity), so
     # tabs below are just per-sample views of that single combined object.
     per_sample: list[SummarizedExperiment] = []
     sample_names: list[str] = []
@@ -123,10 +117,10 @@ def run(args: argparse.Namespace) -> int:
         sample_names.append(name)
 
     combined = combine_experiments(per_sample)
-    all_confidence = combined.metadata.get("confidence", {})
+    all_sequence_identity = combined.metadata.get("sequence_identity", {})
 
     tables = [
-        _build_table(combined, name, index, all_confidence.get(name))
+        _build_table(combined, name, index, all_sequence_identity.get(name))
         for index, name in enumerate(sample_names)
     ]
 

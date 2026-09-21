@@ -29,57 +29,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pandas as pd
-
 from hoshi.lib.experiment import SummarizedExperiment
 from hoshi.lib.savont_reader import SavontReader
-
-
-def read_savont_abundance(
-    feature_table: str | Path,
-    asv_mapping: str | Path,
-) -> pd.DataFrame:
-    """
-    Load Savont feature table and ASV mapping to build a species-level abundance table.
-
-    Reads the feature table (ASV read counts) and ASV mapping (taxonomy
-    assignments per ASV), resolves each ASV to a single species (first hit),
-    and aggregates read counts by species to compute relative abundance.
-
-    This is a thin wrapper over :class:`SavontReader`. It accepts explicit file
-    paths (rather than a directory) for backward compatibility; the two files
-    must live in the same directory (the standard Savont layout).
-
-    Parameters
-    ----------
-    feature_table : str or Path
-        Path to ``feature-table.tsv`` containing ASV read counts.
-
-    asv_mapping : str or Path
-        Path to ``asv_mappings.tsv`` containing taxonomy assignments per ASV.
-
-    Returns
-    -------
-    pd.DataFrame
-        Species-level abundance table with columns:
-        abundance, tax_id, species, genus, family, order, class, phylum,
-        superkingdom, estimated counts.
-        Indexed by a positional integer index (tax_id is a regular column).
-
-    Raises
-    ------
-    ValueError
-        If required files are missing or cannot be parsed.
-    """
-    feature_path = Path(feature_table)
-    mapping_path = Path(asv_mapping)
-
-    if not feature_path.is_file():
-        raise ValueError(f"Feature table not found: {feature_path}")
-    if not mapping_path.is_file():
-        raise ValueError(f"ASV mapping not found: {mapping_path}")
-
-    return SavontReader(feature_path.parent).species_abundance()
 
 
 def read_savont_abundance_into_summarizedexperiment(
@@ -133,7 +84,7 @@ def read_savont_abundance_into_summarizedexperiment(
         - assays["counts"]: estimated counts matrix (features × 1)
         - row_data: taxonomy annotations per feature (raw feature id index)
         - col_data: sample metadata (indexed by sample name)
-        - metadata: {"source": "savont", "confidence": {...}}
+        - metadata: {"source": "savont", "sequence_identity": {...}}
     """
     return SavontReader(
         Path(input_dir), sample_name=sample_name

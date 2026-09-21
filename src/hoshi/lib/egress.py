@@ -3,7 +3,8 @@ Egress module — export SummarizedExperiment to various output formats.
 
 Currently supported:
   - Kraken2 report format
-  - Species count table (flat TSV: abundance, tax_id, taxonomy, estimated counts)
+  - Species count table (flat TSV: abundance, estimated counts, optional
+    sequence identity, tax_id, taxonomy)
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from hoshi.lib.experiment import SummarizedExperiment, aggregate_to_species
+from hoshi.lib.experiment import SummarizedExperiment, species_view
 
 # Mapping from Emu taxonomy column names to Kraken2 rank codes
 _RANK_MAP: dict[str, str] = {
@@ -415,12 +416,15 @@ def write_kraken2_report(
 # separate rank columns (one row per species) rather than being collapsed into a
 # single lineage string.
 
-# Column order of the emitted species count table. Leads with the two values of
-# interest (relative abundance, estimated count) and the identifier (tax_id),
-# followed by the taxonomy lineage from specific → broad.
+# Column order of the emitted species count table. Leads with the values of
+# interest (relative abundance, estimated count, estimated sequence identity)
+# and the identifier (tax_id), followed by the taxonomy lineage specific → broad.
+# ``sequence_identity`` is only emitted when the classifier supplies it (Savont
+# does; EMU does not) — see :func:`build_count_table`.
 _COUNT_TABLE_COLUMNS: list[str] = [
     "relative_abundance",
     "estimated_count",
+    "sequence_identity",
     "tax_id",
     "species",
     "genus",
@@ -438,32 +442,36 @@ def build_count_table(
 ) -> pd.DataFrame:
     """Build a species-level count table from a per-OTU experiment.
 
-    The experiment feature axis is per-OTU/ASV; this aggregates OTUs up to one
-    row per species by ``tax_id`` (see
-    :func:`hoshi.lib.experiment.aggregate_to_species`). OTUs with a missing/blank
-    ``tax_id`` are kept as their own rows (option iii) so counts still total
-    correctly and unassigned sequences are never merged into one bogus taxon.
+    OTUs are rolled up to one row per species via the shared
+    :func:`hoshi.lib.experiment.species_view` (drops classifier meta rows,
+    aggregates by ``tax_id``, sorts by abundance; OTUs with a blank ``tax_id``
+    stay individual so counts still total correctly).
 
     Mirrors Savont's ``species_abundance.tsv`` (relative abundance + taxonomy
-    lineage) but adds the two columns Savont drops: the NCBI ``tax_id`` and the
-    ``estimated_count``. Taxonomy is kept as separate rank columns; there is no
-    OTU column.
+    lineage) but adds the columns Savont drops: the NCBI ``tax_id``, the
+    ``estimated_count``, and the per-species estimated ``sequence_identity``.
+    ``sequence_identity`` is always a column for a stable schema; classifiers that
+    do not report it (EMU) leave it N/A. Taxonomy is kept as separate rank columns;
+    there is no OTU column.
 
     Parameters
     ----------
     experiment : SummarizedExperiment
         Per-OTU experiment. Must have a ``counts`` assay; ``abundance`` is used
         when present and otherwise derived from counts. ``row_data`` supplies
-        ``tax_id`` + taxonomy columns.
+        ``tax_id`` + taxonomy columns; ``metadata["sequence_identity"]`` supplies the
+        optional per-OTU sequence identity (Savont).
     sample : str, optional
         Which sample to export. Required if the experiment has > 1 sample.
 
     Returns
     -------
     pandas.DataFrame
-        Columns: relative_abundance, estimated_count, tax_id, species, genus,
-        family, order, class, phylum, superkingdom. Sorted by
-        relative_abundance (descending) with a positional integer index.
+        Columns: relative_abundance, estimated_count, sequence_identity, tax_id,
+        species, genus, family, order, class, phylum, superkingdom.
+        ``sequence_identity`` is N/A for classifiers that do not report it (EMU).
+        Sorted by relative_abundance (descending) with a positional integer
+        index.
 
     Raises
     ------
@@ -475,67 +483,54 @@ def build_count_table(
         raise ValueError(
             "Experiment must have a 'counts' assay for count-table conversion."
         )
-
-    if sample is None:
-        if experiment.n_samples == 1:
-            sample = experiment.sample_ids[0]
-        else:
-            raise ValueError(
-                f"Experiment has {experiment.n_samples} samples; "
-                f"specify which one with `sample=`."
-            )
-
-    if sample not in experiment.sample_ids:
-        raise ValueError(
-            f"Sample '{sample}' not found. Available: {list(experiment.sample_ids)}"
-        )
-
-    row_data = experiment.row_data
-    tax_cols = [r for r in _RANK_ORDER if r in row_data.columns]
-    if not tax_cols:
+    if not any(r in experiment.row_data.columns for r in _RANK_ORDER):
         raise ValueError(
             "row_data must have at least one taxonomy column "
             f"({', '.join(_RANK_ORDER)})."
         )
-    if "tax_id" not in row_data.columns:
+    if "tax_id" not in experiment.row_data.columns:
         raise ValueError("row_data must have a 'tax_id' column.")
 
-    counts = experiment.assays["counts"][sample].astype(float)
-    if "abundance" in experiment.assay_names:
-        abundance = experiment.assays["abundance"][sample].astype(float)
-    else:
+    # Per-OTU flat frame (sample resolution/validation lives in to_dataframe),
+    # then roll up to species via the shared view so meta/control rows are
+    # dropped consistently with the reports. Per-OTU sequence identity (Savont) is
+    # attached here and aggregated to the species with max() by species_view.
+    per_sample_identity = experiment.metadata.get("sequence_identity") or {}
+    resolved = sample if sample is not None else (
+        experiment.sample_ids[0] if experiment.n_samples == 1 else None
+    )
+    sequence_identity = per_sample_identity.get(str(resolved)) if resolved is not None else None
+
+    per_otu = experiment.to_dataframe(sample=sample, sequence_identity=sequence_identity or None)
+    if "abundance" not in per_otu.columns:
+        counts = per_otu["estimated counts"].astype(float)
         total = counts.sum()
-        abundance = counts / total if total > 0 else counts * 0.0
+        per_otu["abundance"] = counts / total if total > 0 else counts * 0.0
 
-    # Per-OTU flat table (one row per feature) → aggregate up to species.
-    per_otu = pd.DataFrame(index=counts.index)
-    per_otu["abundance"] = abundance
-    per_otu["estimated counts"] = counts
-    per_otu["tax_id"] = row_data["tax_id"].reindex(counts.index)
-    for col in tax_cols:
-        per_otu[col] = row_data[col].reindex(counts.index)
+    species = species_view(per_otu).rename(
+        columns={"abundance": "relative_abundance", "estimated counts": "estimated_count"}
+    )
 
-    species = aggregate_to_species(per_otu)
-
-    table = pd.DataFrame(index=species.index)
-    table["relative_abundance"] = species.get("abundance", pd.Series(dtype=float))
-    counts_series = species.get("estimated counts", pd.Series(dtype=float))
     # Whole-read counts (Savont) render as ints; keep fractional EM counts (Emu).
+    counts_series = species["estimated_count"]
     if counts_series.dropna().mod(1).eq(0).all():
-        table["estimated_count"] = counts_series.round().astype("Int64")
-    else:
-        table["estimated_count"] = counts_series
-    table["tax_id"] = species.get("tax_id", "")
-    for col in tax_cols:
-        table[col] = species.get(col)
+        species["estimated_count"] = counts_series.round().astype("Int64")
 
-    # Guarantee a stable column set/order even when some ranks are absent.
+    # ``sequence_identity`` is always a column for a stable schema. Savont
+    # supplies it (aggregated to the species with max() by species_view); EMU
+    # does not, so those rows stay N/A.
+    if "sequence_identity" in species.columns:
+        species["sequence_identity"] = pd.to_numeric(
+            species["sequence_identity"], errors="coerce"
+        ).round(1)
+
+    # Guarantee a stable column set/order even when some ranks/identity absent.
     for col in _COUNT_TABLE_COLUMNS:
-        if col not in table.columns:
-            table[col] = pd.NA
+        if col not in species.columns:
+            species[col] = pd.NA
 
     return (
-        table[_COUNT_TABLE_COLUMNS]
+        species[_COUNT_TABLE_COLUMNS]
         .sort_values("relative_abundance", ascending=False)
         .reset_index(drop=True)
     )

@@ -130,7 +130,7 @@ class EmuReader:
         """Build a single-sample :class:`SummarizedExperiment` for this folder.
 
         EMU has no per-call identity signal, so (unlike Savont) the result
-        carries no ``species_confidence`` in its metadata.
+        carries no ``sequence_identity`` in its metadata.
 
         Returns
         -------

@@ -163,11 +163,22 @@ def _load_experiment(input_format: str, input_path: Path) -> SummarizedExperimen
     )
 
 
-def _load_metadata(metadata_path: Path | None) -> dict:
-    """Load the optional clinical metadata JSON.
+# Top-level objects in the metadata JSON whose keys are flattened up to the
+# clinical envelope. ``report_metadata`` carries the report/patient/specimen/
+# provider fields (incl. authorized_by); ``method`` carries reference_db /
+# method. Everything else (notably ``qc_items``) is left at the top level.
+_METADATA_GROUPS = ("report_metadata", "method")
 
-    Returns an empty dict when no path is given. Only recognized clinical keys
-    plus ``qc_items`` are carried through; everything else is ignored.
+
+def _load_metadata(metadata_path: Path | None) -> dict:
+    """Load the optional clinical metadata JSON and flatten it.
+
+    The JSON groups clinical fields under ``report_metadata`` (report identity,
+    patient, specimen, provider, authorized_by) and ``method`` (reference_db,
+    method), with ``qc_items`` at the top level. This flattens those groups back
+    into the flat clinical envelope the rest of the pipeline (and the template)
+    consumes. A legacy flat JSON — no group objects — is accepted unchanged.
+    Returns an empty dict when no path is given.
     """
     if metadata_path is None:
         return {}
@@ -177,7 +188,25 @@ def _load_metadata(metadata_path: Path | None) -> dict:
         raw = json.load(f)
     if not isinstance(raw, dict):
         raise ValueError("Metadata JSON must be a JSON object.")
-    return raw
+    return _flatten_metadata(raw)
+
+
+def _flatten_metadata(raw: dict) -> dict:
+    """Flatten the grouped metadata objects into a flat clinical dict.
+
+    Keys inside ``report_metadata`` / ``method`` are lifted to the top level;
+    any keys already at the top level (e.g. ``qc_items``, or fields from a
+    legacy flat JSON) are preserved. Grouped keys take precedence on conflict.
+    """
+    flat = {key: value for key, value in raw.items() if key not in _METADATA_GROUPS}
+    for group in _METADATA_GROUPS:
+        section = raw.get(group)
+        if section is None:
+            continue
+        if not isinstance(section, dict):
+            raise ValueError(f"Metadata '{group}' must be a JSON object.")
+        flat.update(section)
+    return flat
 
 
 def _load_pathogens(sheet_arg: str | None) -> dict[str, str] | None:
@@ -279,7 +308,7 @@ def run(args: argparse.Namespace) -> int:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
-    # Confidence is auto-extracted from the experiment inside build_medical_report
+    # Sequence identity is auto-extracted from the experiment inside build_medical_report
     # (Savont populates it; EMU does not), so we don't pull it out here.
     report = build_medical_report(
         experiment,
@@ -349,9 +378,11 @@ def build_parser(subparsers: argparse._SubParsersAction) -> argparse.ArgumentPar
         "-m",
         "--metadata",
         help=(
-            "Path to an optional clinical metadata JSON (report_id, patient_id, "
-            "specimen_*, conclusion, authorized_by, qc_items, ...). Omitted fields "
-            "fall back to 'N/A'."
+            "Path to an optional clinical metadata JSON. Fields are grouped "
+            "under 'report_metadata' (report_id, patient_*, specimen_*, "
+            "ordering_physician, healthcare_provider, authorized_by, ...) and "
+            "'method' (reference_db, method), with 'qc_items' at the top level. "
+            "Omitted fields fall back to 'N/A'."
         ),
     )
     parser.add_argument(

@@ -84,7 +84,6 @@ from hoshi.lib.ingress.emu import (  # noqa: E402
     _derive_sample_name,
 )
 from hoshi.lib.ingress.savont import (  # noqa: E402
-    read_savont_abundance,
     read_savont_abundance_into_summarizedexperiment,
 )
 
@@ -92,7 +91,6 @@ __all__ = [
     "read_input_table",
     "read_emu_abundance",
     "read_emu_abundance_into_summarizedexperiment",
-    "read_savont_abundance",
     "read_savont_abundance_into_summarizedexperiment",
     "_derive_sample_name",
 ]

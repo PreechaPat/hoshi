@@ -301,6 +301,7 @@ def test_write_kraken2_report(simple_experiment, tmp_path):
 _COUNT_TABLE_COLUMNS = [
     "relative_abundance",
     "estimated_count",
+    "sequence_identity",
     "tax_id",
     "species",
     "genus",
@@ -436,6 +437,38 @@ def test_count_table_multi_sample_no_selection_raises():
     se = SummarizedExperiment(assays={"counts": counts}, row_data=row_data)
     with pytest.raises(ValueError, match="samples"):
         build_count_table(se)
+
+
+def test_count_table_sequence_identity_na_when_absent(per_otu_experiment):
+    """No sequence-identity metadata (e.g. EMU) → column present but N/A."""
+    df = build_count_table(per_otu_experiment)
+    assert list(df.columns) == _COUNT_TABLE_COLUMNS
+    assert df["sequence_identity"].isna().all()
+
+
+def test_count_table_emits_sequence_identity_aggregated_by_max():
+    """When the experiment carries per-OTU sequence identity, emit it per species,
+    aggregated with max() over the OTUs that collapse into that species."""
+    se = _per_otu_se(
+        counts_map={"s1:ASV0": 100.0, "s1:ASV1": 24.0, "s1:ASV2": 50.0},
+        tax_ids={"s1:ASV0": "1496", "s1:ASV1": "1496", "s1:ASV2": "817"},
+        taxonomy={
+            "species": {
+                "s1:ASV0": "Clostridioides difficile",
+                "s1:ASV1": "Clostridioides difficile",
+                "s1:ASV2": "Bacteroides fragilis",
+            },
+        },
+    )
+    se.metadata["sequence_identity"] = {
+        "s1": {"s1:ASV0": 88.0, "s1:ASV1": 97.0, "s1:ASV2": 99.5}
+    }
+    df = build_count_table(se).set_index("tax_id")
+
+    assert "sequence_identity" in df.columns
+    # 1496 collapses ASV0 (88) + ASV1 (97) → max = 97.0
+    assert df.loc["1496", "sequence_identity"] == pytest.approx(97.0)
+    assert df.loc["817", "sequence_identity"] == pytest.approx(99.5)
 
 
 def test_experiment_to_count_table_is_tab_delimited(per_otu_experiment):

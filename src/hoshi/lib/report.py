@@ -2,8 +2,9 @@
 
 ``Report`` is a *composite* over :class:`SummarizedExperiment`: it holds a
 reference to the underlying experiment (the pure abundance/taxonomy container)
-and layers report-time analysis data on top of it — currently species-calling
-confidence, plus a free-form metadata dict for anything else we need later.
+and layers report-time analysis data on top of it — currently the per-species
+estimated sequence identity, plus a free-form metadata dict for anything else
+we need later.
 
 The name ``Report`` is intentionally generic for now and may be renamed later.
 """
@@ -26,9 +27,9 @@ class Report:
         The underlying abundance/taxonomy container. Kept pure — this object
         never mutates it.
 
-    confidence : dict[str, float]
-        Per-OTU calling confidence, keyed by the OTU/ASV feature id, expressed
-        as a percent (0–100). For Savont this is each ASV's
+    sequence_identity : dict[str, float]
+        Per-OTU estimated sequence identity, keyed by the OTU/ASV feature id,
+        expressed as a percent (0–100). For Savont this is each ASV's
         ``alignment_identity``. Sources without a per-call identity signal (e.g.
         EMU) leave this empty. Reports are rendered at species/genus level, so
         consumers aggregate these per-OTU values to the display taxon with
@@ -40,7 +41,7 @@ class Report:
     """
 
     experiment: SummarizedExperiment
-    confidence: dict[str, float] = field(default_factory=dict)
+    sequence_identity: dict[str, float] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     # ─── Construction ────────────────────────────────────────────────
@@ -52,50 +53,50 @@ class Report:
         *,
         metadata: dict[str, Any] | None = None,
     ) -> Report:
-        """Build a ``Report`` from an experiment, auto-extracting confidence.
+        """Build a ``Report`` from an experiment, auto-extracting sequence identity.
 
-        Per-OTU calling confidence is read from
-        ``experiment.metadata["confidence"]`` when present (Savont populates it;
+        Per-OTU estimated sequence identity is read from
+        ``experiment.metadata["sequence_identity"]`` when present (Savont populates it;
         EMU does not). For a single-sample experiment the sample's
         ``{feature_id: pct}`` map is used; multi-sample experiments start with no
-        headline confidence (each sample is reported per-column downstream).
+        headline identity (each sample is reported per-column downstream).
 
         This is the shared entry point for all report commands so they layer
         report-time data on the experiment the same way.
         """
-        per_sample = experiment.metadata.get("confidence")
-        confidence: dict[str, float] = {}
+        per_sample = experiment.metadata.get("sequence_identity")
+        sequence_identity: dict[str, float] = {}
         if per_sample and experiment.n_samples == 1:
             sample = str(experiment.sample_ids[0])
-            confidence = dict(per_sample.get(sample, {}))
+            sequence_identity = dict(per_sample.get(sample, {}))
 
         return cls(
             experiment=experiment,
-            confidence=confidence,
+            sequence_identity=sequence_identity,
             metadata=dict(metadata or {}),
         )
 
     # ─── Convenience ─────────────────────────────────────────────────
 
     @property
-    def confidence_pct(self) -> float | None:
-        """Experiment-level calling confidence, as a percent.
+    def sequence_identity_pct(self) -> float | None:
+        """Experiment-level estimated sequence identity, as a percent.
 
         Reports render at species/genus level, so this collapses the per-OTU
-        confidence values to a single headline number using ``max()``.
+        identity values to a single headline number using ``max()``.
 
         TODO: this is a placeholder aggregation. Revisit to use an
-        abundance-weighted, species-level confidence rather than a plain max.
+        abundance-weighted, species-level identity rather than a plain max.
         """
-        if not self.confidence:
+        if not self.sequence_identity:
             return None
-        return max(self.confidence.values())
+        return max(self.sequence_identity.values())
 
     # ─── Immutable update helpers ────────────────────────────────────
 
-    def with_confidence(self, confidence: dict[str, float]) -> Report:
-        """Return a copy with ``confidence`` replaced (no mutation)."""
-        return replace(self, confidence=dict(confidence))
+    def with_sequence_identity(self, sequence_identity: dict[str, float]) -> Report:
+        """Return a copy with ``sequence_identity`` replaced (no mutation)."""
+        return replace(self, sequence_identity=dict(sequence_identity))
 
     def with_metadata(self, **updates: Any) -> Report:
         """Return a copy with ``metadata`` merged with ``updates`` (no mutation)."""
@@ -105,11 +106,11 @@ class Report:
     # ─── Representation ──────────────────────────────────────────────
 
     def __repr__(self) -> str:
-        pct = self.confidence_pct
+        pct = self.sequence_identity_pct
         pct_str = f"{pct:.2f}%" if pct is not None else "n/a"
         return (
             f"Report("
             f"experiment={self.experiment!r}, "
-            f"n_confidence={len(self.confidence)}, "
-            f"confidence_pct={pct_str})"
+            f"n_sequence_identity={len(self.sequence_identity)}, "
+            f"sequence_identity_pct={pct_str})"
         )
