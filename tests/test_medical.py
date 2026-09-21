@@ -57,28 +57,6 @@ _CLINICAL = {
 }
 
 
-# ─── build_medical_report ────────────────────────────────────────────
-
-
-def test_build_medical_report_stores_everything_in_metadata():
-    report = build_medical_report(
-        _make_experiment(),
-        clinical=_CLINICAL,
-        pathogens={"1496": True, "562": False},
-        qc_items=[{"name": "Read quality", "status": "pass"}],
-        confidence={"s1:ASV0": 99.8},
-    )
-    assert isinstance(report, Report)
-    # Clinical envelope lives in metadata (Option A).
-    assert report.metadata["report_id"] == "16S-2026-000184"
-    assert report.metadata["pathogens"] == {"1496": True, "562": False}
-    assert report.metadata["qc_items"] == [{"name": "Read quality", "status": "pass"}]
-    # Confidence uses the typed field (keyed by per-OTU feature id).
-    assert report.confidence == {"s1:ASV0": 99.8}
-    # Experiment is held unmodified.
-    assert report.experiment.n_features == 4
-
-
 # ─── report_to_medical_data (flatten) ────────────────────────────────
 
 

@@ -18,7 +18,7 @@ metadata and pathogen classification.
 bacteria into pathogen classes (commensal / potential / opportunistic / primary).
 
 ### Environmental report
-_(TODO: describe scope, or remove if not implemented.)_
+TODO: Being draft
 
 ## Coding style
 - Avoid line-by-line comments unless the code is genuinely technical.

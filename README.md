@@ -133,9 +133,12 @@ Run `uv run hoshi <command> --help` for the full flag list of any command.
 
 ### `report-medical` specifics
 
-- `-m, --metadata PATH` — clinical metadata JSON (patient/specimen IDs, QC
-  items, conclusion, lab identity, …). Any omitted field renders as `N/A`; an
-  omitted `authorized_by` renders as a blank signature line.
+- `-m, --metadata PATH` — clinical metadata JSON. Fields are grouped under
+  `report_metadata` (report/patient/specimen/provider fields plus
+  `authorized_by`) and `method` (`reference_db`, `method`), with `qc_items` at
+  the top level. Any omitted field renders as `N/A`; an omitted `authorized_by`
+  renders as a blank signature line. See
+  `test_data/medical/metadata_only.json` for a complete example.
 - `--pathogen-sheet PATH` — CSV mapping NCBI `tax_id` → pathogen class
   (commensal / potential / opportunistic / primary). Default: the pathogen
   sheet bundled with hoshi (`src/hoshi/assets/pathogen_sheet.csv`). Pass an
