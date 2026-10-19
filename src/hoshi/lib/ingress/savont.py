@@ -20,9 +20,11 @@ and, after the classify run, additional taxonomy outputs including::
 
 Species resolution quirk
 ------------------------
-1. The ASV mapping file can list multiple taxonomy hits per ASV. We resolve each
-ASV to a **single species by taking the first hit** (``keep="first"``), then
-aggregate read counts by ``tax_id`` to compute relative abundance.
+1. The ASV mapping file can list multiple taxonomy hits per ASV. Like
+``savont export``, each ASV resolves to its **first row**; below-threshold hits
+get an ``<tax_id>_UNK<nnn>`` tag and unaligned ASVs are kept as ``unmapped``.
+Read counts are then aggregated by ``tax_id`` (see
+:class:`hoshi.lib.savont_reader.SavontReader`).
 """
 
 from __future__ import annotations

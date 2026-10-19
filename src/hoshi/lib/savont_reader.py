@@ -23,7 +23,17 @@ Classify run adds::
 
 Quirks handled here
 -------------------
-- Multiple reference hits per ASV: take the **first hit** per ``asv_header``.
+Resolution mirrors ``savont export`` so counts per lineage match it:
+
+- Multiple reference hits per ASV: take the **first row** per ``asv_header``
+  (the file is sorted by Savont's EM abundance; on an exact EM tie Savont's own
+  ``species_abundance.tsv`` picks the last tied row instead — see
+  ``docs/research/savont-hit-selection.md``).
+- Hits below the species threshold (``species`` = ``UNCLASSIFIED``) keep the
+  nearest reference's tax_id with an ``_UNK<nnn>`` tag, so they never merge
+  with, or are reported as, that species.
+- ASVs with no alignment are missing from ``asv_mappings.tsv``; they are kept
+  as ``unmapped`` so relative abundance uses every read in the feature table.
 - Multiple ASVs collapsing onto one species: depths are **summed** per
   ``tax_id``; sequence identity takes the **max** ``alignment_identity``
   (best-matching ASV wins per species).
@@ -59,6 +69,42 @@ _TAXONOMY_COLUMNS = (
     "phylum",
     "superkingdom",
 )
+
+# Savont writes this (or ``UNCLASSIFIED-(<asv>)`` with --detailed-unclassified)
+# for every rank the hit's identity is too low to call.
+_UNCLASSIFIED_MARKER = "UNCLASSIFIED"
+_RANKS_ABOVE_SPECIES = ("genus", "family", "order", "class", "phylum", "superkingdom")
+
+# tax_id for ASVs with no alignment: counted in the total, never shown as an
+# organism (it is one of META_TAX_IDS, which species_view drops).
+UNMAPPED_TAX_ID = "unmapped"
+
+
+def _is_unclassified(value: object) -> bool:
+    return isinstance(value, str) and value.startswith(_UNCLASSIFIED_MARKER)
+
+
+def _clean_tax_id(value: object) -> str | None:
+    """Normalise a raw tax_id cell to a digit string; blank/non-numeric -> None."""
+    number = pd.to_numeric(value, errors="coerce")
+    return None if pd.isna(number) else str(int(number))
+
+
+def _tag_unresolved_tax_id(tax_id: str | None, hit: pd.Series) -> str | None:
+    """Tag the nearest-reference tax_id of a hit Savont could not call to species.
+
+    Savont keeps the nearest reference's tax_id even when the species (and maybe
+    higher ranks) are ``UNCLASSIFIED``. Using it bare would count those reads as
+    that species and match it in the pathogen sheet. The tag
+    ``<tax_id>_UNK<nnn>`` keeps the nearest reference traceable while making it
+    a different key; ``nnn`` is how many ranks above species are also
+    unresolved (``000`` = only species), so ASVs resolved to different depths
+    never merge under one lineage.
+    """
+    if tax_id is None or not _is_unclassified(hit.get("species")):
+        return tax_id
+    unresolved_above = sum(_is_unclassified(hit.get(rank)) for rank in _RANKS_ABOVE_SPECIES)
+    return f"{tax_id}_UNK{unresolved_above:03d}"
 
 
 @dataclass(frozen=True)
@@ -162,10 +208,13 @@ class SavontReader:
 
     @cached_property
     def _resolved_asvs(self) -> pd.DataFrame:
-        """One row per ASV present in the feature table, first taxonomy hit.
+        """One row per ASV in the feature table, resolved like ``savont export``.
 
-        Carries ``depth`` and ``alignment_identity`` (NaN when the mapping file
-        predates that column) alongside the taxonomy columns.
+        Mapped ASVs take their first ``asv_mappings.tsv`` row. Below-threshold
+        hits get a tagged ``tax_id`` (see :func:`_tag_unresolved_tax_id`). ASVs
+        missing from the mapping file (no alignment) are kept with the
+        ``unmapped`` meta tax_id and no taxonomy, so their reads stay in the
+        total. Carries ``depth`` and ``alignment_identity`` (NaN when absent).
         """
         mapping_df = self.asv_mappings
         depths = self.asv_depths
@@ -173,34 +222,31 @@ class SavontReader:
 
         # First hit per ASV (mapping files can list several references per ASV).
         first_hits = mapping_df.drop_duplicates(subset=["asv_header"], keep="first")
+        first_hits = first_hits.set_index("asv_header")
 
         rows = []
-        for _, hit in first_hits.iterrows():
-            asv_id = hit["asv_header"]
-            if asv_id not in depths.index:
+        for asv_id, depth in depths.items():
+            row = {"asv_header": asv_id, "depth": depth, "alignment_identity": pd.NA}
+            if asv_id not in first_hits.index:
+                row.update({col: pd.NA for col in _TAXONOMY_COLUMNS})
+                row["tax_id"] = UNMAPPED_TAX_ID
+                rows.append(row)
                 continue
-            row = {
-                "asv_header": asv_id,
-                "depth": depths[asv_id],
-                "alignment_identity": (
-                    pd.to_numeric(hit.get("alignment_identity"), errors="coerce")
-                    if has_identity
-                    else pd.NA
-                ),
-            }
+
+            hit = first_hits.loc[asv_id]
+            if has_identity:
+                row["alignment_identity"] = pd.to_numeric(
+                    hit.get("alignment_identity"), errors="coerce"
+                )
             for col in _TAXONOMY_COLUMNS:
                 row[col] = hit.get(col, pd.NA)
+            row["tax_id"] = _tag_unresolved_tax_id(_clean_tax_id(hit.get("tax_id")), hit)
             rows.append(row)
 
         if not rows:
-            raise ValueError("No ASVs could be resolved from the mapping file.")
+            raise ValueError(f"No ASVs found in {self.feature_table_path}.")
 
-        resolved = pd.DataFrame(rows)
-        # tax_id is a nullable annotation now, not a join key: parse tolerantly
-        # so ASVs with a missing/blank/non-numeric tax_id survive as <NA>.
-        tax_num = pd.to_numeric(resolved["tax_id"], errors="coerce").astype("Int64")
-        resolved["tax_id"] = tax_num.astype(str).where(tax_num.notna(), pd.NA)
-        return resolved
+        return pd.DataFrame(rows)
 
     # ─── Derived: per-OTU (per-ASV) abundance table ──────────────────
 

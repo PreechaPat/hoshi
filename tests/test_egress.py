@@ -83,6 +83,16 @@ def test_experiment_to_kraken2_has_unclassified_line(simple_experiment):
     assert "unclassified" in fields[5]
 
 
+def test_experiment_to_kraken2_non_numeric_tax_id_written_as_zero(simple_experiment):
+    """Kraken2 taxids are integers; tagged ids such as Savont's ``<id>_UNK000``
+    (nearest reference of a below-threshold hit) are written as 0."""
+    simple_experiment.row_data.loc["sample1:ASV2", "tax_id"] = "817_UNK000"
+    lines = experiment_to_kraken2(simple_experiment).strip().split("\n")
+    species = {f[5].strip(): f[4] for f in (ln.split("\t") for ln in lines) if f[3] == "S"}
+    assert species["Bacteroides fragilis"] == "0"
+    assert species["Enterococcus faecalis"] == "1351"
+
+
 def test_experiment_to_kraken2_rank_codes(simple_experiment):
     result = experiment_to_kraken2(simple_experiment)
     lines = result.strip().split("\n")

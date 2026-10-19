@@ -135,7 +135,8 @@ def _build_taxonomy_tree(
     """
     # Collect per-feature entries with their lineage. The feature index is a
     # per-OTU id, so the NCBI tax_id is read from row_data (nullable) rather than
-    # the index; features without a tax_id fall back to "0".
+    # the index. Kraken2 taxids are integers: features without a numeric tax_id
+    # (missing, meta rows, Savont's ``<id>_UNK<nnn>`` tags) fall back to "0".
     entries: list[dict] = []
 
     for feature_id in counts.index:
@@ -151,11 +152,9 @@ def _build_taxonomy_tree(
                 lineage[rank] = str(val).strip()
 
         tax_id_val = row.get("tax_id") if "tax_id" in row_data.columns else None
-        tax_id = (
-            str(tax_id_val).strip()
-            if pd.notna(tax_id_val) and str(tax_id_val).strip()
-            else "0"
-        )
+        tax_id = str(tax_id_val).strip() if pd.notna(tax_id_val) else ""
+        if not tax_id.isdigit():
+            tax_id = "0"
 
         entries.append({
             "tax_id": tax_id,
