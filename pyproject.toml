@@ -30,6 +30,11 @@ hoshi = "hoshi.cli:main"
 hoshi-report = "hoshi.command.report:main"
 hoshi-summary = "hoshi.command.summary:main"
 
+[tool.pytest.ini_options]
+markers = [
+    "docker: runs the built Docker image (deselect with -m 'not docker')",
+]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
