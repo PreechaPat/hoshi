@@ -1,0 +1,26 @@
+(2026-10-21 13:23:37.575) INFO [savont] COMMAND: /home/preecha/.pixi/envs/bio/bin/savont export --input-dirs savont-out-soil --output-dir savont-out-soil-export
+(2026-10-21 13:23:37.575) INFO [savont] VERSION: 0.7.0
+(2026-10-21 13:23:37.579) INFO [savont::merge] Loaded 1 input directories (1 total sample columns), 243 unique ASVs
+(2026-10-21 13:23:37.587) INFO [savont::merge] Wrote savont-out-soil-export/merged_feature_table.tsv
+(2026-10-21 13:23:37.588) INFO [savont::merge] Wrote savont-out-soil-export/merged_rep_seqs.fasta
+(2026-10-21 13:23:37.589) INFO [savont::merge] Wrote savont-out-soil-export/merged_asv_taxonomy.tsv (242 ASVs classified)
+(2026-10-21 13:23:37.590) INFO [savont::merge] Wrote savont-out-soil-export/merged_taxon_counts.tsv
+(2026-10-21 13:23:37.590) INFO [savont::merge] To import into QIIME2:
+
+# Feature table
+biom convert -i savont-out-soil-export/merged_feature_table.tsv -o feature-table.biom --table-type='OTU table' --to-hdf5
+qiime tools import --type 'FeatureTable[Frequency]' --input-path feature-table.biom --output-path feature-table.qza
+
+# Representative sequences
+qiime tools import --type 'FeatureData[Sequence]' \
+--input-path savont-out-soil-export/merged_rep_seqs.fasta --output-path rep-seqs.qza
+
+# If `savont classify / sintax` was run: ASV-level taxonomy (use with feature-table.qza for taxa barplot)
+qiime tools import --type 'FeatureData[Taxonomy]' --input-format HeaderlessTSVTaxonomyFormat \
+--input-path savont-out-soil-export/merged_asv_taxonomy.tsv --output-path taxonomy.qza
+
+# If `savont classify / sintax` was run: Taxonomy bar plot
+qiime taxa barplot --i-table feature-table.qza --i-taxonomy taxonomy.qza \
+--o-visualization taxa-bar-plots.qzv\
+
+(2026-10-21 13:23:37.590) INFO [savont::merge] Export complete.

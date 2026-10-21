@@ -205,16 +205,6 @@ Conventions (see [`AGENTS.md`](AGENTS.md) for the full guide):
 
 ## Known gaps
 
-- `pyproject.toml` declares `hoshi-report` and `hoshi-summary` console scripts
-  pointing at `hoshi.command.report:main` / `hoshi.command.summary:main`, which
-  do not currently exist. Use the `hoshi` entry point; these two are stale and
-  should be removed or implemented.
-- Report templates are functional but minimal ("barebone"). Enriching them with
-  more information — QC metrics, run/read stats from other tools — is the "complete
-  report" goal tracked in [`SPECS.md`](SPECS.md).
-- Bracken / QIIME2 / BIOM readers and the comparison report are planned, not
-  implemented.
-
 ## License
 
 See [`LICENSE`](LICENSE).
